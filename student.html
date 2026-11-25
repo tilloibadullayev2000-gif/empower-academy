@@ -404,7 +404,10 @@
 
   <script>
     const token = localStorage.getItem('token');
-    if (!token || localStorage.getItem('role') !== 'student') {
+    const savedRole = localStorage.getItem('role');
+    if (!token) {
+      window.location.href = '/index.html';
+    } else if (savedRole && savedRole !== 'student') {
       window.location.href = '/index.html';
     }
 
@@ -522,7 +525,11 @@
     }
 
     async function api(url, method = 'GET', body = null) {
-      const opts = { method, headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } };
+      const opts = {
+        method,
+        cache: 'no-store',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+      };
       if (body) opts.body = JSON.stringify(body);
       const res = await fetch(url, opts);
       const data = await res.json().catch(() => ({}));
@@ -552,40 +559,7 @@
         if (!obj) continue;
         const candidates = [
           obj[key],
-          obj[`${key}_score`],
-          obj.skills && obj.skills[key],
-          obj.scores && obj.scores[key]
-        ];
-        for (const val of candidates) {
-          if (val !== undefined && val !== null && val !== '' && !Number.isNaN(Number(val))) {
-            return Math.max(0, Math.min(100, Number(val)));
-          }
-        }
-      }
-      return 0;
-    }
-
-    function calcAvgScore(item, fallbackAvg = 0) {
-      if (!item) return Number(fallbackAvg) || 0;
-      const direct = item.avg ?? item.average ?? item.avgScore ?? item.avg_score ?? item.score;
-      if (direct !== undefined && direct !== null && direct !== '' && !Number.isNaN(Number(direct))) {
-        return Math.round(Number(direct));
-      }
-      const vals = ['grammar', 'listening', 'reading', 'vocabulary', 'writing', 'speaking']
-        .map(k => pickSkillVal([item], k));
-      const sum = vals.reduce((a, b) => a + b, 0);
-      return sum > 0 ? Math.round(sum / 6) : (Number(fallbackAvg) || 0);
-    }
-
-    function resolveStudentPhotoSrc(item) {
-      const raw = item?.photo_url || item?.avatar_url || item?.photo_base64 || item?.photo || '';
-      if (!raw || typeof raw !== 'string') return '';
-      const trimmed = raw.trim();
-      if (!trimmed) return '';
-      if (trimmed.startsWith('data:image') || trimmed.startsWith('http') || trimmed.startsWith('/')) {
-        return trimmed;
-      }
-      return `data:image/jpeg;base64,${trimmed}`;
+          obj[`${key}_score`], obj.skills && obj.skills[key], obj.scores && obj.scores[key] ]; for (const val of candidates) { if (val !== undefined && val !== null && val !== '' && !Number.isNaN(Number(val))) { return Math.max(0, Math.min(100, Number(val))); } } } return 0; }  function calcAvgScore(item, fallbackAvg = 0) { if (!item) return Number(fallbackAvg) \vert{}\vert{} 0; const direct = item.avg ?? item.average ?? item.avgScore ?? item.avg_score ?? item.score; if (direct !== undefined && direct !== null && direct !== '' && !Number.isNaN(Number(direct))) { return Math.round(Number(direct)); } const vals = ['grammar', 'listening', 'reading', 'vocabulary', 'writing', 'speaking'] .map(k => pickSkillVal([item], k)); const sum = vals.reduce((a, b) => a + b, 0); return sum > 0 ? Math.round(sum / 6) : (Number(fallbackAvg) \vert{}\vert{} 0); }  function resolveStudentPhotoSrc(item) { const raw = item?.photo_url \vert{}\vert{} item?.avatar_url \vert{}\vert{} item?.photo_base64 \vert{}\vert{} item?.photo \vert{}\vert{} ''; if (!raw \vert{}\vert{} typeof raw !== 'string') return ''; const trimmed = raw.trim(); if (!trimmed) return ''; if (trimmed.startsWith('data:image') \vert{}\vert{} trimmed.startsWith('http') \vert{}\vert{} trimmed.startsWith('/')) { return trimmed; } return `data:image/jpeg;base64,${trimmed}`;
     }
 
     function renderMiniStudentAvatar(item, fallbackName = 'S') {
@@ -664,9 +638,7 @@
 
     async function submitAssignment(assignmentId) {
       const answer_text = document.getElementById(`ansText_${assignmentId}`).value;
-      const answer_url = document.getElementById(`ansUrl_${assignmentId}`).value;
-      try {
-        await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
+      const answer_url = document.getElementById(`ansUrl_${assignmentId}`).value; try { await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
         showToast(tr('sentOk'));
         loadDashboard();
       } catch (err) { showToast(err.message); }
@@ -691,49 +663,16 @@
       const myLevel = (st.level || myRankEntry?.level || '').toString().trim();
 
       document.getElementById('studentName').textContent = st.full_name || myRankEntry?.full_name || 'Student';
-      document.getElementById('studentLevel').textContent = `${tr('levelPrefix')}: ${myLevel || '-'} | ${st.group_name || myRankEntry?.group_name || ''}`;
-      document.getElementById('avatarLetter').textContent = (st.full_name || myRankEntry?.full_name || 'S').charAt(0).toUpperCase();
-      renderStudentProfilePhoto(st, myRankEntry);
-
-      const attSum = data.attendanceSummary || { percent: 0, presentCount: 0, totalCount: 0 };
-      document.getElementById('attPercent').textContent = (attSum.percent || 0) + '%';
-      document.getElementById('attCountText').textContent = `${attSum.presentCount || 0}/${attSum.totalCount || 0}`;
-
-      const skillSources = [st, myRankEntry, data];
-      let skills = [
-        { name: 'Grammar', val: pickSkillVal(skillSources, 'grammar') },
-        { name: 'Listening', val: pickSkillVal(skillSources, 'listening') },
-        { name: 'Reading', val: pickSkillVal(skillSources, 'reading') },
-        { name: 'Vocabulary', val: pickSkillVal(skillSources, 'vocabulary') },
-        { name: 'Writing', val: pickSkillVal(skillSources, 'writing') },
-        { name: 'Speaking', val: pickSkillVal(skillSources, 'speaking') }
-      ];
-
-      const computedAvg = calcAvgScore(st, myRankEntry?.avg ?? data.avgScore ?? data.avg_score ?? 0);
-
-      if (skills.every(s => s.val === 0) && computedAvg > 0) {
-        const offsets = [-5, 4, 2, -3, -2, 6];
-        skills = skills.map((s, idx) => ({
-          ...s,
-          val: Math.max(0, Math.min(100, computedAvg + offsets[idx]))
-        }));
-      }
-
-      const improvementVal = Number(data.performanceSummary?.improvement ?? 0);
-      const impSign = improvementVal > 0 ? `+${improvementVal}%` : `${improvementVal}%`;
-      document.getElementById('avgSkillScore').textContent = computedAvg + '%';
-      document.getElementById('avgImprovementText').textContent = `${tr('statSixSkills')} • ${impSign}`;
-      document.getElementById('myRankText').textContent = '#' + (data.myRank || 1);
-      document.getElementById('totalStudentsText').textContent = `/ ${ranking.length || 1}`;
-      document.getElementById('balanceText').textContent = `${Number(st.balance || 0).toLocaleString()} ${tr('currency')}`;
-      document.getElementById('monthlyFeeText').textContent = `${Number(st.monthly_fee || 0).toLocaleString()} ${tr('currency')}`;
+      document.getElementById('studentLevel').textContent = `${tr('levelPrefix')}:${myLevel || '-'} | ${st.group_name \vert{}\vert{} myRankEntry?.group_name \vert{}\vert{} ''}`; document.getElementById('avatarLetter').textContent = (st.full_name \vert{}\vert{} myRankEntry?.full_name \vert{}\vert{} 'S').charAt(0).toUpperCase(); renderStudentProfilePhoto(st, myRankEntry);  const attSum = data.attendanceSummary \vert{}\vert{} { percent: 0, presentCount: 0, totalCount: 0 }; document.getElementById('attPercent').textContent = (attSum.percent \vert{}\vert{} 0) + '\%'; document.getElementById('attCountText').textContent = `${attSum.presentCount || 0}/${attSum.totalCount \vert{}\vert{} 0}`;  const skillSources = [st, myRankEntry, data]; let skills = [ { name: 'Grammar', val: pickSkillVal(skillSources, 'grammar') }, { name: 'Listening', val: pickSkillVal(skillSources, 'listening') }, { name: 'Reading', val: pickSkillVal(skillSources, 'reading') }, { name: 'Vocabulary', val: pickSkillVal(skillSources, 'vocabulary') }, { name: 'Writing', val: pickSkillVal(skillSources, 'writing') }, { name: 'Speaking', val: pickSkillVal(skillSources, 'speaking') } ];  const computedAvg = calcAvgScore(st, myRankEntry?.avg ?? data.avgScore ?? data.avg_score ?? 0);  if (skills.every(s => s.val === 0) && computedAvg > 0) { const offsets = [-5, 4, 2, -3, -2, 6]; skills = skills.map((s, idx) => ({ ...s, val: Math.max(0, Math.min(100, computedAvg + offsets[idx])) })); }  const improvementVal = Number(data.performanceSummary?.improvement ?? 0); const impSign = improvementVal > 0 ? `+${improvementVal}%` : `${improvementVal}\%`; document.getElementById('avgSkillScore').textContent = computedAvg + '\%'; document.getElementById('avgImprovementText').textContent = `${tr('statSixSkills')} • ${impSign}`; document.getElementById('myRankText').textContent = '#' + (data.myRank \vert{}\vert{} 1); document.getElementById('totalStudentsText').textContent = `/ ${ranking.length || 1}`;
+      document.getElementById('balanceText').textContent = `${Number(st.balance \vert{}\vert{} 0).toLocaleString()}${tr('currency')}`;
+      document.getElementById('monthlyFeeText').textContent = `${Number(st.monthly_fee \vert{}\vert{} 0).toLocaleString()}${tr('currency')}`;
 
       document.getElementById('skillsGrid').innerHTML = skills.map(sk => {
         const col = getSkillColor(sk.val);
         return `
           <div class="skill-box">
             <div class="skill-top"><span>${sk.name}</span><span>${sk.val}%</span></div>
-            <div class="progress-track"><div class="progress-fill" style="width:${sk.val}%; background:${col};"></div></div>
+            <div class="progress-track"><div class="progress-fill" style="width:${sk.val}\%; background:${col};"></div></div>
             <span class="skill-tag" style="color:${col};">${getSkillStatus(sk.val)}</span>
           </div>
         `;
@@ -763,8 +702,7 @@
       const topNameEl = document.getElementById('studentYearlyTopName');
       const topScoreEl = document.getElementById('studentYearlyTopScore');
       if (championToShow) {
-        topNameEl.innerHTML = `🔥 ${escapeHtml(championToShow.full_name)} <span style="font-size:12px; font-weight:800; opacity:0.85;">(${escapeHtml(championToShow.level)})</span>`;
-        topScoreEl.textContent = `${championToShow.avg}%`;
+        topNameEl.innerHTML = `🔥 ${escapeHtml(championToShow.full_name)} <span style="font-size:12px; font-weight:800; opacity:0.85;">(${escapeHtml(championToShow.level)})</span>`; topScoreEl.textContent = `${championToShow.avg}%`;
         renderChampionPhoto(championToShow, st, ranking);
       } else {
         topNameEl.textContent = '🔥 -';
@@ -788,7 +726,7 @@
             <td>
               <span class="top-student-cell">
                 ${renderMiniStudentAvatar(avatarSource, r.full_name)}
-                <span>${escapeHtml(r.full_name)} ${isMe ? '★' : ''}</span>
+                <span>${escapeHtml(r.full_name)}${isMe ? '★' : ''}</span>
               </span>
             </td>
             <td><b>${r.avg}%</b></td>
@@ -806,8 +744,7 @@
         return `
           <div class="item-card">
             <b>${escapeHtml(l.title)}</b> <small>(${escapeHtml(l.level)})</small>
-            <p style="margin-top:4px; font-size:13px;">${escapeHtml(l.description || '')}</p>
-            ${fileHref ? `<a class="btn-link" href="${escapeHtml(fileHref)}" target="_blank">📎 ${escapeHtml(l.file_name || 'File')}</a>` : ''}
+            <p style="margin-top:4px; font-size:13px;">${escapeHtml(l.description \vert{}\vert{} '')}</p>${fileHref ? `<a class="btn-link" href="${escapeHtml(fileHref)}" target="_blank">📎 ${escapeHtml(l.file_name || 'File')}</a>` : ''}
             ${l.material_url ? `<a class="btn-link" href="${escapeHtml(l.material_url)}" target="_blank">🔗 Link</a>` : ''}
           </div>
         `;
@@ -831,9 +768,8 @@
 
         return `
           <div class="item-card">
-            <b>${escapeHtml(a.title)}</b> <small>(${escapeHtml(a.level)} | Due: ${escapeHtml(a.due_date || '-')})</small>
-            <p style="margin:6px 0 10px; font-size:13px;">${escapeHtml(a.description || '')}</p>
-            ${
+            <b>${escapeHtml(a.title)}</b> <small>(${escapeHtml(a.level)} \vert{} Due:${escapeHtml(a.due_date || '-')})</small>
+            <p style="margin:6px 0 10px; font-size:13px;">${escapeHtml(a.description \vert{}\vert{} '')}</p>${
               alreadySubmitted
                 ? `<div class="submitted-note">${tr('alreadySubmitted')}</div>`
                 : `
@@ -851,116 +787,4 @@
       `).join('') || '<tr><td colspan="4">-</td></tr>';
 
       document.getElementById('scheduleTableBody').innerHTML = (data.schedules || []).map(s => `
-        <tr><td><b>${escapeHtml(s.group_name)}</b></td><td>${escapeHtml(s.level)}</td><td>${escapeHtml(s.day_of_week)}</td><td>${escapeHtml(s.lesson_time)}</td><td>${escapeHtml(s.room_or_teacher)}</td></tr>
-      `).join('') || '<tr><td colspan="5">-</td></tr>';
-
-      document.getElementById('attendanceTableBody').innerHTML = (data.attendance || []).map(a => `
-        <tr><td>${escapeHtml(a.lesson_date)}</td><td><b>${escapeHtml(a.status)}</b></td></tr>
-      `).join('') || '<tr><td colspan="2">-</td></tr>';
-
-      document.getElementById('transactionsTableBody').innerHTML = (data.transactions || []).map(tx => `
-        <tr><td>${escapeHtml(tx.created_at)}</td><td>${tx.type === 'deposit' ? 'Deposit (+)' : 'Charge (-)'}</td><td><b>${Number(tx.amount).toLocaleString()} ${tr('currency')}</b></td><td>${escapeHtml(tx.description || '-')}</td></tr>
-      `).join('') || '<tr><td colspan="4">-</td></tr>';
-
-      if (typeof Chart !== 'undefined') {
-        const myHistory = (Array.isArray(data.myMonthlyHistory) ? data.myMonthlyHistory : [])
-          .filter(h => h && h.month_key)
-          .sort((a, b) => String(a.month_key).localeCompare(String(b.month_key)));
-
-        const monthlyLabels = myHistory.length > 0
-          ? [...myHistory.map(h => h.month_key), 'Now']
-          : ['Current'];
-        const monthlySeries = myHistory.length > 0
-          ? [...myHistory.map(h => Math.round(Number(h.avg_score) || 0)), computedAvg]
-          : [computedAvg];
-
-        if (studentMonthlyChartInstance) studentMonthlyChartInstance.destroy();
-        studentMonthlyChartInstance = new Chart(document.getElementById('studentMonthlyChart'), {
-          type: 'line',
-          data: {
-            labels: monthlyLabels,
-            datasets: [{
-              label: 'Monthly Progress (%)',
-              data: monthlySeries,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.16)',
-              fill: true,
-              tension: 0.35,
-              pointRadius: 3
-            }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-        });
-
-        const validHistory = myHistory.filter(h => Number(h.avg_score) > 0);
-        let yearlyLabels = validHistory.map(h => h.month_key);
-        let yearlySeries = validHistory.map(h => Math.round(Number(h.avg_score) || 0));
-
-        if (computedAvg > 0) {
-          yearlyLabels.push('Now');
-          yearlySeries.push(computedAvg);
-        }
-
-        if (yearlyLabels.length === 0) {
-          yearlyLabels = ['Year'];
-          yearlySeries = [computedAvg];
-        }
-
-        if (studentYearlyChartInstance) studentYearlyChartInstance.destroy();
-        studentYearlyChartInstance = new Chart(document.getElementById('studentYearlyChart'), {
-          type: 'bar',
-          data: {
-            labels: yearlyLabels,
-            datasets: [{
-              label: 'Yearly Score (%)',
-              data: yearlySeries,
-              backgroundColor: ['#f59e0b', '#f97316', '#ef4444', '#e11d48', '#3b5bfd', '#10b981'],
-              borderRadius: 8
-            }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-        });
-
-        if (radarChartInstance) radarChartInstance.destroy();
-        radarChartInstance = new Chart(document.getElementById('radarChart'), {
-          type: 'radar',
-          data: {
-            labels: skills.map(s => s.name),
-            datasets: [{ label: 'Skills', data: skills.map(s => s.val), backgroundColor: 'rgba(225, 29, 72, 0.18)', borderColor: '#e11d48', borderWidth: 2 }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, scales: { r: { min: 0, max: 100 } } }
-        });
-
-        if (weeklyChartInstance) weeklyChartInstance.destroy();
-        weeklyChartInstance = new Chart(document.getElementById('weeklyChart'), {
-          type: 'bar',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-            datasets: [{ label: 'Score', data: skills.map(s => s.val), backgroundColor: ['#3b5bfd', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#e11d48'], borderRadius: 8 }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
-        });
-      }
-    }
-
-    async function loadDashboard() {
-      try {
-        const data = await api('/api/student/dashboard');
-        lastDashboardData = data;
-        renderDashboard(data);
-      } catch (err) {
-        console.error('Dashboard load error:', err);
-        showToast('Xato: ' + err.message);
-      }
-    }
-
-    applyLanguage(localStorage.getItem('lang') || 'uz', false);
-    document.getElementById('langSelect').addEventListener('change', (e) => {
-      applyLanguage(e.target.value, true);
-      showToast(tr('langSaved'));
-    });
-
-    loadDashboard();
-  </script>
-</body>
-</html>
+        <tr><td><b>${escapeHtml(s.group_name)}</b></td><td>${escapeHtml(s.level)}</td><td>${escapeHtml(s
