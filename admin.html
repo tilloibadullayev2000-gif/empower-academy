@@ -1,0 +1,1953 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Empower Academy</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #eef2f8; --card: #ffffff; --text: #1e293b; --heading: #0f172a;
+      --muted: #64748b; --border: #e2e8f0; --input-bg: #f8fafc; --row-border: #f1f5f9;
+    }
+    body.dark {
+      --bg: #0b1120; --card: #111827; --text: #e2e8f0; --heading: #f8fafc;
+      --muted: #94a3b8; --border: #1e293b; --input-bg: #1e293b; --row-border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); min-height: 100vh; transition: 0.25s; }
+
+    .topbar {
+      background: var(--card); padding: 14px 32px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 12px;
+      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); position: sticky; top: 0; z-index: 20;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand-logo-img { max-height: 44px; width: auto; object-fit: contain; border-radius: 8px; }
+    .brand-title { font-size: 19px; font-weight: 800; color: #e11d48; line-height: 1.05; }
+    .brand-sub { font-size: 10px; font-weight: 800; color: #e11d48; letter-spacing: 2.2px; }
+    .admin-badge {
+      background: #e11d48; color: #fff; font-size: 11px; font-weight: 800;
+      padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;
+    }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .lang-select, .theme-btn {
+      background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border);
+      padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .logout-btn {
+      background: #fef2f2; color: #ef4444; border: none;
+      padding: 10px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    .container { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
+
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
+    .kpi-card {
+      background: var(--card); border-radius: 22px; padding: 20px 22px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); border-left: 5px solid #3b5bfd;
+    }
+    .kpi-card.emerald { border-left-color: #10b981; }
+    .kpi-card.rose { border-left-color: #e11d48; }
+    .kpi-card.amber { border-left-color: #f59e0b; }
+    .kpi-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .kpi-val { font-size: 26px; font-weight: 800; color: var(--heading); margin: 6px 0; }
+    .kpi-note { font-size: 12px; color: #10b981; font-weight: 600; }
+
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .tab-btn {
+      padding: 10px 16px; border-radius: 13px; border: none;
+      background: var(--card); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); transition: 0.2s;
+    }
+    .tab-btn.active { background: #e11d48; color: #ffffff; box-shadow: 0 8px 20px rgba(225, 29, 72, 0.25); }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .card {
+      background: var(--card); border-radius: 22px; padding: 24px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); margin-bottom: 20px;
+    }
+    .card-header-flex {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 14px;
+    }
+    .card h2 { font-size: 18px; font-weight: 700; color: var(--heading); margin-bottom: 0; }
+    .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .filter-bar input, .filter-bar select { width: auto; min-width: 170px; padding: 9px 13px; font-size: 13px; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    input, select, textarea {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1.5px solid var(--border); background: var(--input-bg); color: var(--heading); font-size: 14px; outline: none;
+    }
+    input[type="checkbox"] { width: auto; }
+    input:focus, select:focus, textarea:focus { border-color: #e11d48; }
+
+    .photo-preview-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .photo-preview-img {
+      width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #e11d48; background: var(--input-bg); display: none;
+    }
+    .st-name-cell, .rank-st-cell { display: inline-flex; align-items: center; gap: 8px; }
+    .st-avatar, .rank-st-avatar {
+      width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+      border: 1.5px solid var(--border); background: var(--input-bg); flex-shrink: 0;
+    }
+
+    .skill-preview-box {
+      background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 16px;
+      padding: 14px 18px; margin-bottom: 16px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .preview-score { font-size: 22px; font-weight: 800; color: #e11d48; }
+
+    @keyframes fireGlow {
+      0%, 100% {
+        text-shadow: 0 0 6px rgba(249, 115, 22, 0.7), 0 0 14px rgba(239, 68, 68, 0.55);
+        transform: scale(1);
+      }
+      50% {
+        text-shadow: 0 0 12px rgba(251, 146, 60, 0.95), 0 0 24px rgba(220, 38, 38, 0.85);
+        transform: scale(1.03);
+      }
+    }
+
+    .flame-champion-box {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(245, 158, 11, 0.14));
+      border: 1.5px solid rgba(249, 115, 22, 0.45);
+      border-radius: 18px;
+      padding: 14px 18px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .admin-top-left { display: flex; align-items: center; gap: 12px; }
+    .admin-top-photo {
+      width: 46px; height: 46px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #f97316; background: var(--input-bg); flex-shrink: 0; display: none;
+    }
+    .admin-top-letter {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff; font-size: 16px; font-weight: 900;
+      display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .flame-label {
+      font-size: 11px; font-weight: 800; letter-spacing: 0.8px; text-transform: uppercase; color: #ea580c;
+    }
+    .flame-student-name {
+      font-size: 21px; font-weight: 900; color: #b91c1c;
+      animation: fireGlow 1.5s ease-in-out infinite;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    body.dark .flame-student-name { color: #fdba74; }
+    .flame-score-pill {
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      color: #fff; font-weight: 800; font-size: 13px; padding: 7px 14px;
+      border-radius: 99px; box-shadow: 0 6px 18px rgba(239, 68, 68, 0.28);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #3b5bfd, #2563eb); color: white; border: none;
+      padding: 11px 22px; border-radius: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
+      padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
+    }
+    .btn-close-month {
+      background: linear-gradient(135deg, #e11d48, #f97316); color: white; border: none;
+      padding: 11px 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
+    }
+    .btn-excel {
+      background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none;
+      padding: 9px 15px; border-radius: 11px; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .btn-clear-hist {
+      background: linear-gradient(135deg, #dc2626, #991b1b); color: white; border: none;
+      padding: 9px 14px; border-radius: 11px; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    .btn-select {
+      background: #fff1f2; color: #be123c; border: none;
+      padding: 6px 11px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;
+    }
+    .btn-fee {
+      background: #fef3c7; color: #b45309; border: none;
+      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-right: 4px;
+    }
+    .btn-edit {
+      background: #eff6ff; color: #2563eb; border: none;
+      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer; margin-right: 4px;
+    }
+    .btn-del {
+      background: #fee2e2; color: #b91c1c; border: none;
+      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;
+    }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 11px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--row-border); }
+    th { color: var(--muted); font-weight: 700; }
+    .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .medal {
+      display: inline-flex; width: 24px; height: 24px; border-radius: 50%;
+      align-items: center; justify-content: center; font-weight: 800; font-size: 12px;
+    }
+    .m-1 { background: #fef3c7; color: #d97706; }
+    .m-2 { background: #e2e8f0; color: #475569; }
+    .m-3 { background: #ffedd5; color: #c2410c; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55);
+      display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: var(--card); color: var(--heading); border-radius: 22px; padding: 26px; width: 100%; max-width: 480px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 14px; }
+    .btn-cancel {
+      background: var(--input-bg); color: var(--text); border: 1px solid var(--border);
+      padding: 11px 18px; border-radius: 12px; font-weight: 600; cursor: pointer;
+    }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #0f172a; color: #fff; padding: 14px 22px;
+      border-radius: 14px; font-size: 14px; font-weight: 600;
+      display: none; z-index: 1200;
+    }
+    @media (max-width: 960px) {
+      .kpi-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .grid-6 { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
+      <div>
+        <div class="brand-title">EMPOWER</div>
+        <div class="brand-sub">ACADEMY</div>
+      </div>
+      <span class="admin-badge">ULTRA ADMIN</span>
+    </div>
+    <div class="top-actions">
+      <select id="langSelect" class="lang-select">
+        <option value="uz">🇺🇿 O‘zbekcha</option>
+        <option value="en">🇬🇧 English</option>
+        <option value="ru">🇷🇺 Русский</option>
+      </select>
+      <button class="theme-btn" id="themeToggleBtn">Dark / Light</button>
+      <button class="logout-btn" id="logoutBtn" data-i18n="logout">Chiqish</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label" data-i18n="kpiTotalStudents">Jami o‘quvchilar</div>
+        <div class="kpi-val" id="kpiTotalStudents">0</div>
+        <div class="kpi-note" data-i18n="kpiActiveBase">Faol o‘quvchilar bazasi</div>
+      </div>
+      <div class="kpi-card emerald">
+        <div class="kpi-label" data-i18n="kpiTotalIncome">Jami kassa kirim</div>
+        <div class="kpi-val" id="kpiTotalIncome">0 so‘m</div>
+        <div class="kpi-note" data-i18n="kpiPaidNote">Hisobga tushgan to‘lovlar</div>
+      </div>
+      <div class="kpi-card rose">
+        <div class="kpi-label" data-i18n="kpiAvgScore">Markaz o‘rtacha balli</div>
+        <div class="kpi-val" id="kpiAvgScore">0%</div>
+        <div class="kpi-note" data-i18n="kpiSkillsNote">Barcha fanlar kesimida</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label" data-i18n="kpiLowBalance">Balansi kam o‘quvchilar</div>
+        <div class="kpi-val" id="kpiLowBalance">0</div>
+        <div class="kpi-note" style="color:#d97706;" data-i18n="kpiLowNote">To‘lov eslatmasi kerak</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
+      <button class="tab-btn" data-tab="teachersTab" data-i18n="tabTeachers">O‘qituvchilar</button>
+      <button class="tab-btn" data-tab="financeTab" data-i18n="tabFinance">Balans & Buxgalteriya</button>
+      <button class="tab-btn" data-tab="attendanceTab" data-i18n="tabAttendance">Davomat</button>
+      <button class="tab-btn" data-tab="skillsTab" data-i18n="tabSkills">Bilim & Reyting</button>
+      <button class="tab-btn" data-tab="lessonsTab" data-i18n="tabLessons">Darsliklar</button>
+      <button class="tab-btn" data-tab="assignmentsTab" data-i18n="tabAssignments">Vazifalar & Baholash</button>
+      <button class="tab-btn" data-tab="extraTab" data-i18n="tabExtra">E’lonlar & Jadval</button>
+      <button class="tab-btn" data-tab="analyticsTab" data-i18n="tabAnalytics">Statistika</button>
+      <button class="tab-btn" data-tab="closeMonthTab" data-i18n="tabCloseMonth">Oy yopish</button>
+    </div>
+
+    <div id="studentsTab" class="section active">
+      <div class="card">
+        <h2 data-i18n="addStudentTitle">Yangi o‘quvchini ro‘yxatdan o‘tkazish</h2>
+        <form id="addStudentForm">
+          <div class="grid-3">
+            <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="stName" placeholder="Jasur Karimov" required /></div>
+            <div class="form-group"><label data-i18n="lblUsername">Login (Username)</label><input type="text" id="stUser" placeholder="jasur" required /></div>
+            <div class="form-group"><label data-i18n="lblPassword">Parol</label><input type="text" id="stPass" placeholder="12345" required /></div>
+            <div class="form-group">
+              <label data-i18n="lblLevel">Daraja (Level)</label>
+              <select id="stLevel">
+                <option value="A1">A1</option><option value="A2">A2</option>
+                <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
+              </select>
+            </div>
+            <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="stGroup" value="General English" /></div>
+            <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov (so‘m)</label><input type="number" id="stFee" value="500000" /></div>
+          </div>
+          <div class="form-group" style="max-width: 420px;">
+            <label data-i18n="lblPhoto">O‘quvchi rasmi (Profil uchun)</label>
+            <input type="file" id="stPhoto" accept="image/*" />
+            <div class="photo-preview-row">
+              <img id="stPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+              <span id="stPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="btnAddStudent">+ O‘quvchini qo‘shish</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="allStudentsTitle">Barcha o‘quvchilar ro‘yxati</h2>
+          <div class="filter-bar">
+            <input type="text" id="searchStudentInput" placeholder="Ism, login yoki guruh..." />
+            <select id="filterLevelSelect">
+              <option value="ALL">ALL</option>
+              <option value="A1">A1</option><option value="A2">A2</option>
+              <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
+            </select>
+            <button type="button" class="btn-excel" id="exportStudentsExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Ism Familiya</th><th>Login</th><th>Level</th><th>Group</th><th>Balance</th><th>Score</th><th>Actions</th></tr>
+          </thead>
+          <tbody id="studentsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="teachersTab" class="section">
+      <div class="card">
+        <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
+        <form id="addTeacherForm">
+          <div class="grid-3">
+            <div class="form-group">
+              <label data-i18n="lblFullName">Ism Familiya</label>
+              <input type="text" id="tchName" placeholder="Azizbek Ustoz" required />
+            </div>
+            <div class="form-group">
+              <label data-i18n="lblUsername">Login (Username)</label>
+              <input type="text" id="tchUser" placeholder="ustoz1" required />
+            </div>
+            <div class="form-group">
+              <label data-i18n="lblPassword">Parol</label>
+              <input type="text" id="tchPass" placeholder="12345" required />
+            </div>
+            <div class="form-group">
+              <label data-i18n="lblPhone">Telefon nomer</label>
+              <input type="text" id="tchPhone" placeholder="+998 90 123 45 67" />
+            </div>
+            <div class="form-group">
+              <label data-i18n="lblTeacherPhoto">O‘qituvchi rasmi</label>
+              <input type="file" id="tchPhoto" accept="image/*" />
+              <div class="photo-preview-row">
+                <img id="tchPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+                <span id="tchPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
+              </div>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="btnAddTeacher">+ O‘qituvchini qo‘shish</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="allTeachersTitle">Barcha o‘qituvchilar ro‘yxati</h2>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Rasm</th><th>Ism Familiya</th><th>Login</th><th>Telefon nomer</th><th>Amal</th></tr>
+          </thead>
+          <tbody id="teachersTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="financeTab" class="section">
+      <div class="card">
+        <h2 data-i18n="balanceFormTitle">O‘quvchi balansini to‘ldirish yoki yechish</h2>
+        <form id="balanceForm">
+          <div class="grid-3">
+            <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchini tanlang</label><select id="finStudentSelect"></select></div>
+            <div class="form-group">
+              <label data-i18n="lblTxType">Amal turi</label>
+              <select id="finType">
+                <option value="deposit">Deposit (+)</option>
+                <option value="charge">Charge (-)</option>
+              </select>
+            </div>
+            <div class="form-group"><label data-i18n="lblAmount">Summa (so‘m)</label><input type="number" id="finAmount" placeholder="500000" required /></div>
+          </div>
+          <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="finDesc" placeholder="..." /></div>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="txHistoryTitle">Oxirgi buxgalteriya operatsiyalari</h2>
+          <div class="filter-bar">
+            <button type="button" class="btn-excel" id="exportFinanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('transactions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Type</th><th>Amount</th><th>Note</th></tr></thead>
+          <tbody id="transactionsAdminBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="attendanceTab" class="section">
+      <div class="card">
+        <h2 data-i18n="bulkAttTitle">Birvarakayiga davomat olish (Barcha o‘quvchilar)</h2>
+        <div class="grid-2" style="margin-bottom:12px;">
+          <div class="form-group">
+            <label data-i18n="lblDate">Dars sanasi</label>
+            <input type="date" id="bulkAttDate" />
+          </div>
+          <div class="form-group" style="display:flex; align-items:flex-end;">
+            <button type="button" class="btn-success" id="saveBulkAttBtn" data-i18n="btnSaveBulk">Barchasini birga saqlash</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Student</th><th>Group</th><th>Level</th><th>Status</th></tr></thead>
+          <tbody id="bulkAttendanceBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="singleAttTitle">Bitta o‘quvchiga davomat belgilash</h2>
+        <form id="attendanceForm">
+          <div class="grid-3">
+            <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchi</label><select id="attStudentSelect"></select></div>
+            <div class="form-group"><label data-i18n="lblDate">Sana</label><input type="date" id="attDate" required /></div>
+            <div class="form-group">
+              <label data-i18n="lblStatus">Holati</label>
+              <select id="attStatus">
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+                <option value="excused">Excused</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="attHistoryTitle">Oxirgi davomat yozuvlari</h2>
+          <div class="filter-bar">
+            <button type="button" class="btn-excel" id="exportAttendanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('attendance')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Status</th></tr></thead>
+          <tbody id="attendanceAdminBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="skillsTab" class="section">
+      <div class="card">
+        <h2 data-i18n="skillsFormTitle">O‘quvchi bilim ballarini yangilash (0 - 100)</h2>
+        <div class="skill-preview-box">
+          <div>
+            <div style="font-size:12px; color:var(--muted); font-weight:700;" data-i18n="lblSelectedPreview">TANLANGAN O‘QUVCHI KO‘RSATKICHI</div>
+            <div id="previewStudentName" style="font-size:16px; font-weight:800; margin-top:2px;">-</div>
+          </div>
+          <div style="text-align:right;">
+            <span class="preview-score" id="previewAvgScore">0%</span>
+            <div id="previewStatusTag" style="font-size:12px; font-weight:700; color:#2563eb;">-</div>
+          </div>
+        </div>
+
+        <form id="skillsForm">
+          <div class="form-group" style="max-width: 360px;">
+            <label data-i18n="lblSelectStudent">O‘quvchini tanlang</label>
+            <select id="skStudentSelect"></select>
+          </div>
+          <div class="grid-6">
+            <div class="form-group"><label>Grammar</label><input type="number" id="skGrammar" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Listening</label><input type="number" id="skListening" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Reading</label><input type="number" id="skReading" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Vocabulary</label><input type="number" id="skVocabulary" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Writing</label><input type="number" id="skWriting" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Speaking</label><input type="number" id="skSpeaking" class="skill-input" min="0" max="100" required /></div>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2 data-i18n="rankingTableTitle">O‘quvchilar bilim reytingi va ballar jadvali</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Student</th><th>Level</th>
+              <th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th>
+              <th>Average</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="skillsRankingBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="lessonsTab" class="section">
+      <div class="card">
+        <h2 data-i18n="addLessonTitle">Yangi darslik qo‘shish (Fayl yoki Havola)</h2>
+        <form id="lessonForm">
+          <div class="grid-3">
+            <div class="form-group"><label data-i18n="lblTitle">Darslik nomi</label><input type="text" id="lesTitle" required /></div>
+            <div class="form-group">
+              <label data-i18n="lblLevel">Daraja</label>
+              <select id="lesLevel">
+                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
+              </select>
+            </div>
+            <div class="form-group"><label data-i18n="lblFile">Fayl yuklash</label><input type="file" id="lesFile" /></div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group"><label data-i18n="lblUrl">Havola (URL)</label><input type="url" id="lesUrl" placeholder="https://..." /></div>
+            <div class="form-group"><label data-i18n="lblDesc">Tavsif</label><input type="text" id="lesDesc" /></div>
+          </div>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="lessonsHistoryTitle">Yuklangan darsliklar tarixi</h2>
+          <button type="button" class="btn-clear-hist" onclick="openClearModal('lessons')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+        </div>
+        <table>
+          <thead><tr><th>ID</th><th>Title</th><th>Level</th><th>File / URL</th><th>Action</th></tr></thead>
+          <tbody id="lessonsAdminBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="assignmentsTab" class="section">
+      <div class="card">
+        <h2 data-i18n="addAssignmentTitle">Yangi uy vazifasi / topshiriq berish</h2>
+        <form id="assignmentForm">
+          <div class="grid-3">
+            <div class="form-group"><label data-i18n="lblTitle">Vazifa sarlavhasi</label><input type="text" id="asTitle" required /></div>
+            <div class="form-group">
+              <label data-i18n="lblLevel">Daraja</label>
+              <select id="asLevel">
+                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
+              </select>
+            </div>
+            <div class="form-group"><label data-i18n="lblDue">Muddat</label><input type="date" id="asDue" /></div>
+          </div>
+          <div class="form-group"><label data-i18n="lblDesc">Vazifa sharti / tavsifi</label><input type="text" id="asDesc" /></div>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="assignmentsHistoryTitle">Yuborilgan topshiriqlar tarixi</h2>
+          <button type="button" class="btn-clear-hist" onclick="openClearModal('assignments')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Level</th><th>Due</th><th>Created</th><th>Action</th></tr></thead>
+          <tbody id="assignmentsHistoryBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="submissionsHistoryTitle">O‘quvchilar yuborgan javoblar tarixi & baholash</h2>
+          <button type="button" class="btn-clear-hist" onclick="openClearModal('submissions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+        </div>
+        <table>
+          <thead><tr><th>Student</th><th>Assignment</th><th>Answer</th><th>Link</th><th>Grade (0-100)</th><th>Feedback</th><th>Action</th></tr></thead>
+          <tbody id="submissionsAdminBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="extraTab" class="section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header-flex">
+            <h2 data-i18n="annTitle">O‘quvchilarga e’lon joylash</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('announcements')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <form id="announcementForm">
+            <div class="form-group"><label data-i18n="lblTitle">Sarlavha</label><input type="text" id="annTitle" required /></div>
+            <div class="form-group">
+              <label data-i18n="lblLevel">Daraja</label>
+              <select id="annLevel">
+                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
+              </select>
+            </div>
+            <div class="form-group"><label data-i18n="lblMessage">Xabar matni</label><textarea id="annMsg" rows="3" required></textarea></div>
+            <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+          </form>
+          <table style="margin-top:16px;">
+            <thead><tr><th>Announcement</th><th>Level</th><th>Action</th></tr></thead>
+            <tbody id="announcementsAdminBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header-flex">
+            <h2 data-i18n="scheduleTitle">Haftalik dars jadvali</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('schedules')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <form id="scheduleForm">
+            <div class="grid-2">
+              <div class="form-group"><label data-i18n="lblGroup">Guruh</label><input type="text" id="schGroup" required /></div>
+              <div class="form-group">
+                <label data-i18n="lblLevel">Daraja</label>
+                <select id="schLevel">
+                  <option value="A1">A1</option><option value="A2">A2</option>
+                  <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
+                </select>
+              </div>
+              <div class="form-group"><label data-i18n="lblDay">Hafta kuni</label><input type="text" id="schDay" placeholder="Mon / Wed / Fri" required /></div>
+              <div class="form-group"><label data-i18n="lblTime">Vaqt</label><input type="text" id="schTime" placeholder="14:00 - 15:30" required /></div>
+            </div>
+            <div class="form-group"><label data-i18n="lblRoom">Xona / Ustoz</label><input type="text" id="schRoom" required /></div>
+            <button type="submit" class="btn-success" data-i18n="btnSave">Saqlash</button>
+          </form>
+          <table style="margin-top:16px;">
+            <thead><tr><th>Group</th><th>Day & Time</th><th>Room/Teacher</th><th>Action</th></tr></thead>
+            <tbody id="schedulesAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="clearLogsTitle">Tarixni tozalash auditi (Kim va qachon tozalagani)</h2>
+          <button type="button" class="btn-clear-hist" onclick="openClearModal('clear_logs')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Section</th><th>Cleared By</th><th>Time</th></tr></thead>
+          <tbody id="clearLogsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="analyticsTab" class="section">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header-flex">
+            <h2 data-i18n="monthlyStatsTitle">Oylik statistika</h2>
+            <span class="badge-ok" data-i18n="monthlyBadge">Oylik</span>
+          </div>
+          <div style="height:280px;"><canvas id="monthlyChart"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header-flex">
+            <h2 data-i18n="yearlyStatsTitle">Yillik statistika</h2>
+            <span class="badge-low" data-i18n="yearlyBadge">Yillik</span>
+          </div>
+
+          <div class="flame-champion-box">
+            <div class="admin-top-left">
+              <img id="yearlyTopStudentPhoto" src="" alt="TOP-1 rasm" class="admin-top-photo" />
+              <span id="yearlyTopStudentLetter" class="admin-top-letter">🔥</span>
+              <div>
+                <div class="flame-label" data-i18n="flameTopLabel">🔥 Yilning TOP-1 o‘quvchisi</div>
+                <div class="flame-student-name" id="yearlyTopStudentName">🔥 -</div>
+              </div>
+            </div>
+            <div class="flame-score-pill" id="yearlyTopStudentScore">0%</div>
+          </div>
+
+          <div style="height:210px;"><canvas id="yearlyChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top: 20px;">
+        <div class="card">
+          <h2 data-i18n="chartLevels">Darajalar bo‘yicha o‘quvchilar</h2>
+          <div style="height:260px;"><canvas id="levelsChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h2 data-i18n="chartTop">Top o‘quvchilar reytingi</h2>
+          <div style="height:260px;"><canvas id="topStudentsChart"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="closeMonthTab" class="section">
+      <div class="card">
+        <h2 data-i18n="closeMonthTitle">Oylik yakun (Закрытие месяца)</h2>
+        <p style="font-size:13px; color:var(--muted); margin:6px 0 18px;" data-i18n="closeMonthDesc">
+          Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari va davomatni yangi oyga yangilaydi.
+        </p>
+
+        <div class="grid-3" style="align-items:end; margin-bottom:16px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label for="closeMonthInput" data-i18n="lblCloseMonth">Yopiladigan oy (YYYY-MM)</label>
+            <input type="month" id="closeMonthInput" />
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+              <input type="checkbox" id="optChargeFee" checked />
+              <span data-i18n="optChargeFee">Oylik to‘lovni balansdan yechish</span>
+            </label>
+          </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+              <input type="checkbox" id="optResetSkills" checked />
+              <span data-i18n="optResetSkills">Bilim ballarini 0 ga yangilash</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="grid-2" style="align-items:center; margin-bottom:18px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+              <input type="checkbox" id="optClearAttendance" checked />
+              <span data-i18n="optClearAttendance">Davomatni yangi oydan boshlash</span>
+            </label>
+          </div>
+
+          <div style="text-align:right;">
+            <button type="button" class="btn-close-month" id="closeMonthBtn" data-i18n="btnCloseMonth">Oyni yopish</button>
+          </div>
+        </div>
+
+        <h3 style="font-size:16px; margin-top:12px; color:var(--heading);" data-i18n="closedMonthsArchive">Yopilgan oylar arxivi</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Oy</th><th>O‘quvchilar</th><th>O‘rtacha ball</th><th>Davomat</th><th>Jami qarzdorlik</th><th>Yopilgan vaqt</th><th>Amal</th>
+            </tr>
+          </thead>
+          <tbody id="monthlyClosingsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h2 style="margin-bottom:16px;" data-i18n="editModalTitle">O‘quvchi ma’lumotlarini tahrirlash</h2>
+      <form id="editStudentForm">
+        <input type="hidden" id="editId" />
+        <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="editName" required /></div>
+        <div class="form-group">
+          <label data-i18n="lblLevel">Daraja</label>
+          <select id="editLevel">
+            <option value="A1">A1</option><option value="A2">A2</option>
+            <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
+          </select>
+        </div>
+        <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="editGroup" required /></div>
+        <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov</label><input type="number" id="editFee" required /></div>
+        <div class="form-group"><label data-i18n="lblPhoto">Yangi rasm (ixtiyoriy)</label><input type="file" id="editPhoto" accept="image/*" /></div>
+        <div class="form-group"><label data-i18n="lblNewPass">Yangi parol (ixtiyoriy)</label><input type="text" id="editNewPass" /></div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="closeEditModalBtn" data-i18n="btnCancel">Bekor qilish</button>
+          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="clearHistoryModal" class="modal-backdrop">
+    <div class="modal-box">
+      <h2 id="authModalTitle" style="margin-bottom:10px; color:#dc2626;" data-i18n="clearModalTitle">Tarixni tozalash (Parol talab qilinadi)</h2>
+      <p id="authModalDesc" style="font-size:13px; color:var(--muted); margin-bottom:14px;" data-i18n="clearModalDesc">
+        Ushbu bo‘lim tarixini tozalash uchun parolni kiriting:
+      </p>
+      <form id="clearHistoryForm">
+        <input type="hidden" id="clearSectionKey" />
+        <div class="form-group">
+          <label data-i18n="lblAdminPassword">Parol</label>
+          <input type="password" id="clearAdminPass" placeholder="••••••••" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" id="closeClearModalBtn" data-i18n="btnCancel">Bekor qilish</button>
+          <button type="submit" id="authModalSubmitBtn" class="btn-clear-hist" data-i18n="btnConfirmClear">Tasdiqlash va tozalash</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const token = localStorage.getItem('token');
+    if (!token || localStorage.getItem('role') !== 'admin') {
+      window.location.href = '/index.html';
+    }
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+    document.getElementById('themeToggleBtn').addEventListener('click', () => {
+      document.body.classList.toggle('dark');
+      localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    });
+
+    function escapeHtml(str) {
+      return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    const CLEAR_PASS = '972400660';
+    let pendingCloseMonthData = null;
+    let clearLogsCache = [];
+    let studentsCache = [];
+    let txCache = [];
+    let attCache = [];
+    let monthlyClosingsCache = [];
+    let yearlyLeadersCache = [];
+    let levelsChartInstance = null;
+    let topStudentsChartInstance = null;
+    let monthlyChartInstance = null;
+    let yearlyChartInstance = null;
+
+    const i18n = {
+      uz: {
+        logout: 'Chiqish', kpiTotalStudents: 'Jami o‘quvchilar', kpiActiveBase: 'Faol o‘quvchilar bazasi',
+        kpiTotalIncome: 'Jami kassa kirim', kpiPaidNote: 'Hisobga tushgan to‘lovlar', kpiAvgScore: 'Markaz o‘rtacha balli',
+        kpiSkillsNote: 'Barcha fanlar kesimida', kpiLowBalance: 'Balansi kam o‘quvchilar', kpiLowNote: 'To‘lov eslatmasi kerak',
+        tabStudents: 'O‘quvchilar', tabTeachers: 'O‘qituvchilar', tabFinance: 'Balans & Buxgalteriya',
+        tabAttendance: 'Davomat', tabSkills: 'Bilim & Reyting',
+        tabLessons: 'Darsliklar', tabAssignments: 'Vazifalar & Baholash', tabExtra: 'E’lonlar & Jadval', tabAnalytics: 'Statistika',
+        tabCloseMonth: 'Oy yopish',
+        addStudentTitle: 'Yangi o‘quvchini ro‘yxatdan o‘tkazish', addTeacherTitle: 'Yangi o‘qituvchi qo‘shish',
+        btnAddTeacher: '+ O‘qituvchini qo‘shish', allTeachersTitle: 'Barcha o‘qituvchilar ro‘yxati',
+        lblFullName: 'Ism Familiya', lblUsername: 'Login',
+        lblPassword: 'Parol', lblPhone: 'Telefon nomer', lblTeacherPhoto: 'O‘qituvchi rasmi',
+        lblLevel: 'Daraja', lblGroup: 'Guruh nomi', lblFee: 'Oylik to‘lov (so‘m)',
+        lblPhoto: 'O‘quvchi rasmi (Profil uchun)',
+        btnAddStudent: '+ O‘quvchini qo‘shish', allStudentsTitle: 'Barcha o‘quvchilar ro‘yxati',
+        btnExcel: 'Excel (.xls) yuklash', btnClearHistory: 'Tarixni tozalash', balanceFormTitle: 'Balansni to‘ldirish yoki yechish',
+        lblSelectStudent: 'O‘quvchini tanlang', lblTxType: 'Amal turi', lblAmount: 'Summa (so‘m)', lblDesc: 'Izoh',
+        btnSave: 'Saqlash', txHistoryTitle: 'Oxirgi buxgalteriya operatsiyalari', bulkAttTitle: 'Birvarakayiga davomat olish',
+        lblDate: 'Sana', btnSaveBulk: 'Barchasini birga saqlash', singleAttTitle: 'Bitta o‘quvchiga davomat',
+        lblStatus: 'Holati', attHistoryTitle: 'Oxirgi davomat yozuvlari', skillsFormTitle: 'Bilim ballarini yangilash (0 - 100)',
+        lblSelectedPreview: 'TANLANGAN O‘QUVCHI KO‘RSATKICHI', rankingTableTitle: 'O‘quvchilar bilim reytingi',
+        addLessonTitle: 'Yangi darslik qo‘shish', lblTitle: 'Nomi / Sarlavha', lblFile: 'Fayl yuklash', lblUrl: 'Havola (URL)',
+        lessonsHistoryTitle: 'Yuklangan darsliklar tarixi', addAssignmentTitle: 'Yangi uy vazifasi berish', lblDue: 'Muddat',
+        assignmentsHistoryTitle: 'Yuborilgan topshiriqlar tarixi', submissionsHistoryTitle: 'O‘quvchilar yuborgan javoblar tarixi & baholash',
+        annTitle: 'E’lon joylash', lblMessage: 'Xabar matni', scheduleTitle: 'Haftalik dars jadvali', lblDay: 'Hafta kuni',
+        lblTime: 'Vaqt', lblRoom: 'Xona / Ustoz', clearLogsTitle: 'Tarixni tozalash auditi',
+        monthlyStatsTitle: 'Oylik statistika', monthlyBadge: 'Oylik', yearlyStatsTitle: 'Yillik statistika', yearlyBadge: 'Yillik',
+        flameTopLabel: '🔥 Yilning TOP-1 o‘quvchisi', chartLevels: 'Darajalar bo‘yicha o‘quvchilar', chartTop: 'Top o‘quvchilar reytingi',
+        closeMonthTitle: 'Oylik yakun (Закрытие месяца)',
+        closeMonthDesc: 'Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari va davomatni yangi oyga yangilaydi.',
+        lblCloseMonth: 'Yopiladigan oy (YYYY-MM)', optChargeFee: 'Oylik to‘lovni balansdan yechish',
+        optResetSkills: 'Bilim ballarini 0 ga yangilash', optClearAttendance: 'Davomatni yangi oydan boshlash',
+        btnCloseMonth: 'Oyni yopish', closedMonthsArchive: 'Yopilgan oylar arxivi',
+        editModalTitle: 'O‘quvchi ma’lumotlarini tahrirlash', lblNewPass: 'Yangi parol (ixtiyoriy)',
+        btnCancel: 'Bekor qilish', clearModalTitle: 'Tarixni tozalash (Parol talab qilinadi)',
+        clearModalDesc: 'Ushbu bo‘lim tarixini tozalash uchun parolni kiriting:',
+        lblAdminPassword: 'Parol', btnConfirmClear: 'Tasdiqlash va tozalash',
+        currentMonthLabel: 'Joriy oy', currentYearLabel: 'Joriy yil'
+      },
+      en: {
+        logout: 'Logout', kpiTotalStudents: 'Total Students', kpiActiveBase: 'Active student database',
+        kpiTotalIncome: 'Total Cash Inflow', kpiPaidNote: 'Received payments', kpiAvgScore: 'Center Average Score',
+        kpiSkillsNote: 'Across all 6 skills', kpiLowBalance: 'Low Balance Students', kpiLowNote: 'Payment reminder needed',
+        tabStudents: 'Students', tabTeachers: 'Teachers', tabFinance: 'Balance & Finance',
+        tabAttendance: 'Attendance', tabSkills: 'Skills & Ranking',
+        tabLessons: 'Lessons', tabAssignments: 'Assignments & Grading', tabExtra: 'Announcements & Schedule', tabAnalytics: 'Statistics',
+        tabCloseMonth: 'Close Month',
+        addStudentTitle: 'Register New Student', addTeacherTitle: 'Add New Teacher',
+        btnAddTeacher: '+ Add Teacher', allTeachersTitle: 'All Teachers List',
+        lblFullName: 'Full Name', lblUsername: 'Username',
+        lblPassword: 'Password', lblPhone: 'Phone Number', lblTeacherPhoto: 'Teacher Photo',
+        lblLevel: 'Level', lblGroup: 'Group Name', lblFee: 'Monthly Fee (UZS)',
+        lblPhoto: 'Student Photo (For Profile)',
+        btnAddStudent: '+ Add Student', allStudentsTitle: 'All Students List',
+        btnExcel: 'Export Excel (.xls)', btnClearHistory: 'Clear History', balanceFormTitle: 'Deposit or Charge Balance',
+        lblSelectStudent: 'Select Student', lblTxType: 'Action Type', lblAmount: 'Amount (UZS)', lblDesc: 'Note',
+        btnSave: 'Save', txHistoryTitle: 'Recent Finance Transactions', bulkAttTitle: 'Bulk Attendance (All Students)',
+        lblDate: 'Date', btnSaveBulk: 'Save All Attendance', singleAttTitle: 'Single Student Attendance',
+        lblStatus: 'Status', attHistoryTitle: 'Recent Attendance History', skillsFormTitle: 'Update Skill Scores (0 - 100)',
+        lblSelectedPreview: 'SELECTED STUDENT PREVIEW', rankingTableTitle: 'Student Skill Ranking',
+        addLessonTitle: 'Add New Lesson', lblTitle: 'Title', lblFile: 'Upload File', lblUrl: 'Link (URL)',
+        lessonsHistoryTitle: 'Uploaded Lessons History', addAssignmentTitle: 'Create New Assignment', lblDue: 'Due Date',
+        assignmentsHistoryTitle: 'Sent Assignments History', submissionsHistoryTitle: 'Student Submissions History & Grading',
+        annTitle: 'Post Announcement', lblMessage: 'Message', scheduleTitle: 'Weekly Class Schedule', lblDay: 'Days',
+        lblTime: 'Time', lblRoom: 'Room / Teacher', clearLogsTitle: 'History Clear Audit Log',
+        monthlyStatsTitle: 'Monthly Statistics', monthlyBadge: 'Monthly', yearlyStatsTitle: 'Yearly Statistics', yearlyBadge: 'Yearly',
+        flameTopLabel: '🔥 TOP-1 Student of the Year', chartLevels: 'Students by Level', chartTop: 'Top Students Ranking',
+        closeMonthTitle: 'Monthly Closing (Закрытие месяца)',
+        closeMonthDesc: 'Close selected month: archives results, deducts monthly fee (updates debt), resets skill scores and attendance for the new month.',
+        lblCloseMonth: 'Month to close (YYYY-MM)', optChargeFee: 'Deduct monthly fee from balance',
+        optResetSkills: 'Reset skill scores to 0', optClearAttendance: 'Start attendance fresh for new month',
+        btnCloseMonth: 'Close Month', closedMonthsArchive: 'Closed Months Archive',
+        editModalTitle: 'Edit Student Info', lblNewPass: 'New Password (optional)',
+        btnCancel: 'Cancel', clearModalTitle: 'Clear History (Password Required)',
+        clearModalDesc: 'Enter password to permanently clear this section history:',
+        lblAdminPassword: 'Password', btnConfirmClear: 'Confirm & Clear',
+        currentMonthLabel: 'Current Month', currentYearLabel: 'Current Year'
+      },
+      ru: {
+        logout: 'Выход', kpiTotalStudents: 'Всего студентов', kpiActiveBase: 'Активная база студентов',
+        kpiTotalIncome: 'Общий приход кассы', kpiPaidNote: 'Полученные оплаты', kpiAvgScore: 'Средний балл центра',
+        kpiSkillsNote: 'По всем 6 навыкам', kpiLowBalance: 'Низкий баланс', kpiLowNote: 'Нужно напомнить об оплате',
+        tabStudents: 'Студенты', tabTeachers: 'Учителя', tabFinance: 'Баланс и Финансы',
+        tabAttendance: 'Посещаемость', tabSkills: 'Навыки и Рейтинг',
+        tabLessons: 'Уроки', tabAssignments: 'Задания и Оценки', tabExtra: 'Объявления и Расписание', tabAnalytics: 'Статистика',
+        tabCloseMonth: 'Закрыть месяц',
+        addStudentTitle: 'Регистрация нового студента', addTeacherTitle: 'Добавить нового учителя',
+        btnAddTeacher: '+ Добавить учителя', allTeachersTitle: 'Список всех учителей',
+        lblFullName: 'Имя Фамилия', lblUsername: 'Логин',
+        lblPassword: 'Пароль', lblPhone: 'Номер телефона', lblTeacherPhoto: 'Фото учителя',
+        lblLevel: 'Уровень', lblGroup: 'Группа', lblFee: 'Оплата в месяц (сум)',
+        lblPhoto: 'Фото студента (Для профиля)',
+        btnAddStudent: '+ Добавить студента', allStudentsTitle: 'Список всех студентов',
+        btnExcel: 'Скачать Excel (.xls)', btnClearHistory: 'Очистить историю', balanceFormTitle: 'Пополнение или списание баланса',
+        lblSelectStudent: 'Выберите студента', lblTxType: 'Тип операции', lblAmount: 'Сумма (сум)', lblDesc: 'Примечание',
+        btnSave: 'Сохранить', txHistoryTitle: 'История финансовых операций', bulkAttTitle: 'Массовая посещаемость',
+        lblDate: 'Дата', btnSaveBulk: 'Сохранить всех', singleAttTitle: 'Отметить одного студента',
+        lblStatus: 'Статус', attHistoryTitle: 'История посещаемости', skillsFormTitle: 'Обновление баллов (0 - 100)',
+        lblSelectedPreview: 'ПОКАЗАТЕЛИ ВЫБРАННОГО СТУДЕНТА', rankingTableTitle: 'Рейтинг знаний студентов',
+        addLessonTitle: 'Добавить урок', lblTitle: 'Название / Заголовок', lblFile: 'Загрузить файл', lblUrl: 'Ссылка (URL)',
+        lessonsHistoryTitle: 'История загруженных уроков', addAssignmentTitle: 'Создать задание', lblDue: 'Срок сдачи',
+        assignmentsHistoryTitle: 'История выданных заданий', submissionsHistoryTitle: 'История ответов студентов и оценка',
+        annTitle: 'Объявления для студентов', lblMessage: 'Текст сообщения', scheduleTitle: 'Расписание занятий', lblDay: 'Дни недели',
+        lblTime: 'Время', lblRoom: 'Кабинет / Преподаватель', clearLogsTitle: 'Журнал очистки истории',
+        monthlyStatsTitle: 'Месячная статистика', monthlyBadge: 'Месяц', yearlyStatsTitle: 'Годовая статистика', yearlyBadge: 'Год',
+        flameTopLabel: '🔥 ТОП-1 студент года', chartLevels: 'Студенты по уровням', chartTop: 'Топ студентов',
+        closeMonthTitle: 'Закрытие месяца',
+        closeMonthDesc: 'Закрытие выбранного месяца: сохраняет архив, списывает ежемесячную оплату (обновляет долг), обнуляет баллы и посещаемость для нового месяца.',
+        lblCloseMonth: 'Закрываемый месяц (YYYY-MM)', optChargeFee: 'Списать ежемесячную оплату с баланса',
+        optResetSkills: 'Обнулить баллы навыков (0)', optClearAttendance: 'Начать посещаемость заново в новом месяце',
+        btnCloseMonth: 'Закрыть месяц', closedMonthsArchive: 'Архив закрытых месяцев',
+        editModalTitle: 'Редактировать студента', lblNewPass: 'Новый пароль (необязательно)',
+        btnCancel: 'Отмена', clearModalTitle: 'Очистка истории (Требуется пароль)',
+        clearModalDesc: 'Введите пароль для очистки истории этого раздела:',
+        lblAdminPassword: 'Пароль', btnConfirmClear: 'Подтвердить и очистить',
+        currentMonthLabel: 'Текущий месяц', currentYearLabel: 'Текущий год'
+      }
+    };
+
+    function trAdmin(key) {
+      const lang = localStorage.getItem('lang') || 'uz';
+      return (i18n[lang] && i18n[lang][key]) || i18n.uz[key] || key;
+    }
+
+    function applyLanguage(lang) {
+      localStorage.setItem('lang', lang);
+      document.getElementById('langSelect').value = lang;
+      const dict = i18n[lang] || i18n.uz;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      if (studentsCache.length > 0) {
+        updateCharts(studentsCache);
+      }
+    }
+
+    const savedLang = localStorage.getItem('lang') || 'uz';
+    applyLanguage(savedLang);
+    document.getElementById('langSelect').addEventListener('change', (e) => applyLanguage(e.target.value));
+
+    const nowObj = new Date();
+    const todayStr = nowObj.toISOString().slice(0, 10);
+    document.getElementById('attDate').value = todayStr;
+    document.getElementById('bulkAttDate').value = todayStr;
+    document.getElementById('closeMonthInput').value =
+      `${nowObj.getFullYear()}-${String(nowObj.getMonth() + 1).padStart(2, '0')}`;
+
+    function getStudentPhotoSrc(student) {
+      const raw = student?.photo_url || student?.avatar_url || student?.photo_base64 || student?.photo || '';
+      if (!raw || typeof raw !== 'string') return '/logo.jpg';
+      const trimmed = raw.trim();
+      if (!trimmed) return '/logo.jpg';
+      if (trimmed.startsWith('data:image') || trimmed.startsWith('http') || trimmed.startsWith('/')) return trimmed;
+      return `data:image/jpeg;base64,${trimmed}`;
+    }
+
+    function renderRankStudentAvatar(student) {
+      const src = getStudentPhotoSrc(student);
+      return `<img src="${escapeHtml(src)}" alt="${escapeHtml(student?.full_name || '')}" class="rank-st-avatar" onerror="this.src='/logo.jpg'" />`;
+    }
+
+    function renderAdminChampionPhoto(championObj) {
+      const imgEl = document.getElementById('yearlyTopStudentPhoto');
+      const letterEl = document.getElementById('yearlyTopStudentLetter');
+
+      const matchedStudent = (studentsCache || []).find(
+        s => (championObj?.id && s.id === championObj.id) ||
+             (championObj?.student_id && s.id === championObj.student_id) ||
+             (championObj?.name && s.full_name === championObj.name) ||
+             (championObj?.full_name && s.full_name === championObj.full_name)
+      );
+
+      const rawPhoto =
+        championObj?.photo_url || championObj?.avatar_url || championObj?.photo_base64 || championObj?.photo ||
+        matchedStudent?.photo_url || matchedStudent?.avatar_url || matchedStudent?.photo_base64 || matchedStudent?.photo || '';
+
+      const displayName = championObj?.name || championObj?.full_name || '';
+      if (letterEl) letterEl.textContent = displayName ? displayName.charAt(0).toUpperCase() : '🔥';
+
+      const showLetter = () => {
+        if (imgEl) imgEl.style.display = 'none';
+        if (letterEl) letterEl.style.display = 'inline-flex';
+      };
+
+      if (!rawPhoto || !imgEl) {
+        showLetter();
+        return;
+      }
+
+      let src = String(rawPhoto).trim();
+      if (!src) {
+        showLetter();
+        return;
+      }
+      if (!src.startsWith('data:image') && !src.startsWith('http') && !src.startsWith('/')) {
+        src = `data:image/jpeg;base64,${src}`;
+      }
+
+      imgEl.onload = () => {
+        imgEl.style.display = 'block';
+        if (letterEl) letterEl.style.display = 'none';
+      };
+      imgEl.onerror = showLetter;
+      imgEl.src = src;
+    }
+
+    function resetStudentPhotoPreview() {
+      const preview = document.getElementById('stPhotoPreview');
+      const label = document.getElementById('stPhotoName');
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      if (label) label.textContent = 'Rasm tanlanmagan';
+    }
+
+    document.getElementById('stPhoto').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('stPhotoPreview');
+      const label = document.getElementById('stPhotoName');
+      if (!file) {
+        resetStudentPhotoPreview();
+        return;
+      }
+      label.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    function resetTeacherPhotoPreview() {
+      const preview = document.getElementById('tchPhotoPreview');
+      const label = document.getElementById('tchPhotoName');
+      if (preview) {
+        preview.src = '';
+        preview.style.display = 'none';
+      }
+      if (label) label.textContent = 'Rasm tanlanmagan';
+    }
+
+    document.getElementById('tchPhoto').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      const preview = document.getElementById('tchPhotoPreview');
+      const label = document.getElementById('tchPhotoName');
+      if (!file) {
+        resetTeacherPhotoPreview();
+        return;
+      }
+      label.textContent = file.name;
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-tab');
+        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        btn.classList.add('active');
+      });
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.clear();
+      window.location.href = '/index.html';
+    });
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2800);
+    }
+
+    function openClearModal(sectionKey) {
+      pendingCloseMonthData = null;
+      document.getElementById('clearSectionKey').value = sectionKey;
+      document.getElementById('authModalTitle').textContent = 'Tarixni tozalash (Parol talab qilinadi)';
+      document.getElementById('authModalDesc').textContent = 'Ushbu bo‘lim tarixini tozalash uchun parolni kiriting:';
+      document.getElementById('authModalSubmitBtn').textContent = 'Tasdiqlash va tozalash';
+      document.getElementById('clearAdminPass').value = '';
+      document.getElementById('clearHistoryModal').classList.add('open');
+      setTimeout(() => document.getElementById('clearAdminPass').focus(), 100);
+    }
+
+    function openCloseMonthAuthModal(payload) {
+      pendingCloseMonthData = payload;
+      document.getElementById('clearSectionKey').value = 'close_month';
+      document.getElementById('authModalTitle').textContent = `${payload.month_key} oyini yopish (Parol talab qilinadi)`;
+      document.getElementById('authModalDesc').textContent = `${payload.month_key} oyini yopish uchun parolni kiriting:`;
+      document.getElementById('authModalSubmitBtn').textContent = 'Tasdiqlash va oyni yopish';
+      document.getElementById('clearAdminPass').value = '';
+      document.getElementById('clearHistoryModal').classList.add('open');
+      setTimeout(() => document.getElementById('clearAdminPass').focus(), 100);
+    }
+
+    document.getElementById('closeClearModalBtn').addEventListener('click', () => {
+      pendingCloseMonthData = null;
+      document.getElementById('clearHistoryModal').classList.remove('open');
+    });
+
+    function renderClearLogsTable() {
+      const tbody = document.getElementById('clearLogsBody');
+      if (!tbody) return;
+      tbody.innerHTML = clearLogsCache.map((l, idx) => `
+        <tr><td>#${l.id ?? (idx + 1)}</td><td><b>${escapeHtml(l.section_key)}</b></td><td>${escapeHtml(l.cleared_by)}</td><td>${escapeHtml(l.cleared_at)}</td></tr>
+      `).join('') || '<tr><td colspan="4">-</td></tr>';
+    }
+
+    document.getElementById('clearHistoryForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const section = document.getElementById('clearSectionKey').value;
+      const password = document.getElementById('clearAdminPass').value.trim();
+
+      if (password !== CLEAR_PASS) {
+        return showToast('Parol noto‘g‘ri!');
+      }
+
+      if (section === 'close_month' && pendingCloseMonthData) {
+        const closePayload = { ...pendingCloseMonthData, password };
+        pendingCloseMonthData = null;
+        document.getElementById('clearHistoryModal').classList.remove('open');
+        try {
+          const res = await api('/api/admin/close-month', 'POST', closePayload);
+          showToast(res.message);
+          loadAllAdminData();
+        } catch (err) {
+          showToast(err.message);
+        }
+        return;
+      }
+
+      if (section === 'clear_logs') {
+        try {
+          await api('/api/admin/clear-history', 'POST', { section, password });
+        } catch (_) {}
+        clearLogsCache = [];
+        renderClearLogsTable();
+        document.getElementById('clearHistoryModal').classList.remove('open');
+        showToast('Tarixni tozalash auditi tozalandi!');
+        return;
+      }
+
+      try {
+        const res = await api('/api/admin/clear-history', 'POST', { section, password });
+        document.getElementById('clearHistoryModal').classList.remove('open');
+        showToast(res.message);
+        loadAllAdminData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    function downloadExcelXls(filename, headers, rows) {
+      const esc = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const headHtml = headers.map(h => `<th>${esc(h)}</th>`).join('');
+      const bodyHtml = rows.map(r => `<tr>${r.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`).join('');
+      const html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8" /></head>
+        <body><table border="1"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></body></html>
+      `;
+      const blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(`${filename} yuklab olindi!`);
+    }
+
+    async function api(url, method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(url, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Xatolik');
+      return data;
+    }
+
+    async function loadTeachersTable() {
+      const tbody = document.getElementById('teachersTableBody');
+      if (!tbody) return;
+      try {
+        const teachers = await api('/api/admin/teachers');
+        tbody.innerHTML = (teachers || []).map(t => {
+          const photoSrc = getStudentPhotoSrc(t);
+          return `
+            <tr>
+              <td>#${t.id}</td>
+              <td><img src="${escapeHtml(photoSrc)}" alt="${escapeHtml(t.full_name || '')}" class="st-avatar" onerror="this.src='/logo.jpg'" /></td>
+              <td><b>${escapeHtml(t.full_name)}</b></td>
+              <td>${escapeHtml(t.username)}</td>
+              <td>${escapeHtml(t.phone || '-')}</td>
+              <td><button type="button" class="btn-del" onclick="deleteTeacher(${t.id})">O‘chirish</button></td>
+            </tr>
+          `;
+        }).join('') || '<tr><td colspan="6">Hali o‘qituvchilar yo‘q</td></tr>';
+      } catch (err) {
+        console.error('Teachers load error:', err);
+      }
+    }
+
+    async function deleteTeacher(id) {
+      if (!confirm('O‘qituvchi o‘chirilsinmi?')) return;
+      try {
+        await api(`/api/admin/teachers/${id}`, 'DELETE');
+        showToast('O‘qituvchi o‘chirildi!');
+        loadTeachersTable();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
+    document.getElementById('addTeacherForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const photoInput = document.getElementById('tchPhoto');
+        let photoBase64 = null, photoName = null;
+        if (photoInput.files[0]) {
+          photoBase64 = await fileToBase64(photoInput.files[0]);
+          photoName = photoInput.files[0].name;
+        }
+        await api('/api/admin/teachers', 'POST', {
+          full_name: document.getElementById('tchName').value,
+          username: document.getElementById('tchUser').value,
+          password: document.getElementById('tchPass').value,
+          phone: document.getElementById('tchPhone').value,
+          photo_base64: photoBase64,
+          photo_url: photoBase64,
+          avatar_url: photoBase64,
+          photo_name: photoName
+        });
+        e.target.reset();
+        resetTeacherPhotoPreview();
+        showToast('Yangi o‘qituvchi qo‘shildi!');
+        loadTeachersTable();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    async function deleteClosedMonth(monthKey) {
+      const enteredPass = prompt(`${monthKey} oy yopilishini o‘chirish uchun parolni kiriting:`);
+      if (enteredPass === null) return;
+
+      if (enteredPass.trim() !== CLEAR_PASS) {
+        return showToast('Parol noto‘g‘ri! O‘chirilmadi.');
+      }
+
+      try {
+        const res = await api(`/api/admin/monthly-close/${encodeURIComponent(monthKey)}`, 'DELETE', {
+          password: enteredPass.trim()
+        });
+        showToast(res.message || `${monthKey} o‘chirildi!`);
+        loadAllAdminData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
+    async function loadMonthlyClosings() {
+      const tbody = document.getElementById('monthlyClosingsBody');
+      try {
+        const data = await api('/api/admin/monthly-closings');
+        monthlyClosingsCache = Array.isArray(data.closings) ? data.closings : [];
+        yearlyLeadersCache = Array.isArray(data.yearly_leaders) ? data.yearly_leaders : [];
+
+        if (tbody) {
+          tbody.innerHTML = monthlyClosingsCache.map(r => `
+            <tr>
+              <td><b>${escapeHtml(r.month_key)}</b></td>
+              <td>${r.students_count} ta</td>
+              <td><b>${r.avg_score || 0}%</b></td>
+              <td>${r.avg_attendance || 0}%</td>
+              <td style="color:#dc2626; font-weight:700;">${Number(r.total_debt || 0).toLocaleString()} so‘m</td>
+              <td>${escapeHtml(r.closed_at || '-')}</td>
+              <td>
+                <button type="button" class="btn-del" onclick="deleteClosedMonth('${String(r.month_key).replace(/'/g, "\\'")}')">
+                  O‘chirish
+                </button>
+              </td>
+            </tr>
+          `).join('') || '<tr><td colspan="7">Hali yopilgan oylar yo‘q</td></tr>';
+        }
+      } catch (err) {
+        monthlyClosingsCache = [];
+        yearlyLeadersCache = [];
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">${escapeHtml(err.message)}</td></tr>`;
+      }
+    }
+
+    document.getElementById('closeMonthBtn').addEventListener('click', () => {
+      const month_key = document.getElementById('closeMonthInput').value;
+      if (!month_key) return showToast('Avval oyni tanlang!');
+
+      openCloseMonthAuthModal({
+        month_key,
+        charge_fee: document.getElementById('optChargeFee').checked,
+        reset_skills: document.getElementById('optResetSkills').checked,
+        clear_month_attendance: document.getElementById('optClearAttendance').checked
+      });
+    });
+
+    document.getElementById('exportStudentsExcelBtn').addEventListener('click', () => {
+      const rows = studentsCache.map(s => {
+        const avg = Math.round(((Number(s.grammar)||0) + (Number(s.listening)||0) + (Number(s.reading)||0) + (Number(s.vocabulary)||0) + (Number(s.writing)||0) + (Number(s.speaking)||0)) / 6);
+        return [s.id, s.full_name || '', s.username || '', s.level || '', s.group_name || '', s.balance || 0, s.monthly_fee || 0, s.grammar || 0, s.listening || 0, s.reading || 0, s.vocabulary || 0, s.writing || 0, s.speaking || 0, avg + '%'];
+      });
+      downloadExcelXls('empower_oquvchilar.xls', ['ID', 'Full Name', 'Username', 'Level', 'Group', 'Balance', 'Monthly Fee', 'Grammar', 'Listening', 'Reading', 'Vocabulary', 'Writing', 'Speaking', 'Average'], rows);
+    });
+
+    document.getElementById('exportFinanceExcelBtn').addEventListener('click', () => {
+      const rows = txCache.map(t => [t.created_at, t.full_name, t.group_name, t.type === 'deposit' ? 'Deposit' : 'Charge', t.amount, t.description || '']);
+      downloadExcelXls('empower_buxgalteriya.xls', ['Date', 'Student', 'Group', 'Type', 'Amount', 'Note'], rows);
+    });
+
+    document.getElementById('exportAttendanceExcelBtn').addEventListener('click', () => {
+      const rows = attCache.map(a => [a.lesson_date, a.full_name, a.group_name, a.status]);
+      downloadExcelXls('empower_davomat.xls', ['Date', 'Student', 'Group', 'Status'], rows);
+    });
+
+    function updateLiveSkillPreview() {
+      const id = Number(document.getElementById('skStudentSelect').value);
+      const st = studentsCache.find(x => x.id === id);
+      document.getElementById('previewStudentName').textContent = st ? `${st.full_name || ''} — ${st.level || ''} (${st.group_name || ''})` : '-';
+      const vals = [
+        Number(document.getElementById('skGrammar').value) || 0,
+        Number(document.getElementById('skListening').value) || 0,
+        Number(document.getElementById('skReading').value) || 0,
+        Number(document.getElementById('skVocabulary').value) || 0,
+        Number(document.getElementById('skWriting').value) || 0,
+        Number(document.getElementById('skSpeaking').value) || 0
+      ];
+      const avg = Math.round(vals.reduce((a, b) => a + b, 0) / 6);
+      document.getElementById('previewAvgScore').textContent = avg + '%';
+      document.getElementById('previewStatusTag').textContent =
+        avg >= 85 ? 'Excellent' : avg >= 65 ? 'Strong' : 'Moderate';
+    }
+
+    document.querySelectorAll('.skill-input').forEach(inp => inp.addEventListener('input', updateLiveSkillPreview));
+
+    function selectStudentForSkills(studentId) {
+      document.getElementById('skStudentSelect').value = String(studentId);
+      fillSkillsInputs();
+    }
+
+    function renderSkillsRankingTable() {
+      const ranked = [...studentsCache]
+        .map(s => ({
+          ...s,
+          avg: Math.round(((Number(s.grammar)||0) + (Number(s.listening)||0) + (Number(s.reading)||0) + (Number(s.vocabulary)||0) + (Number(s.writing)||0) + (Number(s.speaking)||0)) / 6)
+        }))
+        .sort((a, b) => b.avg - a.avg);
+
+      document.getElementById('skillsRankingBody').innerHTML = ranked.map((s, idx) => {
+        const pos = idx + 1;
+        const medalClass = pos <= 3 ? `medal m-${pos}` : '';
+        return `
+          <tr>
+            <td><span class="${medalClass}">${pos}</span></td>
+            <td>
+              <span class="rank-st-cell">
+                ${renderRankStudentAvatar(s)}
+                <b>${escapeHtml(s.full_name || '-')}</b>
+              </span>
+            </td>
+            <td>${escapeHtml(s.level || '-')}</td>
+            <td>${s.grammar || 0}%</td><td>${s.listening || 0}%</td><td>${s.reading || 0}%</td>
+            <td>${s.vocabulary || 0}%</td><td>${s.writing || 0}%</td><td>${s.speaking || 0}%</td>
+            <td><b>${s.avg}%</b></td>
+            <td><button type="button" class="btn-select" onclick="selectStudentForSkills(${s.id})">Select</button></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderStudentsTable() {
+      const q = (document.getElementById('searchStudentInput').value || '').toLowerCase();
+      const lvl = document.getElementById('filterLevelSelect').value;
+
+      const filtered = studentsCache.filter(s => {
+        const name = (s.full_name || '').toLowerCase();
+        const user = (s.username || '').toLowerCase();
+        const grp = (s.group_name || '').toLowerCase();
+        const matchQ = name.includes(q) || user.includes(q) || grp.includes(q);
+        const matchL = lvl === 'ALL' || s.level === lvl;
+        return matchQ && matchL;
+      });
+
+      document.getElementById('studentsTableBody').innerHTML = filtered.map(s => {
+        const avg = Math.round(((Number(s.grammar)||0) + (Number(s.listening)||0) + (Number(s.reading)||0) + (Number(s.vocabulary)||0) + (Number(s.writing)||0) + (Number(s.speaking)||0)) / 6);
+        const isLow = Number(s.balance || 0) < Number(s.monthly_fee || 0);
+        const photoSrc = getStudentPhotoSrc(s);
+        return `
+          <tr>
+            <td>#${s.id}</td>
+            <td>
+              <span class="st-name-cell">
+                <img src="${escapeHtml(photoSrc)}" alt="${escapeHtml(s.full_name || '')}" class="st-avatar" onerror="this.src='/logo.jpg'" />
+                <b>${escapeHtml(s.full_name || '-')}</b>
+              </span>
+            </td>
+            <td>${escapeHtml(s.username || '-')}</td><td>${escapeHtml(s.level || '-')}</td><td>${escapeHtml(s.group_name || '-')}</td>
+            <td><b>${Number(s.balance || 0).toLocaleString()} UZS</b><br/><small style="color:var(--muted);">Fee: ${Number(s.monthly_fee || 0).toLocaleString()}</small> ${isLow ? '<span class="badge-low">Low</span>' : '<span class="badge-ok">OK</span>'}</td>
+            <td><b>${avg}%</b></td>
+            <td>
+              <button class="btn-fee" onclick="quickChargeFee(${s.id}, ${Number(s.monthly_fee || 0)})">-Fee</button>
+              <button class="btn-edit" onclick="openEditModal(${s.id})">Edit</button>
+              <button class="btn-del" onclick="deleteStudent(${s.id})">Del</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    document.getElementById('searchStudentInput').addEventListener('input', renderStudentsTable);
+    document.getElementById('filterLevelSelect').addEventListener('change', renderStudentsTable);
+
+    async function quickChargeFee(studentId, fee) {
+      if (!confirm(`${Number(fee).toLocaleString()} so‘m yechilsinmi?`)) return;
+      try {
+        await api('/api/admin/balance', 'POST', { student_id: studentId, type: 'charge', amount: fee, description: 'Monthly fee charge' });
+        showToast('OK!');
+        loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    }
+
+    function fillSkillsInputs() {
+      const id = Number(document.getElementById('skStudentSelect').value);
+      const st = studentsCache.find(x => x.id === id);
+      if (!st) return;
+      document.getElementById('skGrammar').value = st.grammar ?? 0;
+      document.getElementById('skListening').value = st.listening ?? 0;
+      document.getElementById('skReading').value = st.reading ?? 0;
+      document.getElementById('skVocabulary').value = st.vocabulary ?? 0;
+      document.getElementById('skWriting').value = st.writing ?? 0;
+      document.getElementById('skSpeaking').value = st.speaking ?? 0;
+      updateLiveSkillPreview();
+    }
+
+    document.getElementById('skStudentSelect').addEventListener('change', fillSkillsInputs);
+
+    function openEditModal(id) {
+      const st = studentsCache.find(x => x.id === id);
+      if (!st) return;
+      document.getElementById('editId').value = st.id;
+      document.getElementById('editName').value = st.full_name || '';
+      document.getElementById('editLevel').value = st.level || 'B1';
+      document.getElementById('editGroup').value = st.group_name || '';
+      document.getElementById('editFee').value = st.monthly_fee ?? 500000;
+      document.getElementById('editPhoto').value = '';
+      document.getElementById('editNewPass').value = '';
+      document.getElementById('editModal').classList.add('open');
+    }
+
+    document.getElementById('closeEditModalBtn').addEventListener('click', () => document.getElementById('editModal').classList.remove('open'));
+
+    document.getElementById('editStudentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('editId').value;
+      try {
+        const editPhotoInput = document.getElementById('editPhoto');
+        let photoBase64 = null, photoName = null;
+        if (editPhotoInput.files[0]) {
+          photoBase64 = await fileToBase64(editPhotoInput.files[0]);
+          photoName = editPhotoInput.files[0].name;
+        }
+        await api(`/api/admin/students/${id}`, 'PUT', {
+          full_name: document.getElementById('editName').value,
+          level: document.getElementById('editLevel').value,
+          group_name: document.getElementById('editGroup').value,
+          monthly_fee: document.getElementById('editFee').value,
+          new_password: document.getElementById('editNewPass').value,
+          photo_base64: photoBase64,
+          photo_url: photoBase64,
+          avatar_url: photoBase64,
+          photo_name: photoName
+        });
+        document.getElementById('editModal').classList.remove('open');
+        showToast('Updated!');
+        loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    async function deleteStudent(id) {
+      if (!confirm('Delete student?')) return;
+      try { await api(`/api/admin/students/${id}`, 'DELETE'); showToast('Deleted'); loadAllAdminData(); } catch (err) { showToast(err.message); }
+    }
+
+    async function deleteLesson(id) {
+      if (!confirm('Delete lesson?')) return;
+      try { await api(`/api/admin/lessons/${id}`, 'DELETE'); showToast('Deleted'); loadAllAdminData(); } catch (err) { showToast(err.message); }
+    }
+
+    async function deleteAssignment(id) {
+      if (!confirm('Delete assignment?')) return;
+      try { await api(`/api/admin/assignments/${id}`, 'DELETE'); showToast('Deleted'); loadAllAdminData(); } catch (err) { showToast(err.message); }
+    }
+
+    async function gradeSubmission(subId) {
+      const grade = document.getElementById(`gradeInp_${subId}`).value;
+      const feedback = document.getElementById(`fbInp_${subId}`).value;
+      try {
+        await api(`/api/admin/submissions/${subId}/grade`, 'PUT', { grade, teacher_feedback: feedback });
+        showToast('Graded!');
+        loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    }
+
+    async function deleteAnnouncement(id) {
+      try { await api(`/api/admin/announcements/${id}`, 'DELETE'); showToast('Deleted'); loadAllAdminData(); } catch (err) { showToast(err.message); }
+    }
+
+    async function deleteSchedule(id) {
+      try { await api(`/api/admin/schedules/${id}`, 'DELETE'); showToast('Deleted'); loadAllAdminData(); } catch (err) { showToast(err.message); }
+    }
+
+    function updateCharts(students) {
+      try {
+        const safeStudents = Array.isArray(students) ? students : [];
+
+        const levelCounts = { A1: 0, A2: 0, B1: 0, B2: 0, C1: 0 };
+        safeStudents.forEach(s => { if (levelCounts[s.level] !== undefined) levelCounts[s.level]++; });
+        if (levelsChartInstance) levelsChartInstance.destroy();
+        levelsChartInstance = new Chart(document.getElementById('levelsChart'), {
+          type: 'doughnut',
+          data: { labels: Object.keys(levelCounts), datasets: [{ data: Object.values(levelCounts), backgroundColor: ['#3b5bfd', '#10b981', '#f59e0b', '#e11d48', '#8b5cf6'] }] },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const currentSorted = [...safeStudents]
+          .map(s => ({
+            id: s.id,
+            name: s.full_name || 'Student',
+            level: s.level || '-',
+            photo_url: s.photo_url || '',
+            avg: Math.round(((Number(s.grammar) || 0) + (Number(s.listening) || 0) + (Number(s.reading) || 0) + (Number(s.vocabulary) || 0) + (Number(s.writing) || 0) + (Number(s.speaking) || 0)) / 6)
+          }))
+          .sort((a, b) => b.avg - a.avg);
+
+        const currentTop1 = currentSorted[0];
+        const archiveTop1 = yearlyLeadersCache[0];
+        let yearlyChampion = null;
+
+        if (archiveTop1 && (!currentTop1 || Number(archiveTop1.yearly_avg) >= currentTop1.avg)) {
+          yearlyChampion = {
+            id: archiveTop1.student_id || archiveTop1.id,
+            name: archiveTop1.full_name,
+            level: archiveTop1.level,
+            photo_url: archiveTop1.photo_url || '',
+            avg: Math.round(Number(archiveTop1.yearly_avg) || 0)
+          };
+        } else if (currentTop1 && currentTop1.avg > 0) {
+          yearlyChampion = currentTop1;
+        }
+
+        const topNameEl = document.getElementById('yearlyTopStudentName');
+        const topScoreEl = document.getElementById('yearlyTopStudentScore');
+        if (yearlyChampion) {
+          topNameEl.innerHTML = `🔥 ${escapeHtml(yearlyChampion.name)} <span style="font-size:12px; font-weight:800; opacity:0.85;">(${escapeHtml(yearlyChampion.level || '-')})</span>`;
+          topScoreEl.textContent = `${yearlyChampion.avg}%`;
+          renderAdminChampionPhoto(yearlyChampion);
+        } else {
+          topNameEl.textContent = '🔥 -';
+          topScoreEl.textContent = '0%';
+          renderAdminChampionPhoto(null);
+        }
+
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyTotals = new Array(12).fill(0);
+        (txCache || []).forEach(t => {
+          if (t.type === 'deposit' && t.created_at) {
+            const d = new Date(t.created_at);
+            if (!isNaN(d.getTime())) {
+              monthlyTotals[d.getMonth()] += Number(t.amount) || 0;
+            }
+          }
+        });
+
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        monthlyChartInstance = new Chart(document.getElementById('monthlyChart'), {
+          type: 'line',
+          data: {
+            labels: months,
+            datasets: [{
+              label: 'Monthly Deposit (UZS)',
+              data: monthlyTotals,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.18)',
+              fill: true,
+              tension: 0.35,
+              pointRadius: 4
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false }
+        });
+
+        const currentCenterAvg = safeStudents.length
+          ? Math.round(currentSorted.reduce((sum, x) => sum + x.avg, 0) / safeStudents.length)
+          : 0;
+
+        const archiveMonthsAsc = [...monthlyClosingsCache]
+          .filter(m => Number(m.avg_score) > 0)
+          .sort((a, b) => String(a.month_key).localeCompare(String(b.month_key)));
+
+        let yearlyLabels = archiveMonthsAsc.map(m => m.month_key);
+        let yearlyValues = archiveMonthsAsc.map(m => Math.round(Number(m.avg_score) || 0));
+
+        if (currentCenterAvg > 0) {
+          yearlyLabels.push(trAdmin('currentMonthLabel'));
+          yearlyValues.push(currentCenterAvg);
+        }
+
+        if (yearlyLabels.length === 0) {
+          yearlyLabels = [trAdmin('currentYearLabel')];
+          yearlyValues = [currentCenterAvg];
+        }
+
+        if (yearlyChartInstance) yearlyChartInstance.destroy();
+        yearlyChartInstance = new Chart(document.getElementById('yearlyChart'), {
+          type: 'bar',
+          data: {
+            labels: yearlyLabels,
+            datasets: [{
+              label: 'Yearly Avg (%)',
+              data: yearlyValues,
+              backgroundColor: ['#f59e0b', '#f97316', '#ef4444', '#e11d48', '#3b5bfd', '#10b981'],
+              borderRadius: 8
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+        });
+
+        const top7 = currentSorted.slice(0, 7);
+        if (topStudentsChartInstance) topStudentsChartInstance.destroy();
+        topStudentsChartInstance = new Chart(document.getElementById('topStudentsChart'), {
+          type: 'bar',
+          data: { labels: top7.map(x => x.name), datasets: [{ label: 'Avg (%)', data: top7.map(x => x.avg), backgroundColor: '#e11d48', borderRadius: 8 }] },
+          options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 100 } } }
+        });
+      } catch (err) {
+        console.error('Charts error:', err);
+      }
+    }
+
+    async function loadAllAdminData() {
+      try {
+        const prevSelectedSkillId = document.getElementById('skStudentSelect').value;
+        studentsCache = await api('/api/admin/students');
+        renderStudentsTable();
+        renderSkillsRankingTable();
+
+        document.getElementById('kpiTotalStudents').textContent = studentsCache.length;
+        const avgCenter = studentsCache.length
+          ? Math.round(studentsCache.reduce((acc, s) => acc + ((Number(s.grammar)||0) + (Number(s.listening)||0) + (Number(s.reading)||0) + (Number(s.vocabulary)||0) + (Number(s.writing)||0) + (Number(s.speaking)||0)) / 6, 0) / studentsCache.length)
+          : 0;
+        document.getElementById('kpiAvgScore').textContent = avgCenter + '%';
+        document.getElementById('kpiLowBalance').textContent = studentsCache.filter(s => Number(s.balance || 0) < Number(s.monthly_fee || 0)).length;
+
+        const optionsHtml = studentsCache.map(s => `<option value="${s.id}">${escapeHtml(s.full_name || '-')} (${escapeHtml(s.level || '-')})</option>`).join('');
+        document.getElementById('finStudentSelect').innerHTML = optionsHtml;
+        document.getElementById('attStudentSelect').innerHTML = optionsHtml;
+        document.getElementById('skStudentSelect').innerHTML = optionsHtml;
+        if (prevSelectedSkillId && studentsCache.some(s => String(s.id) === String(prevSelectedSkillId))) {
+          document.getElementById('skStudentSelect').value = prevSelectedSkillId;
+        }
+        fillSkillsInputs();
+
+        document.getElementById('bulkAttendanceBody').innerHTML = studentsCache.map(s => `
+          <tr>
+            <td><b>${escapeHtml(s.full_name || '-')}</b></td><td>${escapeHtml(s.group_name || '-')}</td><td>${escapeHtml(s.level || '-')}</td>
+            <td>
+              <select class="bulk-att-select" data-student-id="${s.id}" style="max-width:170px;">
+                <option value="present">Present</option><option value="absent">Absent</option><option value="excused">Excused</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error('Students load error:', err);
+      }
+
+      await loadTeachersTable();
+
+      try {
+        txCache = await api('/api/admin/transactions');
+        const totalIncome = txCache.filter(t => t.type === 'deposit').reduce((sum, t) => sum + Number(t.amount || 0), 0);
+        document.getElementById('kpiTotalIncome').textContent = totalIncome.toLocaleString() + ' so‘m';
+        document.getElementById('transactionsAdminBody').innerHTML = txCache.map(t => `
+          <tr><td>${escapeHtml(t.created_at)}</td><td><b>${escapeHtml(t.full_name)}</b></td><td>${escapeHtml(t.group_name)}</td><td>${t.type === 'deposit' ? 'Deposit (+)' : 'Charge (-)'}</td><td><b>${Number(t.amount).toLocaleString()}</b></td><td>${escapeHtml(t.description || '-')}</td></tr>
+        `).join('') || '<tr><td colspan="6">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        attCache = await api('/api/admin/attendance');
+        document.getElementById('attendanceAdminBody').innerHTML = attCache.map(a => `
+          <tr><td>${escapeHtml(a.lesson_date)}</td><td><b>${escapeHtml(a.full_name)}</b></td><td>${escapeHtml(a.group_name)}</td><td>${escapeHtml(a.status)}</td></tr>
+        `).join('') || '<tr><td colspan="4">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        const lessonRows = await api('/api/admin/lessons');
+        document.getElementById('lessonsAdminBody').innerHTML = lessonRows.map(l => `
+          <tr><td>#${l.id}</td><td><b>${escapeHtml(l.title)}</b></td><td>${escapeHtml(l.level)}</td><td>${escapeHtml(l.file_name || l.material_url || '-')}</td><td><button class="btn-del" onclick="deleteLesson(${l.id})">Del</button></td></tr>
+        `).join('') || '<tr><td colspan="5">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        const asData = await api('/api/admin/assignments');
+        document.getElementById('assignmentsHistoryBody').innerHTML = (asData.assignments || []).map(a => `
+          <tr>
+            <td>#${a.id}</td><td><b>${escapeHtml(a.title)}</b></td><td>${escapeHtml(a.description || '-')}</td>
+            <td>${escapeHtml(a.level)}</td><td>${escapeHtml(a.due_date || '-')}</td><td>${escapeHtml(a.created_at || '-')}</td>
+            <td><button class="btn-del" onclick="deleteAssignment(${a.id})">Del</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="7">-</td></tr>';
+
+        document.getElementById('submissionsAdminBody').innerHTML = (asData.submissions || []).map(sub => `
+          <tr>
+            <td><b>${escapeHtml(sub.full_name)}</b></td><td>${escapeHtml(sub.assignment_title)}</td><td>${escapeHtml(sub.answer_text || '-')}</td>
+            <td>${sub.answer_url ? `<a href="${escapeHtml(sub.answer_url)}" target="_blank">Link</a>` : '-'}</td>
+            <td><input type="number" id="gradeInp_${sub.id}" value="${sub.grade ?? ''}" min="0" max="100" style="width:76px; padding:6px;" /></td>
+            <td><input type="text" id="fbInp_${sub.id}" value="${escapeHtml(sub.teacher_feedback || '')}" style="width:140px; padding:6px;" /></td>
+            <td><button class="btn-primary" style="padding:6px 12px; font-size:12px;" onclick="gradeSubmission(${sub.id})">OK</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="7">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        const anns = await api('/api/announcements');
+        document.getElementById('announcementsAdminBody').innerHTML = anns.map(a => `
+          <tr><td><b>${escapeHtml(a.title)}</b><br/><small>${escapeHtml(a.message)}</small></td><td>${escapeHtml(a.target_level)}</td><td><button class="btn-del" onclick="deleteAnnouncement(${a.id})">Del</button></td></tr>
+        `).join('') || '<tr><td colspan="3">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        const schs = await api('/api/schedules');
+        document.getElementById('schedulesAdminBody').innerHTML = schs.map(s => `
+          <tr><td><b>${escapeHtml(s.group_name)}</b> (${escapeHtml(s.level)})</td><td>${escapeHtml(s.day_of_week)} | ${escapeHtml(s.lesson_time)}</td><td>${escapeHtml(s.room_or_teacher)}</td><td><button class="btn-del" onclick="deleteSchedule(${s.id})">Del</button></td></tr>
+        `).join('') || '<tr><td colspan="4">-</td></tr>';
+      } catch (err) { console.error(err); }
+
+      try {
+        const logs = await api('/api/admin/clear-logs');
+        clearLogsCache = Array.isArray(logs) ? logs : [];
+        renderClearLogsTable();
+      } catch (err) { console.error(err); }
+
+      await loadMonthlyClosings();
+      updateCharts(studentsCache);
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('addStudentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const photoInput = document.getElementById('stPhoto');
+        let photoBase64 = null, photoName = null;
+        if (photoInput.files[0]) {
+          photoBase64 = await fileToBase64(photoInput.files[0]);
+          photoName = photoInput.files[0].name;
+        }
+        await api('/api/admin/students', 'POST', {
+          full_name: document.getElementById('stName').value,
+          username: document.getElementById('stUser').value,
+          password: document.getElementById('stPass').value,
+          level: document.getElementById('stLevel').value,
+          group_name: document.getElementById('stGroup').value,
+          monthly_fee: document.getElementById('stFee').value,
+          photo_base64: photoBase64,
+          photo_url: photoBase64,
+          avatar_url: photoBase64,
+          photo_name: photoName
+        });
+        e.target.reset();
+        resetStudentPhotoPreview();
+        showToast('OK!');
+        loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('balanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/balance', 'POST', {
+          student_id: document.getElementById('finStudentSelect').value, type: document.getElementById('finType').value,
+          amount: document.getElementById('finAmount').value, description: document.getElementById('finDesc').value
+        });
+        document.getElementById('finAmount').value = ''; document.getElementById('finDesc').value = '';
+        showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('attendanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/attendance', 'POST', {
+          student_id: document.getElementById('attStudentSelect').value, lesson_date: document.getElementById('attDate').value,
+          status: document.getElementById('attStatus').value
+        });
+        showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('saveBulkAttBtn').addEventListener('click', async () => {
+      const lesson_date = document.getElementById('bulkAttDate').value;
+      const records = Array.from(document.querySelectorAll('.bulk-att-select')).map(sel => ({
+        student_id: Number(sel.getAttribute('data-student-id')), status: sel.value
+      }));
+      try {
+        await api('/api/admin/attendance/bulk', 'POST', { lesson_date, records });
+        showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('skillsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('skStudentSelect').value;
+      try {
+        await api(`/api/admin/skills/${id}`, 'PUT', {
+          grammar: Number(document.getElementById('skGrammar').value), listening: Number(document.getElementById('skListening').value),
+          reading: Number(document.getElementById('skReading').value), vocabulary: Number(document.getElementById('skVocabulary').value),
+          writing: Number(document.getElementById('skWriting').value), speaking: Number(document.getElementById('skSpeaking').value)
+        });
+        showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('lessonForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        const fileInput = document.getElementById('lesFile');
+        let fileBase64 = null, fileName = null;
+        if (fileInput.files[0]) { fileBase64 = await fileToBase64(fileInput.files[0]); fileName = fileInput.files[0].name; }
+        await api('/api/admin/lessons', 'POST', {
+          title: document.getElementById('lesTitle').value, level: document.getElementById('lesLevel').value,
+          material_url: document.getElementById('lesUrl').value, description: document.getElementById('lesDesc').value,
+          file_base64: fileBase64, file_name: fileName
+        });
+        e.target.reset(); showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/assignments', 'POST', {
+          title: document.getElementById('asTitle').value, level: document.getElementById('asLevel').value,
+          due_date: document.getElementById('asDue').value, description: document.getElementById('asDesc').value
+        });
+        e.target.reset(); showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/announcements', 'POST', {
+          title: document.getElementById('annTitle').value, target_level: document.getElementById('annLevel').value,
+          message: document.getElementById('annMsg').value
+        });
+        e.target.reset(); showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/schedules', 'POST', {
+          group_name: document.getElementById('schGroup').value, level: document.getElementById('schLevel').value,
+          day_of_week: document.getElementById('schDay').value, lesson_time: document.getElementById('schTime').value,
+          room_or_teacher: document.getElementById('schRoom').value
+        });
+        e.target.reset(); showToast('OK!'); loadAllAdminData();
+      } catch (err) { showToast(err.message); }
+    });
+
+    loadAllAdminData();
+  </script>
+</body>
+</html>
