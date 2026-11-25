@@ -14,9 +14,7 @@ app.use(express.json({ limit: '25mb' }));
 app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Papkalarni avtomatik aniqlash (frontend va uploads)
-const FRONTEND_DIR = fs.existsSync(path.join(__dirname, 'frontend'))
-  ? path.join(__dirname, 'frontend')
-  : path.join(__dirname, '..', 'frontend');
+const FRONTEND_DIR = __dirname;
 
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
