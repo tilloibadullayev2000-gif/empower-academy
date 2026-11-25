@@ -96,6 +96,14 @@
   </div>
 
   <script>
+    const existingToken = localStorage.getItem('token');
+    const existingRole = localStorage.getItem('role');
+    if (existingToken && existingRole) {
+      if (existingRole === 'admin') window.location.href = '/admin.html';
+      else if (existingRole === 'teacher') window.location.href = '/teacher.html';
+      else window.location.href = '/student.html';
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const username = document.getElementById('username').value.trim();
