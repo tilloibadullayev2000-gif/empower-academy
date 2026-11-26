@@ -27,6 +27,8 @@ app.use(express.static(FRONTEND_DIR));
 const dbPath = path.join(__dirname, 'empower.db');
 const db = new sqlite3.Database(dbPath);
 
+const SKILL_KEYS = ['grammar', 'listening', 'reading', 'vocabulary', 'writing', 'speaking'];
+
 function dbRun(sql, params = []) {
   return new Promise((resolve, reject) => {
     db.run(sql, params, function (err) {
@@ -93,15 +95,14 @@ function saveBase64File(base64Str, prefix = 'file', originalName = '') {
 }
 
 function calcAvgScore(user) {
-  const skills = [
-    Number(user.grammar) || 0,
-    Number(user.listening) || 0,
-    Number(user.reading) || 0,
-    Number(user.vocabulary) || 0,
-    Number(user.writing) || 0,
-    Number(user.speaking) || 0
-  ];
+  const skills = SKILL_KEYS.map((k) => Number(user[k]) || 0);
   return Math.round(skills.reduce((a, b) => a + b, 0) / skills.length);
+}
+
+function clampScore(val) {
+  const num = Number(val);
+  if (!Number.isFinite(num)) return 0;
+  return Math.max(0, Math.min(100, Math.round(num)));
 }
 
 async function ensureUserExtraColumns() {
@@ -140,6 +141,21 @@ async function initDb() {
   `);
 
   await ensureUserExtraColumns();
+
+  await dbRun(`
+    CREATE TABLE IF NOT EXISTS skill_evaluations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      student_id INTEGER NOT NULL,
+      grammar INTEGER DEFAULT 0,
+      listening INTEGER DEFAULT 0,
+      reading INTEGER DEFAULT 0,
+      vocabulary INTEGER DEFAULT 0,
+      writing INTEGER DEFAULT 0,
+      speaking INTEGER DEFAULT 0,
+      created_by TEXT,
+      created_at TEXT DEFAULT (datetime('now','localtime'))
+    )
+  `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS transactions (
@@ -256,6 +272,91 @@ async function initDb() {
       ['Super Admin', 'admin', hash]
     );
   }
+}
+
+async function recordAndRecalculateSkills(studentId, body, actorName = 'system') {
+  const existing = await dbGet(
+    `SELECT id, grammar, listening, reading, vocabulary, writing, speaking FROM users WHERE id = ? AND role = 'student'`,
+    [studentId]
+  );
+  if (!existing) {
+    throw new Error('O‘quvchi topilmadi!');
+  }
+
+  const historyRows = await dbAll(
+    `SELECT grammar, listening, reading, vocabulary, writing, speaking FROM skill_evaluations WHERE student_id = ?`,
+    [studentId]
+  );
+
+  // Agar oldin baholar tarixda bo'lmagan bo'lsa-yu, users jadvalida ball bor bo'lsa, uni birinchi baho sifatida saqlab qo'yamiz
+  const hasAnyNonZero = SKILL_KEYS.some((k) => Number(existing[k]) > 0);
+  if (historyRows.length === 0 && hasAnyNonZero) {
+    await dbRun(
+      `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        studentId,
+        clampScore(existing.grammar),
+        clampScore(existing.listening),
+        clampScore(existing.reading),
+        clampScore(existing.vocabulary),
+        clampScore(existing.writing),
+        clampScore(existing.speaking),
+        'initial'
+      ]
+    );
+  }
+
+  const newEntry = {
+    grammar: clampScore(body.grammar),
+    listening: clampScore(body.listening),
+    reading: clampScore(body.reading),
+    vocabulary: clampScore(body.vocabulary),
+    writing: clampScore(body.writing),
+    speaking: clampScore(body.speaking)
+  };
+
+  await dbRun(
+    `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      studentId,
+      newEntry.grammar,
+      newEntry.listening,
+      newEntry.reading,
+      newEntry.vocabulary,
+      newEntry.writing,
+      newEntry.speaking,
+      actorName
+    ]
+  );
+
+  const allEvals = await dbAll(
+    `SELECT grammar, listening, reading, vocabulary, writing, speaking FROM skill_evaluations WHERE student_id = ?`,
+    [studentId]
+  );
+
+  const averages = {};
+  for (const key of SKILL_KEYS) {
+    const sum = allEvals.reduce((acc, row) => acc + (Number(row[key]) || 0), 0);
+    averages[key] = allEvals.length > 0 ? Math.round(sum / allEvals.length) : 0;
+  }
+
+  await dbRun(
+    `UPDATE users SET grammar=?, listening=?, reading=?, vocabulary=?, writing=?, speaking=?
+     WHERE id=? AND role='student'`,
+    [
+      averages.grammar,
+      averages.listening,
+      averages.reading,
+      averages.vocabulary,
+      averages.writing,
+      averages.speaking,
+      studentId
+    ]
+  );
+
+  return averages;
 }
 
 function authMiddleware(req, res, next) {
@@ -561,13 +662,12 @@ app.post('/api/teacher/attendance/bulk', authMiddleware, teacherOrAdmin, async (
 
 app.put('/api/teacher/skills/:id', authMiddleware, teacherOrAdmin, async (req, res) => {
   try {
-    const { grammar, listening, reading, vocabulary, writing, speaking } = req.body;
-    await dbRun(
-      `UPDATE users SET grammar=?, listening=?, reading=?, vocabulary=?, writing=?, speaking=?
-       WHERE id=? AND role='student'`,
-      [grammar, listening, reading, vocabulary, writing, speaking, req.params.id]
+    const averages = await recordAndRecalculateSkills(
+      req.params.id,
+      req.body,
+      req.user.full_name || req.user.username || 'teacher'
     );
-    res.json({ message: 'Ballar yangilandi!' });
+    res.json({ message: 'Yangi baho qo‘shildi va o‘rtacha ball hisoblandi!', averages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -783,6 +883,10 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       );
     }
 
+    if (reset_skills) {
+      await dbRun(`DELETE FROM skill_evaluations`);
+    }
+
     if (clear_month_attendance) {
       await dbRun(`DELETE FROM attendance WHERE strftime('%Y-%m', lesson_date) = ?`, [cleanMonth]);
     }
@@ -936,6 +1040,7 @@ app.put('/api/admin/students/:id', authMiddleware, adminOnly, async (req, res) =
 app.delete('/api/admin/students/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
     const id = req.params.id;
+    await dbRun(`DELETE FROM skill_evaluations WHERE student_id = ?`, [id]);
     await dbRun(`DELETE FROM attendance WHERE student_id = ?`, [id]);
     await dbRun(`DELETE FROM transactions WHERE student_id = ?`, [id]);
     await dbRun(`DELETE FROM assignment_submissions WHERE student_id = ?`, [id]);
@@ -1019,13 +1124,12 @@ app.get('/api/admin/attendance', authMiddleware, adminOnly, async (req, res) => 
 
 app.put('/api/admin/skills/:id', authMiddleware, adminOnly, async (req, res) => {
   try {
-    const { grammar, listening, reading, vocabulary, writing, speaking } = req.body;
-    await dbRun(
-      `UPDATE users SET grammar=?, listening=?, reading=?, vocabulary=?, writing=?, speaking=?
-       WHERE id=? AND role='student'`,
-      [grammar, listening, reading, vocabulary, writing, speaking, req.params.id]
+    const averages = await recordAndRecalculateSkills(
+      req.params.id,
+      req.body,
+      req.user.full_name || req.user.username || 'admin'
     );
-    res.json({ message: 'Ballar yangilandi' });
+    res.json({ message: 'Yangi baho qo‘shildi va o‘rtacha ball hisoblandi!', averages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
