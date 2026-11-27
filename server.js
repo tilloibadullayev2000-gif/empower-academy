@@ -24,6 +24,11 @@ if (!fs.existsSync(UPLOADS_DIR)) {
 app.use('/uploads', express.static(UPLOADS_DIR));
 app.use(express.static(FRONTEND_DIR));
 
+// Mobil ilova (APK) uchun alohida sahifa
+app.get('/mobile', (req, res) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'mobile.html'));
+});
+
 const dbPath = path.join(__dirname, 'empower.db');
 const db = new sqlite3.Database(dbPath);
 
