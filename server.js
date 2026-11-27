@@ -1302,7 +1302,7 @@ app.post('/api/admin/balance', authMiddleware, adminOnly, async (req, res) => {
     await dbRun(`UPDATE users SET balance = balance + ? WHERE id = ? AND role = 'student'`, [delta, student_id]);
     await dbRun(
       `INSERT INTO transactions (student_id, amount, type, description) VALUES (?, ?, ?, ?)`,
-      [student_id, numAmount, type, description || (type === 'deposit' ? 'Hisob to‘ldirildi' : 'Oylik dars to‘lovi yechildi')],
+      [student_id, numAmount, type, description || (type === 'deposit' ? 'Hisob to‘ldirildi' : 'Oylik dars to‘lovi yechildi')]
     );
     res.json({ message: 'Balans yangilandi' });
   } catch (err) {
