@@ -164,7 +164,6 @@
       align-items: center;
       gap: 10px;
       position: relative;
-      padding-top: 12px;
     }
     .brand-logo-img {
       width: 42px;
@@ -192,22 +191,6 @@
       letter-spacing: 2.2px;
       color: #cbd5e1;
       margin-top: 2px;
-    }
-    .leaning-santa-doppi {
-      position: absolute;
-      top: -22px;
-      right: -18px;
-      width: 34px;
-      height: 32px;
-      pointer-events: none;
-      transform: rotate(10deg);
-      transform-origin: bottom center;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
-      animation: santaLeanNod 3.2s ease-in-out infinite;
-    }
-    @keyframes santaLeanNod {
-      0%, 100% { transform: rotate(10deg) translateY(0px); }
-      50% { transform: rotate(15deg) translateY(-1.5px); }
     }
 
     .admin-badge {
@@ -247,16 +230,6 @@
 
     .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-    .wall-btn {
-      background: rgba(30, 41, 59, 0.78);
-      color: #f8fafc;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      padding: 7px 11px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
     .santa-trigger-btn {
       background: linear-gradient(135deg, #e11d48, #be123c);
       color: #fff;
@@ -267,27 +240,6 @@
       font-weight: 700;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
-    }
-    .lang-select {
-      padding: 7px 11px;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      background: rgba(241, 245, 249, 0.95);
-      color: #0f172a;
-      font-weight: 700;
-      font-size: 12px;
-      cursor: pointer;
-      width: auto;
-    }
-    .theme-btn {
-      background: rgba(30, 41, 59, 0.82);
-      color: #f8fafc;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      padding: 7px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
     }
     .logout-btn {
       background: #ffffff;
@@ -351,24 +303,24 @@
     }
 
     .sidebar {
-      width: 92px;
+      width: 98px;
       flex-shrink: 0;
       padding: 16px 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      background: rgba(15, 23, 42, 0.42);
+      background: rgba(15, 23, 42, 0.48);
       backdrop-filter: blur(12px);
       border-right: 1px solid rgba(255, 255, 255, 0.12);
     }
     .side-nav-item {
-      width: 72px;
+      width: 78px;
       padding: 10px 6px;
       border-radius: 16px;
       border: 1px solid transparent;
       background: transparent;
-      color: rgba(255, 255, 255, 0.85);
+      color: rgba(255, 255, 255, 0.88);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -376,10 +328,12 @@
       cursor: pointer;
       font-size: 11px;
       font-weight: 700;
+      text-decoration: none;
+      text-align: center;
       transition: all 0.2s ease;
     }
     .side-nav-item:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.14);
       color: #fff;
     }
     .side-nav-item.active {
@@ -387,6 +341,15 @@
       color: #ffffff;
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
       border-color: rgba(255, 255, 255, 0.25);
+    }
+    .side-nav-item.tg-help-link {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: rgba(52, 211, 153, 0.35);
+      color: #a7f3d0;
+    }
+    .side-nav-item.tg-help-link:hover {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #ffffff;
     }
     .side-ico {
       font-size: 18px;
@@ -542,6 +505,7 @@
     .section { display: none; }
     .section.active { display: block; }
 
+    .section[data-ny-theme="home"] .card { border-top: 4px solid #6366f1; }
     .section[data-ny-theme="students"] .card { border-top: 4px solid #3b82f6; }
     .section[data-ny-theme="teachers"] .card { border-top: 4px solid #10b981; }
     .section[data-ny-theme="finance"] .card { border-top: 4px solid #eab308; }
@@ -552,6 +516,7 @@
     .section[data-ny-theme="extra"] .card { border-top: 4px solid #dc2626; }
     .section[data-ny-theme="analytics"] .card { border-top: 4px solid #8b5cf6; }
     .section[data-ny-theme="close-month"] .card { border-top: 4px solid #e11d48; }
+    .section[data-ny-theme="settings"] .card { border-top: 4px solid #0ea5e9; }
 
     .ny-section-ribbon {
       display: inline-flex;
@@ -578,6 +543,59 @@
       border-bottom: 1px solid var(--border);
       margin-bottom: 18px;
       position: relative;
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .quick-action-btn {
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      background: var(--input-bg);
+      color: var(--heading);
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+    .quick-action-btn:hover {
+      border-color: #2563eb;
+      transform: translateY(-2px);
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 14px;
+    }
+    .settings-box {
+      background: var(--input-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .settings-box-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--heading);
+      margin-bottom: 4px;
+    }
+    .settings-box-desc {
+      font-size: 12.5px;
+      color: var(--muted);
     }
 
     .form-hero-header {
@@ -846,6 +864,7 @@
 
     @media (max-width: 1050px) {
       .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .quick-actions-grid { grid-template-columns: repeat(2, 1fr); }
       .bottom-form-row { grid-template-columns: 1fr; }
     }
     @media (max-width: 820px) {
@@ -863,7 +882,7 @@
         flex-shrink: 0;
       }
       .container { padding: 12px 16px 28px; }
-      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .grid-3, .grid-2, .settings-grid { grid-template-columns: 1fr; }
       .grid-6 { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
@@ -887,24 +906,6 @@
       <div class="brand">
         <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
         <div class="brand-title-wrap">
-          <svg class="leaning-santa-doppi" viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <path d="M18 56 C18 42, 26 35, 36 35 C45 35, 51 42, 52 56 Z" fill="#dc2626"/>
-            <path d="M27 35 L33 46 L39 35 Z" fill="#f8fafc"/>
-            <rect x="20" y="45" width="30" height="5" rx="2" fill="#1e293b"/>
-            <rect x="31" y="44" width="7" height="7" rx="1.5" fill="#facc15"/>
-            <circle cx="35" cy="25" r="10.5" fill="#fed7aa"/>
-            <circle cx="32" cy="24" r="1.3" fill="#0f172a"/>
-            <circle cx="38" cy="24" r="1.3" fill="#0f172a"/>
-            <circle cx="35" cy="26.5" r="1.8" fill="#fb7185"/>
-            <path d="M24 27 C24 36, 29 41, 35 41 C41 41, 46 36, 46 27 C43 30, 39 31, 35 31 C31 31, 27 30, 24 27 Z" fill="#ffffff"/>
-            <path d="M24 18 C24 11, 46 11, 46 18 L47 21 L23 21 Z" fill="#111827"/>
-            <path d="M23.5 18.5 Q35 21.5 46.5 18.5" stroke="#f8fafc" stroke-width="1.6" fill="none" stroke-dasharray="3 2"/>
-            <path d="M29 15.5 C29 14, 31 14, 31 15.5 C31 17, 29 17, 29 15.5 Z" fill="#f8fafc"/>
-            <path d="M34 14.5 C34 13, 36 13, 36 14.5 C36 16, 34 16, 34 14.5 Z" fill="#f8fafc"/>
-            <path d="M39 15.5 C39 14, 41 14, 41 15.5 C41 17, 39 17, 39 15.5 Z" fill="#f8fafc"/>
-            <path d="M21 42 C13 43, 10 49, 13 54" stroke="#dc2626" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-            <circle cx="13.5" cy="54.5" r="3.2" fill="#f8fafc"/>
-          </svg>
           <div class="brand-title">EMPOWER</div>
           <div class="brand-sub">ACADEMY</div>
         </div>
@@ -918,14 +919,7 @@
     </div>
 
     <div class="top-actions">
-      <button type="button" class="wall-btn" id="nextWallpaperBtn" title="Fon rasmi (oboi)">🖼️ Oboi: <span id="wallpaperLabel">1/1</span></button>
       <button type="button" class="santa-trigger-btn" id="triggerSantaBtn" title="Qorbobo va kiyiklarni uchirish">🦌🎅 Oyga uchirish</button>
-      <select id="langSelect" class="lang-select">
-        <option value="uz">🇺🇿 O‘zbekcha</option>
-        <option value="en">🇬🇧 English</option>
-        <option value="ru">🇷🇺 Русский</option>
-      </select>
-      <button class="theme-btn" id="themeToggleBtn">Dark / Light</button>
       <button class="logout-btn" id="logoutBtn" data-i18n="logout">Chiqish</button>
       <button type="button" class="icon-bell-btn" title="Eslatmalar" onclick="activateSection('extraTab')">
         🔔<span class="bell-dot" id="topBellCount">3</span>
@@ -937,7 +931,7 @@
   <div class="app-shell">
     <!-- Chap yon menyu -->
     <aside class="sidebar" aria-label="Asosiy menyu">
-      <button type="button" class="side-nav-item active" data-sync-tab="studentsTab">
+      <button type="button" class="side-nav-item active" data-sync-tab="homeDashboardTab">
         <span class="side-ico">🏠</span>
         <span>Bosh sahifa</span>
       </button>
@@ -953,14 +947,14 @@
         <span class="side-ico">📊</span>
         <span>Hisobotlar</span>
       </button>
-      <button type="button" class="side-nav-item" data-sync-tab="closeMonthTab">
+      <button type="button" class="side-nav-item" data-sync-tab="settingsTab">
         <span class="side-ico">⚙️</span>
         <span>Sozlamalar</span>
       </button>
-      <button type="button" class="side-nav-item" data-sync-tab="extraTab">
+      <a href="https://t.me/tillo_ibadullayev" target="_blank" rel="noopener noreferrer" class="side-nav-item tg-help-link" title="Telegram lichkaga o‘tish: @tillo_ibadullayev">
         <span class="side-ico">🎧</span>
         <span>Yordam</span>
-      </button>
+      </a>
     </aside>
 
     <div class="container">
@@ -968,7 +962,7 @@
       <div class="ny-banner">
         <div class="ny-banner-text">
           <span>🎄</span>
-          <span>Yangi Yil bayram muhiti faol — o‘zgaruvchan fon (oboi), do‘ppili Qorbobo va yaltilovchi qor parchalari!</span>
+          <span>Yangi Yil bayram muhiti faol — o‘zgaruvchan fon (oboi) va yaltilovchi qor parchalari!</span>
         </div>
         <div class="ny-banner-pill" id="wallpaperModePill">▶ Avto-oboi (14s)</div>
       </div>
@@ -1018,7 +1012,8 @@
 
       <!-- Gorizontal bo'lim tablari -->
       <div class="tabs">
-        <button class="tab-btn active" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
+        <button class="tab-btn active" data-tab="homeDashboardTab">Bosh sahifa</button>
+        <button class="tab-btn" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
         <button class="tab-btn" data-tab="teachersTab" data-i18n="tabTeachers">O‘qituvchilar</button>
         <button class="tab-btn" data-tab="financeTab" data-i18n="tabFinance">Balans & Buxgalteriya</button>
         <button class="tab-btn" data-tab="attendanceTab" data-i18n="tabAttendance">Davomat</button>
@@ -1028,10 +1023,64 @@
         <button class="tab-btn" data-tab="extraTab" data-i18n="tabExtra">E’lonlar & Jadval</button>
         <button class="tab-btn" data-tab="analyticsTab" data-i18n="tabAnalytics">Statistika</button>
         <button class="tab-btn" data-tab="closeMonthTab" data-i18n="tabCloseMonth">Oy yopish</button>
+        <button class="tab-btn" data-tab="settingsTab">Sozlamalar</button>
+      </div>
+
+      <!-- 0. BOSH SAHIFA (DASHBOARD) -->
+      <div id="homeDashboardTab" class="section active" data-ny-theme="home">
+        <div class="card">
+          <div class="ny-section-ribbon">🏠 Bosh sahifa — Markaz boshqaruv paneli</div>
+          <div class="form-hero-header">
+            <div>
+              <h2>Empower Academy — Tezkor Dashboard</h2>
+              <div class="form-hero-sub">Asosiy ko‘rsatkichlar, tezkor amallar va so‘nggi yangilanishlar</div>
+            </div>
+            <div class="calligraphy-note" aria-hidden="true">Yangi Yil — yangi yutuqlar... ✦</div>
+          </div>
+
+          <div class="quick-actions-grid">
+            <button type="button" class="quick-action-btn" onclick="activateSection('studentsTab')">
+              <span>👤</span>
+              <span>O‘quvchi qo‘shish</span>
+            </button>
+            <button type="button" class="quick-action-btn" onclick="activateSection('financeTab')">
+              <span>💳</span>
+              <span>To‘lov & Balans</span>
+            </button>
+            <button type="button" class="quick-action-btn" onclick="activateSection('attendanceTab')">
+              <span>📋</span>
+              <span>Davomat olish</span>
+            </button>
+            <a href="https://t.me/tillo_ibadullayev" target="_blank" rel="noopener noreferrer" class="quick-action-btn" style="text-decoration:none;">
+              <span>✈️</span>
+              <span>Yordam (@tillo_ibadullayev)</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="ny-section-ribbon">🏆 Top o‘quvchilar</div>
+            <h2>Reytingda yetakchi o‘quvchilar</h2>
+            <table>
+              <thead><tr><th>#</th><th>O‘quvchi</th><th>Daraja</th><th>O‘rtacha ball</th></tr></thead>
+              <tbody id="homeTopStudentsBody"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="ny-section-ribbon">💳 So‘nggi kassa amallari</div>
+            <h2>Oxirgi moliyaviy harakatlar</h2>
+            <table>
+              <thead><tr><th>O‘quvchi</th><th>Turi</th><th>Summa</th><th>Sana</th></tr></thead>
+              <tbody id="homeRecentTxBody"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <!-- 1. O'QUVCHILAR -->
-      <div id="studentsTab" class="section active" data-ny-theme="students">
+      <div id="studentsTab" class="section" data-ny-theme="students">
         <div class="card">
           <div class="form-hero-header">
             <div>
@@ -1645,6 +1694,56 @@
           </table>
         </div>
       </div>
+
+      <!-- 11. SOZLAMALAR -->
+      <div id="settingsTab" class="section" data-ny-theme="settings">
+        <div class="card">
+          <div class="ny-section-ribbon">⚙️ Tizim sozlamalari</div>
+          <h2>Panel sozlamalari</h2>
+          <div class="form-hero-sub">Fon rasmi (oboi), til, mavzu va aloqa sozlamalari</div>
+
+          <div class="settings-grid">
+            <div class="settings-box">
+              <div>
+                <div class="settings-box-title">🖼️ Fon rasmi (Oboi)</div>
+                <div class="settings-box-desc">Joriy fon: <b id="wallpaperLabel">1/1</b></div>
+              </div>
+              <button type="button" class="btn-primary" id="nextWallpaperBtn">Keyingi oboi</button>
+            </div>
+
+            <div class="settings-box">
+              <div>
+                <div class="settings-box-title">🌐 Til tanlash (UZ / EN / RU)</div>
+                <div class="settings-box-desc">Interfeys tilini o‘zgartiring</div>
+              </div>
+              <select id="langSelect" style="width:100%;">
+                <option value="uz">🇺🇿 O‘zbekcha (UZ)</option>
+                <option value="en">🇬🇧 English (EN)</option>
+                <option value="ru">🇷🇺 Русский (RU)</option>
+              </select>
+            </div>
+
+            <div class="settings-box">
+              <div>
+                <div class="settings-box-title">🌓 Mavzu (Dark / Light)</div>
+                <div class="settings-box-desc">Kunduzgi yoki tungi rejimni tanlang</div>
+              </div>
+              <button type="button" class="btn-success" id="themeToggleBtn">Dark / Light rejimni almashtirish</button>
+            </div>
+
+            <div class="settings-box">
+              <div>
+                <div class="settings-box-title">✈️ Telegram Yordam</div>
+                <div class="settings-box-desc">To‘g‘ridan-to‘g‘ri bog‘lanish: <b>@tillo_ibadullayev</b></div>
+              </div>
+              <a href="https://t.me/tillo_ibadullayev" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration:none; text-align:center;">
+                @tillo_ibadullayev ga o‘tish
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -2202,7 +2301,7 @@
       document.getElementById(targetId)?.classList.add('active');
       document.querySelectorAll(`.tab-btn[data-tab="${targetId}"]`).forEach(b => b.classList.add('active'));
 
-      document.querySelectorAll('.side-nav-item').forEach(sb => sb.classList.remove('active'));
+      document.querySelectorAll('.side-nav-item[data-sync-tab]').forEach(sb => sb.classList.remove('active'));
       if (clickedSideBtn) {
         clickedSideBtn.classList.add('active');
       } else {
@@ -2217,7 +2316,7 @@
       });
     });
 
-    document.querySelectorAll('.side-nav-item').forEach(btn => {
+    document.querySelectorAll('.side-nav-item[data-sync-tab]').forEach(btn => {
       btn.addEventListener('click', () => {
         const targetId = btn.getAttribute('data-sync-tab');
         activateSection(targetId, btn);
@@ -2346,6 +2445,40 @@
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Xatolik');
       return data;
+    }
+
+    function renderHomeDashboardSummary() {
+      const topBody = document.getElementById('homeTopStudentsBody');
+      if (topBody) {
+        const ranked = [...studentsCache]
+          .map(s => ({
+            ...s,
+            avg: Math.round(((Number(s.grammar)||0) + (Number(s.listening)||0) + (Number(s.reading)||0) + (Number(s.vocabulary)||0) + (Number(s.writing)||0) + (Number(s.speaking)||0)) / 6)
+          }))
+          .sort((a, b) => b.avg - a.avg)
+          .slice(0, 5);
+
+        topBody.innerHTML = ranked.map((s, i) => `
+          <tr>
+            <td><b>#${i + 1}</b></td>
+            <td><b>${escapeHtml(s.full_name || '-')}</b></td>
+            <td>${escapeHtml(s.level || '-')}</td>
+            <td><b>${s.avg}%</b></td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Ma’lumot yo‘q</td></tr>';
+      }
+
+      const txBody = document.getElementById('homeRecentTxBody');
+      if (txBody) {
+        txBody.innerHTML = (txCache || []).slice(0, 5).map(t => `
+          <tr>
+            <td><b>${escapeHtml(t.full_name || '-')}</b></td>
+            <td>${t.type === 'deposit' ? 'Deposit (+)' : 'Charge (-)'}</td>
+            <td><b>${Number(t.amount || 0).toLocaleString()}</b></td>
+            <td>${escapeHtml(t.created_at || '-')}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Operatsiyalar yo‘q</td></tr>';
+      }
     }
 
     async function loadTeachersTable() {
@@ -2969,6 +3102,8 @@
           <tr><td>${escapeHtml(t.created_at)}</td><td><b>${escapeHtml(t.full_name)}</b></td><td>${escapeHtml(t.group_name)}</td><td>${t.type === 'deposit' ? 'Deposit (+)' : 'Charge (-)'}</td><td><b>${Number(t.amount).toLocaleString()}</b></td><td>${escapeHtml(t.description || '-')}</td></tr>
         `).join('') || '<tr><td colspan="6">-</td></tr>';
       } catch (err) { console.error(err); }
+
+      renderHomeDashboardSummary();
 
       try {
         attCache = await api('/api/admin/attendance');
