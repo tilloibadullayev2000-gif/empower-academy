@@ -1178,9 +1178,9 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    /* O'zgaruvchan fon (oboi) — 404 bermaydigan 3 ta Yangi Yil foni */
+    /* O'zgaruvchan fon (oboi) — GitHub ildizidagi 3 ta rasm + zahira SVG */
     (function initDynamicWallpaper() {
-      const WALLPAPERS = [
+      const FALLBACK_WALLPAPERS = [
         'data:image/svg+xml;utf8,' + encodeURIComponent(`
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
             <defs>
@@ -1231,6 +1231,12 @@
         `)
       ];
 
+      const WALLPAPERS = [
+        '/1695368459_2-31.jpg',
+        '/1695368475_2-34.jpg',
+        '/1695368627_1-2.jpg'
+      ];
+
       const layer = document.getElementById('wallpaperLayer');
       const label = document.getElementById('wallpaperLabel');
       const pill = document.getElementById('wallpaperModePill');
@@ -1242,6 +1248,13 @@
         const div = document.createElement('div');
         div.className = 'ny-wallpaper-slide' + (idx === 0 ? ' active' : '');
         div.style.backgroundImage = `url("${src}")`;
+
+        const probe = new Image();
+        probe.onerror = () => {
+          div.style.backgroundImage = `url("${FALLBACK_WALLPAPERS[idx % FALLBACK_WALLPAPERS.length]}")`;
+        };
+        probe.src = src;
+
         layer.appendChild(div);
         return div;
       });
