@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Empower Academy — Tizimga kirish</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
     body {
@@ -12,29 +12,147 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #eef2f9 0%, #dfe7f5 100%);
+      background:
+        radial-gradient(circle at 20% 20%, rgba(250, 204, 21, 0.2), transparent 38%),
+        radial-gradient(circle at 80% 25%, rgba(225, 29, 72, 0.16), transparent 40%),
+        linear-gradient(135deg, #0d1936 0%, #172852 55%, #0b2229 100%);
       padding: 20px;
+      position: relative;
+      overflow-x: hidden;
     }
+
+    #nySnowCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .top-garland {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 42px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-around;
+      padding: 0 16px;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .top-garland::before {
+      content: "";
+      position: absolute;
+      top: 5px;
+      left: 2%;
+      right: 2%;
+      height: 1.5px;
+      background: rgba(253, 224, 71, 0.5);
+    }
+    .garland-bulb {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 5px;
+    }
+    .garland-cap {
+      width: 5px;
+      height: 4px;
+      background: #475569;
+      border-radius: 2px 2px 0 0;
+    }
+    .garland-glass {
+      width: 10px;
+      height: 13px;
+      border-radius: 50% 50% 45% 45%;
+      animation: nyBulbBlink var(--dur, 1.1s) ease-in-out var(--delay, 0s) infinite alternate;
+    }
+    .b-red { background: #ff3b5c; color: #ff3b5c; }
+    .b-gold { background: #fde047; color: #fde047; }
+    .b-green { background: #22c55e; color: #22c55e; }
+    .b-cyan { background: #38bdf8; color: #38bdf8; }
+
+    @keyframes nyBulbBlink {
+      0% { opacity: 0.3; transform: scale(0.88); box-shadow: 0 0 3px currentColor; }
+      100% { opacity: 1; transform: scale(1.16); box-shadow: 0 0 12px currentColor, 0 0 22px currentColor; }
+    }
+
     .login-card {
+      position: relative;
+      z-index: 4;
       background: rgba(255, 255, 255, 0.96);
-      border: 1px solid #ffffff;
+      border: 2px solid rgba(253, 224, 71, 0.75);
       border-radius: 28px;
       padding: 40px 36px;
       width: 100%;
       max-width: 430px;
-      box-shadow: 0 20px 50px rgba(31, 45, 90, 0.08);
+      overflow: hidden;
+      animation: nyCardGlow 2.4s ease-in-out infinite alternate;
     }
-    .brand { text-align: center; margin-bottom: 28px; }
+
+    @keyframes nyCardGlow {
+      0% {
+        box-shadow:
+          0 20px 50px rgba(0, 0, 0, 0.35),
+          0 0 20px rgba(253, 224, 71, 0.38),
+          0 0 36px rgba(225, 29, 72, 0.18);
+      }
+      100% {
+        box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.42),
+          0 0 34px rgba(253, 224, 71, 0.72),
+          0 0 56px rgba(34, 197, 94, 0.28);
+      }
+    }
+
+    .login-card::after {
+      content: "";
+      position: absolute;
+      top: -40%;
+      left: -80%;
+      width: 42%;
+      height: 180%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(254, 240, 138, 0.3) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(24deg);
+      animation: nyLightRay 5.5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes nyLightRay {
+      0% { left: -80%; opacity: 0; }
+      25% { opacity: 1; }
+      60% { left: 140%; opacity: 0.85; }
+      100% { left: 140%; opacity: 0; }
+    }
+
+    .brand { text-align: center; margin-bottom: 28px; position: relative; z-index: 2; }
     .brand img {
       max-height: 76px;
       width: auto;
       object-fit: contain;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       border-radius: 12px;
+      box-shadow: 0 0 18px rgba(250, 204, 21, 0.45);
+    }
+    .ny-greeting {
+      font-family: 'Great Vibes', cursive;
+      font-size: 24px;
+      color: #d97706;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.45);
     }
     .brand h1 { font-size: 24px; color: #1e293b; font-weight: 800; }
     .brand p { color: #64748b; font-size: 14px; margin-top: 6px; }
-    .form-group { margin-bottom: 18px; }
+    .form-group { margin-bottom: 18px; position: relative; z-index: 2; }
     label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 7px; }
     input {
       width: 100%;
@@ -58,7 +176,9 @@
       font-weight: 700;
       cursor: pointer;
       margin-top: 8px;
-      box-shadow: 0 10px 25px rgba(225, 29, 72, 0.25);
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 10px 25px rgba(225, 29, 72, 0.25), 0 0 16px rgba(250, 204, 21, 0.35);
     }
     .error-msg {
       color: #ef4444;
@@ -69,13 +189,29 @@
       margin-bottom: 16px;
       display: none;
       text-align: center;
+      position: relative;
+      z-index: 2;
     }
   </style>
 </head>
 <body>
+  <canvas id="nySnowCanvas" aria-hidden="true"></canvas>
+
+  <div class="top-garland" aria-hidden="true">
+    <span class="garland-bulb" style="--dur:0.9s; --delay:0s;"><span class="garland-cap"></span><span class="garland-glass b-red"></span></span>
+    <span class="garland-bulb" style="--dur:1.15s; --delay:0.2s;"><span class="garland-cap"></span><span class="garland-glass b-gold"></span></span>
+    <span class="garland-bulb" style="--dur:0.85s; --delay:0.4s;"><span class="garland-cap"></span><span class="garland-glass b-green"></span></span>
+    <span class="garland-bulb" style="--dur:1.25s; --delay:0.1s;"><span class="garland-cap"></span><span class="garland-glass b-cyan"></span></span>
+    <span class="garland-bulb" style="--dur:1.1s; --delay:0.3s;"><span class="garland-cap"></span><span class="garland-glass b-gold"></span></span>
+    <span class="garland-bulb" style="--dur:0.95s; --delay:0.5s;"><span class="garland-cap"></span><span class="garland-glass b-red"></span></span>
+    <span class="garland-bulb" style="--dur:1.2s; --delay:0.15s;"><span class="garland-cap"></span><span class="garland-glass b-green"></span></span>
+    <span class="garland-bulb" style="--dur:1.05s; --delay:0.25s;"><span class="garland-cap"></span><span class="garland-glass b-gold"></span></span>
+  </div>
+
   <div class="login-card">
     <div class="brand">
       <img src="/logo.jpg" alt="Empower Academy Logo" onerror="this.style.display='none'" />
+      <div class="ny-greeting">🎄 Happy New Year! ✨</div>
       <h1>Xush kelibsiz</h1>
       <p>Shaxsiy kabinetga kirish uchun ma’lumotlarni kiriting</p>
     </div>
@@ -96,6 +232,43 @@
   </div>
 
   <script>
+    (function initSnow() {
+      const canvas = document.getElementById('nySnowCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth;
+      let h = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => {
+        w = canvas.width = window.innerWidth;
+        h = canvas.height = window.innerHeight;
+      });
+      const flakes = Array.from({ length: 42 }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: 1.5 + Math.random() * 2.5,
+        vy: 0.6 + Math.random() * 1.0,
+        vx: -0.3 + Math.random() * 0.6,
+        phase: Math.random() * Math.PI * 2
+      }));
+      function draw() {
+        ctx.clearRect(0, 0, w, h);
+        for (const f of flakes) {
+          f.phase += 0.03;
+          f.x += f.vx + Math.sin(f.phase) * 0.25;
+          f.y += f.vy;
+          if (f.y > h + 10) { f.y = -10; f.x = Math.random() * w; }
+          if (f.x > w + 10) f.x = -10;
+          if (f.x < -10) f.x = w + 10;
+          ctx.beginPath();
+          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 250, 210, ${0.5 + 0.35 * Math.sin(f.phase)})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    })();
+
     const existingToken = localStorage.getItem('token');
     const existingRole = localStorage.getItem('role');
     if (existingToken && existingRole) {
