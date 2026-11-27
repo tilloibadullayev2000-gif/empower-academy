@@ -508,7 +508,7 @@
       </div>
 
       <div class="card">
-        <h2 data-i18n="rankingTableTitle">O‘quvchilar bilim reytingi va ballar jadvali</h2>
+        <h2 data-i18n="rankingTableTitle">O‘quvchilar bilim reytingi va o‘rtacha ballar jadvali</h2>
         <table>
           <thead>
             <tr>
@@ -518,6 +518,20 @@
             </tr>
           </thead>
           <tbody id="skillsRankingBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2>Qo‘yilgan baholar tarixi (Har bir baholash yozuvi)</h2>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Vaqt</th><th>O‘quvchi</th><th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th><th>Kim qo‘ydi</th><th>Amal</th>
+            </tr>
+          </thead>
+          <tbody id="skillEvaluationsBody"></tbody>
         </table>
       </div>
     </div>
@@ -838,6 +852,7 @@
     let studentsCache = [];
     let txCache = [];
     let attCache = [];
+    let skillEvalsCache = [];
     let monthlyClosingsCache = [];
     let yearlyLeadersCache = [];
     let levelsChartInstance = null;
@@ -866,7 +881,7 @@
         btnSave: 'Saqlash', txHistoryTitle: 'Oxirgi buxgalteriya operatsiyalari', bulkAttTitle: 'Birvarakayiga davomat olish',
         lblDate: 'Sana', btnSaveBulk: 'Barchasini birga saqlash', singleAttTitle: 'Bitta o‘quvchiga davomat',
         lblStatus: 'Holati', attHistoryTitle: 'Oxirgi davomat yozuvlari', skillsFormTitle: 'Bilim ballarini yangilash (0 - 100)',
-        lblSelectedPreview: 'TANLANGAN O‘QUVCHI KO‘RSATKICHI', rankingTableTitle: 'O‘quvchilar bilim reytingi',
+        lblSelectedPreview: 'TANLANGAN O‘QUVCHI KO‘RSATKICHI', rankingTableTitle: 'O‘quvchilar bilim reytingi va o‘rtacha ballar jadvali',
         addLessonTitle: 'Yangi darslik qo‘shish', lblTitle: 'Nomi / Sarlavha', lblFile: 'Fayl yuklash', lblUrl: 'Havola (URL)',
         lessonsHistoryTitle: 'Yuklangan darsliklar tarixi', addAssignmentTitle: 'Yangi uy vazifasi berish', lblDue: 'Muddat',
         assignmentsHistoryTitle: 'Yuborilgan topshiriqlar tarixi', submissionsHistoryTitle: 'O‘quvchilar yuborgan javoblar tarixi & baholash',
@@ -883,7 +898,7 @@
         btnCancel: 'Bekor qilish', clearModalTitle: 'Tarixni tozalash (Parol talab qilinadi)',
         clearModalDesc: 'Ushbu bo‘lim tarixini tozalash uchun parolni kiriting:',
         lblAdminPassword: 'Parol', btnConfirmClear: 'Tasdiqlash va tozalash',
-        currentMonthLabel: 'Joriy oy', currentYearLabel: 'Joriy yil'
+        noClosedMonthsLabel: 'Yopilgan oylar yo‘q'
       },
       en: {
         logout: 'Logout', kpiTotalStudents: 'Total Students', kpiActiveBase: 'Active student database',
@@ -905,7 +920,7 @@
         btnSave: 'Save', txHistoryTitle: 'Recent Finance Transactions', bulkAttTitle: 'Bulk Attendance (All Students)',
         lblDate: 'Date', btnSaveBulk: 'Save All Attendance', singleAttTitle: 'Single Student Attendance',
         lblStatus: 'Status', attHistoryTitle: 'Recent Attendance History', skillsFormTitle: 'Update Skill Scores (0 - 100)',
-        lblSelectedPreview: 'SELECTED STUDENT PREVIEW', rankingTableTitle: 'Student Skill Ranking',
+        lblSelectedPreview: 'SELECTED STUDENT PREVIEW', rankingTableTitle: 'Student Skill Ranking & Average Table',
         addLessonTitle: 'Add New Lesson', lblTitle: 'Title', lblFile: 'Upload File', lblUrl: 'Link (URL)',
         lessonsHistoryTitle: 'Uploaded Lessons History', addAssignmentTitle: 'Create New Assignment', lblDue: 'Due Date',
         assignmentsHistoryTitle: 'Sent Assignments History', submissionsHistoryTitle: 'Student Submissions History & Grading',
@@ -922,7 +937,7 @@
         btnCancel: 'Cancel', clearModalTitle: 'Clear History (Password Required)',
         clearModalDesc: 'Enter password to permanently clear this section history:',
         lblAdminPassword: 'Password', btnConfirmClear: 'Confirm & Clear',
-        currentMonthLabel: 'Current Month', currentYearLabel: 'Current Year'
+        noClosedMonthsLabel: 'No closed months'
       },
       ru: {
         logout: 'Выход', kpiTotalStudents: 'Всего студентов', kpiActiveBase: 'Активная база студентов',
@@ -944,7 +959,7 @@
         btnSave: 'Сохранить', txHistoryTitle: 'История финансовых операций', bulkAttTitle: 'Массовая посещаемость',
         lblDate: 'Дата', btnSaveBulk: 'Сохранить всех', singleAttTitle: 'Отметить одного студента',
         lblStatus: 'Статус', attHistoryTitle: 'История посещаемости', skillsFormTitle: 'Обновление баллов (0 - 100)',
-        lblSelectedPreview: 'ПОКАЗАТЕЛИ ВЫБРАННОГО СТУДЕНТА', rankingTableTitle: 'Рейтинг знаний студентов',
+        lblSelectedPreview: 'ПОКАЗАТЕЛИ ВЫБРАННОГО СТУДЕНТА', rankingTableTitle: 'Рейтинг знаний и средние баллы',
         addLessonTitle: 'Добавить урок', lblTitle: 'Название / Заголовок', lblFile: 'Загрузить файл', lblUrl: 'Ссылка (URL)',
         lessonsHistoryTitle: 'История загруженных уроков', addAssignmentTitle: 'Создать задание', lblDue: 'Срок сдачи',
         assignmentsHistoryTitle: 'История выданных заданий', submissionsHistoryTitle: 'История ответов студентов и оценка',
@@ -961,7 +976,7 @@
         btnCancel: 'Отмена', clearModalTitle: 'Очистка истории (Требуется пароль)',
         clearModalDesc: 'Введите пароль для очистки истории этого раздела:',
         lblAdminPassword: 'Пароль', btnConfirmClear: 'Подтвердить и очистить',
-        currentMonthLabel: 'Текущий месяц', currentYearLabel: 'Текущий год'
+        noClosedMonthsLabel: 'Нет закрытых месяцев'
       }
     };
 
@@ -1438,6 +1453,36 @@
       }).join('');
     }
 
+    function renderSkillEvaluationsTable() {
+      const tbody = document.getElementById('skillEvaluationsBody');
+      if (!tbody) return;
+      tbody.innerHTML = (skillEvalsCache || []).map(ev => `
+        <tr>
+          <td>${escapeHtml(ev.created_at || '-')}</td>
+          <td><b>${escapeHtml(ev.full_name || '-')}</b></td>
+          <td>${ev.grammar ?? 0}%</td>
+          <td>${ev.listening ?? 0}%</td>
+          <td>${ev.reading ?? 0}%</td>
+          <td>${ev.vocabulary ?? 0}%</td>
+          <td>${ev.writing ?? 0}%</td>
+          <td>${ev.speaking ?? 0}%</td>
+          <td>${escapeHtml(ev.created_by || '-')}</td>
+          <td><button type="button" class="btn-del" onclick="deleteSkillEval(${ev.id})">O‘chirish</button></td>
+        </tr>
+      `).join('') || '<tr><td colspan="10">Hali baholar tarixi yozuvlari yo‘q</td></tr>';
+    }
+
+    async function deleteSkillEval(evalId) {
+      if (!confirm('Ushbu baho yozuvi o‘chirilsinmi?')) return;
+      try {
+        await api(`/api/admin/skill-evaluations/${evalId}`, 'DELETE');
+        showToast('Baho yozuvi o‘chirildi!');
+        loadAllAdminData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
     function renderStudentsTable() {
       const q = (document.getElementById('searchStudentInput').value || '').toLowerCase();
       const lvl = document.getElementById('filterLevelSelect').value;
@@ -1602,11 +1647,10 @@
           }))
           .sort((a, b) => b.avg - a.avg);
 
-        const currentTop1 = currentSorted[0];
         const archiveTop1 = yearlyLeadersCache[0];
         let yearlyChampion = null;
 
-        if (archiveTop1 && (!currentTop1 || Number(archiveTop1.yearly_avg) >= currentTop1.avg)) {
+        if (archiveTop1 && Number(archiveTop1.yearly_avg) > 0) {
           yearlyChampion = {
             id: archiveTop1.student_id || archiveTop1.id,
             name: archiveTop1.full_name,
@@ -1614,8 +1658,6 @@
             photo_url: archiveTop1.photo_url || '',
             avg: Math.round(Number(archiveTop1.yearly_avg) || 0)
           };
-        } else if (currentTop1 && currentTop1.avg > 0) {
-          yearlyChampion = currentTop1;
         }
 
         const topNameEl = document.getElementById('yearlyTopStudentName');
@@ -1659,25 +1701,16 @@
           options: { responsive: true, maintainAspectRatio: false }
         });
 
-        const currentCenterAvg = safeStudents.length
-          ? Math.round(currentSorted.reduce((sum, x) => sum + x.avg, 0) / safeStudents.length)
-          : 0;
-
         const archiveMonthsAsc = [...monthlyClosingsCache]
-          .filter(m => Number(m.avg_score) > 0)
+          .filter(m => m && m.month_key)
           .sort((a, b) => String(a.month_key).localeCompare(String(b.month_key)));
 
         let yearlyLabels = archiveMonthsAsc.map(m => m.month_key);
         let yearlyValues = archiveMonthsAsc.map(m => Math.round(Number(m.avg_score) || 0));
 
-        if (currentCenterAvg > 0) {
-          yearlyLabels.push(trAdmin('currentMonthLabel'));
-          yearlyValues.push(currentCenterAvg);
-        }
-
         if (yearlyLabels.length === 0) {
-          yearlyLabels = [trAdmin('currentYearLabel')];
-          yearlyValues = [currentCenterAvg];
+          yearlyLabels = [trAdmin('noClosedMonthsLabel')];
+          yearlyValues = [0];
         }
 
         if (yearlyChartInstance) yearlyChartInstance.destroy();
@@ -1742,6 +1775,13 @@
         `).join('');
       } catch (err) {
         console.error('Students load error:', err);
+      }
+
+      try {
+        skillEvalsCache = await api('/api/admin/skill-evaluations');
+        renderSkillEvaluationsTable();
+      } catch (err) {
+        console.error('Skill evaluations load error:', err);
       }
 
       await loadTeachersTable();
