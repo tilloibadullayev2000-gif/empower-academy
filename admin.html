@@ -230,7 +230,6 @@
       position: relative;
     }
 
-    /* Logo + Qorbobo topisi */
     .logo-cap-wrap {
       position: relative;
       display: inline-flex;
@@ -265,7 +264,6 @@
       50% { transform: rotate(-12deg) translateY(-1.5px); }
     }
 
-    /* Daxshatli yonib turuvchi EMPOWER ACADEMY yozuvi */
     .brand-title-wrap {
       position: relative;
       display: inline-flex;
@@ -1174,7 +1172,6 @@
   <header class="topbar">
     <div class="brand-cluster">
       <div class="brand">
-        <!-- Empower logosi + ustida Qorbobo topisi -->
         <div class="logo-cap-wrap">
           <svg class="logo-santa-cap" viewBox="0 0 64 56" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M12 42C13 22 28 10 49 14C44 22 43 32 45 42H12Z" fill="#DC2626"/>
@@ -1185,7 +1182,6 @@
           <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
         </div>
 
-        <!-- Daxshatli yonib turuvchi EMPOWER ACADEMY yozuvi -->
         <div class="brand-title-wrap">
           <div class="brand-title">EMPOWER</div>
           <div class="brand-sub">ACADEMY</div>
@@ -1210,7 +1206,6 @@
   </header>
 
   <div class="app-shell">
-    <!-- Chap yon menyu -->
     <aside class="sidebar" aria-label="Asosiy menyu">
       <button type="button" class="side-nav-item active" data-sync-tab="homeDashboardTab">
         <span class="side-ico">🏠</span>
@@ -1239,7 +1234,6 @@
     </aside>
 
     <div class="container">
-      <!-- Bayram banneri -->
       <div class="ny-banner">
         <div class="ny-banner-text">
           <span>🎆</span>
@@ -1248,7 +1242,6 @@
         <div class="ny-banner-pill" id="wallpaperModePill">▶ Avto-oboi (14s)</div>
       </div>
 
-      <!-- 4 ta rang-barang KPI karta -->
       <div class="kpi-grid">
         <div class="kpi-card blue-card">
           <div class="kpi-top-row">
@@ -1291,7 +1284,6 @@
         </div>
       </div>
 
-      <!-- Gorizontal bo'lim tablari -->
       <div class="tabs">
         <button class="tab-btn active" data-tab="homeDashboardTab">Bosh sahifa</button>
         <button class="tab-btn" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
@@ -2078,7 +2070,6 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    /* Kartalarga yaltiroq yulduzcha / qor uchquni shulalarini qo'shish */
     document.querySelectorAll('.card').forEach(card => {
       const s1 = document.createElement('span');
       s1.className = 'ny-sparkle';
@@ -2096,7 +2087,6 @@
       card.appendChild(s2);
     });
 
-    /* ORQA FON SALYUT (FIREWORKS) ANIMATSIYASI */
     (function initFireworks() {
       const canvas = document.getElementById('fireworksCanvas');
       if (!canvas) return;
@@ -2383,7 +2373,6 @@
       drawSnow();
     })();
 
-    /* Qorbobo sekin uchishi, qoluvchi shulasi va tushib qoluvchi padarkalar */
     let giftDropTimers = [];
     function spawnDroppedGift(xPx, yPx) {
       const layer = document.getElementById('santaFlightLayer');
