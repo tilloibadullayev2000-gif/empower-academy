@@ -19,29 +19,29 @@
     body { background: var(--bg); color: var(--text); min-height: 100vh; transition: 0.25s; }
 
     .topbar {
-      background: var(--card); padding: 14px 32px; display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 12px;
-      box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); position: sticky; top: 0; z-index: 20;
+      background: var(--card); padding: 8px 24px; display: flex; justify-content: space-between;
+      align-items: center; flex-wrap: wrap; gap: 10px;
+      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05); position: sticky; top: 0; z-index: 20;
     }
-    .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-logo-img { max-height: 44px; width: auto; object-fit: contain; border-radius: 8px; }
-    .brand-title { font-size: 19px; font-weight: 800; color: #e11d48; line-height: 1.05; }
-    .brand-sub { font-size: 10px; font-weight: 800; color: #e11d48; letter-spacing: 2.2px; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-logo-img { max-height: 34px; width: auto; object-fit: contain; border-radius: 7px; }
+    .brand-title { font-size: 16px; font-weight: 800; color: #e11d48; line-height: 1.05; }
+    .brand-sub { font-size: 9px; font-weight: 800; color: #e11d48; letter-spacing: 2px; }
     .admin-badge {
-      background: #e11d48; color: #fff; font-size: 11px; font-weight: 800;
-      padding: 4px 10px; border-radius: 99px; letter-spacing: 0.5px;
+      background: #e11d48; color: #fff; font-size: 10px; font-weight: 800;
+      padding: 3px 9px; border-radius: 99px; letter-spacing: 0.4px; white-space: nowrap;
     }
-    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .top-actions { display: flex; gap: 8px; align-items: center; }
     .lang-select, .theme-btn {
       background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border);
-      padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer;
+      padding: 6px 11px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
     }
     .logout-btn {
       background: #fef2f2; color: #ef4444; border: none;
-      padding: 10px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;
+      padding: 7px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
     }
 
-    .container { max-width: 1400px; margin: 24px auto; padding: 0 24px; }
+    .container { max-width: 1400px; margin: 18px auto 24px; padding: 0 24px; }
 
     .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
     .kpi-card {
