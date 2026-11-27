@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>O‘qituvchi Paneli — Empower Academy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #eef2f8; --card: #ffffff; --text: #1e293b; --heading: #0f172a;
+      --bg: #f1f5f9; --card: #ffffff; --text: #1e293b; --heading: #0f172a;
       --muted: #64748b; --border: #e2e8f0; --input-bg: #f8fafc; --row-border: #f1f5f9;
     }
     body.dark {
@@ -19,44 +19,40 @@
 
     .topbar {
       background: var(--card); padding: 14px 32px; display: flex; justify-content: space-between;
-      align-items: center; flex-wrap: wrap; gap: 12px;
+      align-items: center; gap: 12px; flex-wrap: wrap;
       box-shadow: 0 6px 24px rgba(15, 23, 42, 0.05); position: sticky; top: 0; z-index: 20;
     }
     .brand { display: flex; align-items: center; gap: 12px; }
-    .brand-logo-img { max-height: 44px; width: auto; object-fit: contain; border-radius: 8px; }
-    .brand-title { font-size: 19px; font-weight: 800; color: #e11d48; line-height: 1.05; }
-    .brand-sub { font-size: 10px; font-weight: 800; color: #e11d48; letter-spacing: 2.2px; }
-    .teacher-badge {
-      background: linear-gradient(135deg, #2563eb, #3b5bfd); color: #fff;
-      font-size: 11px; font-weight: 800; padding: 5px 11px; border-radius: 99px; letter-spacing: 0.6px;
+    .brand-logo { max-height: 42px; width: auto; object-fit: contain; border-radius: 8px; }
+    .brand-title { font-size: 18px; font-weight: 800; color: #e11d48; line-height: 1.05; }
+    .brand-sub { font-size: 10px; font-weight: 800; color: #e11d48; letter-spacing: 2px; }
+    .role-badge {
+      background: #2563eb; color: #fff; font-size: 11px; font-weight: 800;
+      padding: 4px 10px; border-radius: 99px;
     }
-    .top-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-    .teacher-name-pill {
-      font-size: 13px; font-weight: 700; color: var(--heading);
-      background: var(--input-bg); border: 1.5px solid var(--border);
-      padding: 8px 14px; border-radius: 12px;
+    .top-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .teacher-chip {
+      background: var(--input-bg); border: 1px solid var(--border); color: var(--heading);
+      padding: 8px 14px; border-radius: 12px; font-weight: 700; font-size: 13px;
     }
     .theme-btn {
       background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border);
-      padding: 9px 14px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer;
+      padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 12px; cursor: pointer;
     }
     .logout-btn {
       background: #fef2f2; color: #ef4444; border: none;
-      padding: 10px 18px; border-radius: 12px; font-weight: 700; cursor: pointer;
+      padding: 9px 16px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
 
-    .container { max-width: 1360px; margin: 24px auto; padding: 0 24px; }
+    .container { max-width: 1320px; margin: 24px auto; padding: 0 24px; }
 
-    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 22px; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .tab-btn {
-      padding: 12px 20px; border-radius: 14px; border: none;
-      background: var(--card); color: var(--text); font-weight: 700; font-size: 14px; cursor: pointer;
+      padding: 10px 16px; border-radius: 13px; border: none;
+      background: var(--card); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer;
       box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); transition: 0.2s;
     }
-    .tab-btn.active {
-      background: linear-gradient(135deg, #2563eb, #3b5bfd); color: #ffffff;
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
-    }
+    .tab-btn.active { background: #2563eb; color: #fff; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25); }
 
     .section { display: none; }
     .section.active { display: block; }
@@ -65,43 +61,43 @@
       background: var(--card); border-radius: 22px; padding: 24px;
       box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); margin-bottom: 20px;
     }
-    .card h2 { font-size: 18px; font-weight: 700; color: var(--heading); margin-bottom: 16px; }
+    .card h2 { font-size: 18px; font-weight: 700; color: var(--heading); margin-bottom: 14px; }
 
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
     input, select, textarea {
       width: 100%; padding: 11px 14px; border-radius: 12px;
-      border: 1.5px solid var(--border); background: var(--input-bg); color: var(--heading); font-size: 14px; outline: none;
+      border: 1.5px solid var(--border); background: var(--input-bg); color: var(--heading);
+      font-size: 14px; outline: none;
     }
     input:focus, select:focus, textarea:focus { border-color: #2563eb; }
 
     .btn-primary {
-      background: linear-gradient(135deg, #3b5bfd, #2563eb); color: white; border: none;
-      padding: 11px 22px; border-radius: 12px; font-weight: 700; cursor: pointer;
+      background: linear-gradient(135deg, #3b5bfd, #2563eb); color: #fff; border: none;
+      padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
     }
     .btn-success {
-      background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
-      padding: 11px 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
+      background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none;
+      padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
     }
     .btn-select {
-      background: #eff6ff; color: #2563eb; border: none;
-      padding: 6px 11px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;
-    }
-    .btn-del {
-      background: #fee2e2; color: #b91c1c; border: none;
-      padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;
+      background: #eff6ff; color: #1d4ed8; border: none;
+      padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;
     }
 
-    .status-badge {
-      padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 800; display: inline-block;
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th, td { padding: 11px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--row-border); }
+    th { color: var(--muted); font-weight: 700; }
+
+    .st-cell { display: inline-flex; align-items: center; gap: 8px; }
+    .st-avatar {
+      width: 32px; height: 32px; border-radius: 50%; object-fit: cover;
+      border: 1.5px solid var(--border); background: var(--input-bg);
     }
-    .st-present { background: #dcfce7; color: #15803d; }
-    .st-absent { background: #fee2e2; color: #b91c1c; }
-    .st-excused { background: #fef3c7; color: #b45309; }
 
     .skill-preview-box {
       background: var(--input-bg); border: 1.5px solid var(--border); border-radius: 16px;
@@ -109,16 +105,6 @@
       display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
     }
     .preview-score { font-size: 22px; font-weight: 800; color: #2563eb; }
-
-    .st-cell { display: inline-flex; align-items: center; gap: 8px; }
-    .st-avatar {
-      width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
-      border: 1.5px solid var(--border); background: var(--input-bg); flex-shrink: 0;
-    }
-
-    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { padding: 11px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--row-border); }
-    th { color: var(--muted); font-weight: 700; }
 
     .toast {
       position: fixed; bottom: 24px; right: 24px;
@@ -128,35 +114,33 @@
     }
 
     @media (max-width: 960px) {
-      .grid-3, .grid-2 { grid-template-columns: 1fr; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
       .grid-6 { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
-
   <header class="topbar">
     <div class="brand">
-      <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
+      <img src="/logo.jpg" alt="Empower Academy" class="brand-logo" onerror="this.style.display='none'" />
       <div>
         <div class="brand-title">EMPOWER</div>
         <div class="brand-sub">ACADEMY</div>
       </div>
-      <span class="teacher-badge">TEACHER</span>
+      <span class="role-badge">TEACHER</span>
     </div>
-    <div class="top-actions">
-      <span class="teacher-name-pill" id="teacherFullName">O‘qituvchi</span>
+    <div class="top-right">
+      <div class="teacher-chip" id="teacherNameChip">O‘qituvchi</div>
       <button class="theme-btn" id="themeToggleBtn">Dark / Light</button>
       <button class="logout-btn" id="logoutBtn">Chiqish</button>
     </div>
   </header>
 
   <div class="container">
-    <!-- FAQAT 4 TA TAB -->
     <div class="tabs">
       <button class="tab-btn active" data-tab="attTab">1. Davomat</button>
       <button class="tab-btn" data-tab="lessonsTab">2. Darslik</button>
-      <button class="tab-btn" data-tab="gradesTab">3. Baho</button>
+      <button class="tab-btn" data-tab="skillsTab">3. Baho</button>
       <button class="tab-btn" data-tab="assignmentsTab">4. Vazifalar baholash</button>
     </div>
 
@@ -164,51 +148,30 @@
     <div id="attTab" class="section active">
       <div class="card">
         <h2>Birvarakayiga davomat olish</h2>
-        <div class="grid-3" style="margin-bottom:12px;">
-          <div class="form-group">
+        <div class="grid-2" style="margin-bottom:14px;">
+          <div class="form-group" style="margin-bottom:0;">
             <label>Dars sanasi</label>
             <input type="date" id="bulkAttDate" />
           </div>
-          <div class="form-group">
-            <label>Guruh / Daraja filtri</label>
-            <select id="attFilterSelect">
-              <option value="">Barcha o‘quvchilar</option>
-            </select>
-          </div>
-          <div class="form-group" style="display:flex; align-items:flex-end;">
-            <button type="button" class="btn-success" id="saveBulkAttBtn">Barchasini birga saqlash</button>
+          <div class="form-group" style="display:flex; align-items:flex-end; margin-bottom:0;">
+            <button type="button" class="btn-success" id="saveBulkAttBtn">Davomatni saqlash</button>
           </div>
         </div>
         <table>
-          <thead><tr><th>O‘quvchi</th><th>Guruh</th><th>Daraja</th><th>Holat</th></tr></thead>
-          <tbody id="bulkAttendanceBody"></tbody>
+          <thead>
+            <tr><th>O‘quvchi</th><th>Daraja</th><th>Guruh</th><th>Holati</th></tr>
+          </thead>
+          <tbody id="bulkAttBody"></tbody>
         </table>
-      </div>
-
-      <div class="card">
-        <h2>Bitta o‘quvchiga davomat belgilash</h2>
-        <form id="singleAttForm">
-          <div class="grid-3">
-            <div class="form-group"><label>O‘quvchi</label><select id="attStudentSelect"></select></div>
-            <div class="form-group"><label>Sana</label><input type="date" id="attDate" required /></div>
-            <div class="form-group">
-              <label>Holati</label>
-              <select id="attStatus">
-                <option value="present">Present</option>
-                <option value="absent">Absent</option>
-                <option value="excused">Excused</option>
-              </select>
-            </div>
-          </div>
-          <button type="submit" class="btn-primary">Davomatni saqlash</button>
-        </form>
       </div>
 
       <div class="card">
         <h2>Oxirgi davomat yozuvlari</h2>
         <table>
-          <thead><tr><th>Sana</th><th>O‘quvchi</th><th>Guruh</th><th>Holat</th></tr></thead>
-          <tbody id="attendanceHistoryBody"></tbody>
+          <thead>
+            <tr><th>Sana</th><th>O‘quvchi</th><th>Guruh</th><th>Holati</th></tr>
+          </thead>
+          <tbody id="attHistoryBody"></tbody>
         </table>
       </div>
     </div>
@@ -216,22 +179,35 @@
     <!-- 2. DARSLIK -->
     <div id="lessonsTab" class="section">
       <div class="card">
-        <h2>Yangi darslik qo‘shish (Fayl yoki Havola)</h2>
+        <h2>Yangi darslik yuklash</h2>
         <form id="lessonForm">
           <div class="grid-3">
-            <div class="form-group"><label>Darslik nomi</label><input type="text" id="lesTitle" required /></div>
+            <div class="form-group">
+              <label>Darslik nomi</label>
+              <input type="text" id="lesTitle" required />
+            </div>
             <div class="form-group">
               <label>Daraja</label>
               <select id="lesLevel">
-                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                <option value="ALL">ALL</option>
+                <option value="A1">A1</option><option value="A2">A2</option>
                 <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
               </select>
             </div>
-            <div class="form-group"><label>Fayl yuklash</label><input type="file" id="lesFile" /></div>
+            <div class="form-group">
+              <label>Fayl yuklash</label>
+              <input type="file" id="lesFile" />
+            </div>
           </div>
           <div class="grid-2">
-            <div class="form-group"><label>Havola (URL)</label><input type="url" id="lesUrl" placeholder="https://..." /></div>
-            <div class="form-group"><label>Tavsif</label><input type="text" id="lesDesc" /></div>
+            <div class="form-group">
+              <label>Havola (URL)</label>
+              <input type="url" id="lesUrl" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Tavsif</label>
+              <input type="text" id="lesDesc" />
+            </div>
           </div>
           <button type="submit" class="btn-primary">Darslikni saqlash</button>
         </form>
@@ -240,14 +216,16 @@
       <div class="card">
         <h2>Yuklangan darsliklar</h2>
         <table>
-          <thead><tr><th>ID</th><th>Nomi</th><th>Daraja</th><th>Fayl / Havola</th><th>Amal</th></tr></thead>
-          <tbody id="lessonsTableBody"></tbody>
+          <thead>
+            <tr><th>Nomi</th><th>Daraja</th><th>Fayl / Havola</th><th>Tavsif</th></tr>
+          </thead>
+          <tbody id="lessonsBody"></tbody>
         </table>
       </div>
     </div>
 
     <!-- 3. BAHO -->
-    <div id="gradesTab" class="section">
+    <div id="skillsTab" class="section">
       <div class="card">
         <h2>O‘quvchi bilim ballarini baholash (0 - 100)</h2>
         <div class="skill-preview-box">
@@ -261,18 +239,18 @@
           </div>
         </div>
 
-        <form id="gradesForm">
-          <div class="form-group" style="max-width: 360px;">
+        <form id="skillsForm">
+          <div class="form-group" style="max-width:360px;">
             <label>O‘quvchini tanlang</label>
-            <select id="grStudentSelect"></select>
+            <select id="skStudentSelect"></select>
           </div>
           <div class="grid-6">
-            <div class="form-group"><label>Grammar</label><input type="number" id="grGrammar" class="grade-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Listening</label><input type="number" id="grListening" class="grade-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Reading</label><input type="number" id="grReading" class="grade-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Vocabulary</label><input type="number" id="grVocabulary" class="grade-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Writing</label><input type="number" id="grWriting" class="grade-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Speaking</label><input type="number" id="grSpeaking" class="grade-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Grammar</label><input type="number" id="skGrammar" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Listening</label><input type="number" id="skListening" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Reading</label><input type="number" id="skReading" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Vocabulary</label><input type="number" id="skVocabulary" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Writing</label><input type="number" id="skWriting" class="skill-input" min="0" max="100" required /></div>
+            <div class="form-group"><label>Speaking</label><input type="number" id="skSpeaking" class="skill-input" min="0" max="100" required /></div>
           </div>
           <button type="submit" class="btn-primary">Bahoni saqlash</button>
         </form>
@@ -283,12 +261,24 @@
         <table>
           <thead>
             <tr>
-              <th>#</th><th>O‘quvchi</th><th>Daraja</th>
-              <th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th>
-              <th>O‘rtacha</th><th>Tanlash</th>
+              <th>#</th><th>O‘quvchi</th><th>Daraja</th><th>Grammar</th><th>Listening</th>
+              <th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th><th>O‘rtacha</th><th>Tanlash</th>
             </tr>
           </thead>
-          <tbody id="gradesTableBody"></tbody>
+          <tbody id="skillsTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Qo‘yilgan baholar tarixi</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Vaqt</th><th>O‘quvchi</th><th>Grammar</th><th>Listening</th><th>Reading</th>
+              <th>Vocab</th><th>Writing</th><th>Speaking</th><th>Kim qo‘ydi</th>
+            </tr>
+          </thead>
+          <tbody id="skillHistoryBody"></tbody>
         </table>
       </div>
     </div>
@@ -296,39 +286,43 @@
     <!-- 4. VAZIFALAR BAHOLASH -->
     <div id="assignmentsTab" class="section">
       <div class="card">
-        <h2>Yangi uy vazifasi berish</h2>
+        <h2>Yangi vazifa berish</h2>
         <form id="assignmentForm">
           <div class="grid-3">
-            <div class="form-group"><label>Vazifa sarlavhasi</label><input type="text" id="asTitle" required /></div>
+            <div class="form-group">
+              <label>Vazifa nomi</label>
+              <input type="text" id="asTitle" required />
+            </div>
             <div class="form-group">
               <label>Daraja</label>
               <select id="asLevel">
-                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                <option value="ALL">ALL</option>
+                <option value="A1">A1</option><option value="A2">A2</option>
                 <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
               </select>
             </div>
-            <div class="form-group"><label>Topshirish muddati</label><input type="date" id="asDue" /></div>
+            <div class="form-group">
+              <label>Topshirish muddati</label>
+              <input type="date" id="asDue" />
+            </div>
           </div>
-          <div class="form-group"><label>Vazifa tavsifi</label><input type="text" id="asDesc" /></div>
-          <button type="submit" class="btn-primary">Vazifani yaratish</button>
+          <div class="form-group">
+            <label>Vazifa tavsifi</label>
+            <input type="text" id="asDesc" />
+          </div>
+          <button type="submit" class="btn-primary">Vazifani saqlash</button>
         </form>
       </div>
 
       <div class="card">
-        <h2>O‘quvchilar yuborgan vazifalarni baholash</h2>
+        <h2>O‘quvchilar yuborgan javoblar & baholash</h2>
         <table>
           <thead>
-            <tr><th>O‘quvchi</th><th>Vazifa</th><th>Javob</th><th>Havola</th><th>Baho (0-100)</th><th>Izoh</th><th>Saqlash</th></tr>
+            <tr>
+              <th>O‘quvchi</th><th>Vazifa</th><th>Javob</th><th>Havola</th><th>Baho (0-100)</th><th>Izoh</th><th>Amal</th>
+            </tr>
           </thead>
           <tbody id="submissionsBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <h2>Berilgan vazifalar ro‘yxati</h2>
-        <table>
-          <thead><tr><th>#</th><th>Sarlavha</th><th>Tavsif</th><th>Daraja</th><th>Muddat</th></tr></thead>
-          <tbody id="assignmentsListBody"></tbody>
         </table>
       </div>
     </div>
@@ -339,11 +333,9 @@
   <script>
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
-    if (!token || !['teacher', 'admin'].includes(role)) {
+    if (!token || (role !== 'teacher' && role !== 'admin')) {
       window.location.href = '/index.html';
     }
-
-    document.getElementById('teacherFullName').textContent = localStorage.getItem('full_name') || 'O‘qituvchi';
 
     if (localStorage.getItem('theme') === 'dark') {
       document.body.classList.add('dark');
@@ -358,9 +350,7 @@
       window.location.href = '/index.html';
     });
 
-    const todayStr = new Date().toISOString().slice(0, 10);
-    document.getElementById('attDate').value = todayStr;
-    document.getElementById('bulkAttDate').value = todayStr;
+    document.getElementById('bulkAttDate').value = new Date().toISOString().slice(0, 10);
 
     let studentsCache = [];
 
@@ -372,11 +362,11 @@
         .replace(/"/g, '&quot;');
     }
 
-    function renderStatusBadge(statusVal) {
-      const s = String(statusVal || '').toLowerCase();
-      if (s === 'present') return `<span class="status-badge st-present">Present</span>`;
-      if (s === 'absent') return `<span class="status-badge st-absent">Absent</span>`;
-      return `<span class="status-badge st-excused">${escapeHtml(statusVal || 'Excused')}</span>`;
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2800);
     }
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -388,13 +378,6 @@
         btn.classList.add('active');
       });
     });
-
-    function showToast(msg) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 2800);
-    }
 
     async function api(url, method = 'GET', body = null) {
       const opts = {
@@ -408,53 +391,28 @@
       return data;
     }
 
-    function getPhotoSrc(st) {
-      return st?.photo_url ? st.photo_url : '/logo.jpg';
+    function getAvatarSrc(st) {
+      const raw = st?.photo_url || st?.avatar_url || st?.photo_base64 || st?.photo || '';
+      if (!raw || typeof raw !== 'string') return '/logo.jpg';
+      const trimmed = raw.trim();
+      if (!trimmed) return '/logo.jpg';
+      if (trimmed.startsWith('data:image') || trimmed.startsWith('http') || trimmed.startsWith('/')) return trimmed;
+      return `data:image/jpeg;base64,${trimmed}`;
     }
 
-    function renderBulkAttendanceList() {
-      const selectedGroup = document.getElementById('attFilterSelect').value;
-      const filtered = selectedGroup
-        ? studentsCache.filter(s => (s.group_name || '') === selectedGroup)
-        : studentsCache;
-
-      document.getElementById('bulkAttendanceBody').innerHTML = filtered.map(s => `
-        <tr>
-          <td>
-            <span class="st-cell">
-              <img src="${escapeHtml(getPhotoSrc(s))}" alt="${escapeHtml(s.full_name)}" class="st-avatar" onerror="this.src='/logo.jpg'" />
-              <b>${escapeHtml(s.full_name)}</b>
-            </span>
-          </td>
-          <td>${escapeHtml(s.group_name || '-')}</td>
-          <td>${escapeHtml(s.level || '-')}</td>
-          <td>
-            <select class="bulk-att-select" data-student-id="${s.id}" style="max-width:170px;">
-              <option value="present">Present</option>
-              <option value="absent">Absent</option>
-              <option value="excused">Excused</option>
-            </select>
-          </td>
-        </tr>
-      `).join('') || '<tr><td colspan="4">-</td></tr>';
-    }
-
-    document.getElementById('attFilterSelect').addEventListener('change', renderBulkAttendanceList);
-
-    function updateGradePreview() {
-      const id = Number(document.getElementById('grStudentSelect').value);
+    function updateLiveSkillPreview() {
+      const id = Number(document.getElementById('skStudentSelect').value);
       const st = studentsCache.find(x => x.id === id);
       document.getElementById('previewStudentName').textContent = st
-        ? `${st.full_name} — ${st.level || '-'} (${st.group_name || '-'})`
+        ? `${st.full_name || ''} — ${st.level || ''} (${st.group_name || ''})`
         : '-';
-
       const vals = [
-        Number(document.getElementById('grGrammar').value) || 0,
-        Number(document.getElementById('grListening').value) || 0,
-        Number(document.getElementById('grReading').value) || 0,
-        Number(document.getElementById('grVocabulary').value) || 0,
-        Number(document.getElementById('grWriting').value) || 0,
-        Number(document.getElementById('grSpeaking').value) || 0
+        Number(document.getElementById('skGrammar').value) || 0,
+        Number(document.getElementById('skListening').value) || 0,
+        Number(document.getElementById('skReading').value) || 0,
+        Number(document.getElementById('skVocabulary').value) || 0,
+        Number(document.getElementById('skWriting').value) || 0,
+        Number(document.getElementById('skSpeaking').value) || 0
       ];
       const avg = Math.round(vals.reduce((a, b) => a + b, 0) / 6);
       document.getElementById('previewAvgScore').textContent = avg + '%';
@@ -462,53 +420,26 @@
         avg >= 85 ? 'Excellent' : avg >= 65 ? 'Strong' : 'Moderate';
     }
 
-    document.querySelectorAll('.grade-input').forEach(inp => inp.addEventListener('input', updateGradePreview));
+    document.querySelectorAll('.skill-input').forEach(inp => inp.addEventListener('input', updateLiveSkillPreview));
 
-    function fillGradeInputs() {
-      const id = Number(document.getElementById('grStudentSelect').value);
+    function fillSkillsInputs() {
+      const id = Number(document.getElementById('skStudentSelect').value);
       const st = studentsCache.find(x => x.id === id);
       if (!st) return;
-      document.getElementById('grGrammar').value = st.grammar ?? 0;
-      document.getElementById('grListening').value = st.listening ?? 0;
-      document.getElementById('grReading').value = st.reading ?? 0;
-      document.getElementById('grVocabulary').value = st.vocabulary ?? 0;
-      document.getElementById('grWriting').value = st.writing ?? 0;
-      document.getElementById('grSpeaking').value = st.speaking ?? 0;
-      updateGradePreview();
+      document.getElementById('skGrammar').value = st.grammar ?? 0;
+      document.getElementById('skListening').value = st.listening ?? 0;
+      document.getElementById('skReading').value = st.reading ?? 0;
+      document.getElementById('skVocabulary').value = st.vocabulary ?? 0;
+      document.getElementById('skWriting').value = st.writing ?? 0;
+      document.getElementById('skSpeaking').value = st.speaking ?? 0;
+      updateLiveSkillPreview();
     }
 
-    document.getElementById('grStudentSelect').addEventListener('change', fillGradeInputs);
+    document.getElementById('skStudentSelect').addEventListener('change', fillSkillsInputs);
 
-    function selectStudentForGrading(studentId) {
-      document.getElementById('grStudentSelect').value = String(studentId);
-      fillGradeInputs();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function renderGradesTable() {
-      const rows = studentsCache.map((s, idx) => {
-        const avg = Math.round(
-          ((Number(s.grammar) || 0) + (Number(s.listening) || 0) + (Number(s.reading) || 0) +
-           (Number(s.vocabulary) || 0) + (Number(s.writing) || 0) + (Number(s.speaking) || 0)) / 6
-        );
-        return `
-          <tr>
-            <td>${idx + 1}</td>
-            <td>
-              <span class="st-cell">
-                <img src="${escapeHtml(getPhotoSrc(s))}" alt="${escapeHtml(s.full_name)}" class="st-avatar" onerror="this.src='/logo.jpg'" />
-                <b>${escapeHtml(s.full_name)}</b>
-              </span>
-            </td>
-            <td>${escapeHtml(s.level || '-')}</td>
-            <td>${s.grammar || 0}%</td><td>${s.listening || 0}%</td><td>${s.reading || 0}%</td>
-            <td>${s.vocabulary || 0}%</td><td>${s.writing || 0}%</td><td>${s.speaking || 0}%</td>
-            <td><b>${avg}%</b></td>
-            <td><button type="button" class="btn-select" onclick="selectStudentForGrading(${s.id})">Baholash</button></td>
-          </tr>
-        `;
-      });
-      document.getElementById('gradesTableBody').innerHTML = rows.join('') || '<tr><td colspan="11">-</td></tr>';
+    function selectStudentForSkills(studentId) {
+      document.getElementById('skStudentSelect').value = String(studentId);
+      fillSkillsInputs();
     }
 
     function fileToBase64(file) {
@@ -520,15 +451,6 @@
       });
     }
 
-    async function deleteLesson(id) {
-      if (!confirm('Darslik o‘chirilsinmi?')) return;
-      try {
-        await api(`/api/teacher/lessons/${id}`, 'DELETE');
-        showToast('Darslik o‘chirildi');
-        loadTeacherData();
-      } catch (err) { showToast(err.message); }
-    }
-
     async function gradeSubmission(subId) {
       const grade = document.getElementById(`gradeInp_${subId}`).value;
       const teacher_feedback = document.getElementById(`fbInp_${subId}`).value;
@@ -536,73 +458,127 @@
         await api(`/api/teacher/submissions/${subId}/grade`, 'PUT', { grade, teacher_feedback });
         showToast('Vazifa baholandi!');
         loadTeacherData();
-      } catch (err) { showToast(err.message); }
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
+    async function loadSkillHistory() {
+      const tbody = document.getElementById('skillHistoryBody');
+      if (!tbody) return;
+      try {
+        const rows = await api('/api/admin/skill-evaluations');
+        tbody.innerHTML = (rows || []).map(ev => `
+          <tr>
+            <td>${escapeHtml(ev.created_at || '-')}</td>
+            <td><b>${escapeHtml(ev.full_name || '-')}</b></td>
+            <td>${ev.grammar ?? 0}%</td>
+            <td>${ev.listening ?? 0}%</td>
+            <td>${ev.reading ?? 0}%</td>
+            <td>${ev.vocabulary ?? 0}%</td>
+            <td>${ev.writing ?? 0}%</td>
+            <td>${ev.speaking ?? 0}%</td>
+            <td>${escapeHtml(ev.created_by || '-')}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="9">Hali baholar tarixi yo‘q</td></tr>';
+      } catch (_) {
+        tbody.innerHTML = '<tr><td colspan="9">-</td></tr>';
+      }
     }
 
     async function loadTeacherData() {
       try {
-        const prevGrId = document.getElementById('grStudentSelect').value;
-        const prevGroupFilter = document.getElementById('attFilterSelect').value;
-        studentsCache = await api('/api/teacher/students');
+        const prevSelectedId = document.getElementById('skStudentSelect').value;
+        const dash = await api('/api/teacher/dashboard');
+        document.getElementById('teacherNameChip').textContent =
+          dash.teacher?.full_name || localStorage.getItem('full_name') || 'O‘qituvchi';
 
-        const uniqueGroups = [...new Set(studentsCache.map(s => s.group_name).filter(Boolean))];
-        document.getElementById('attFilterSelect').innerHTML =
-          `<option value="">Barcha o‘quvchilar</option>` +
-          uniqueGroups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
-        if (prevGroupFilter && uniqueGroups.includes(prevGroupFilter)) {
-          document.getElementById('attFilterSelect').value = prevGroupFilter;
-        }
+        studentsCache = Array.isArray(dash.students) ? dash.students : [];
 
-        const opts = studentsCache.map(s => `<option value="${s.id}">${escapeHtml(s.full_name)} (${escapeHtml(s.level || '-')})</option>`).join('');
-        document.getElementById('attStudentSelect').innerHTML = opts;
-        document.getElementById('grStudentSelect').innerHTML = opts;
-        if (prevGrId && studentsCache.some(s => String(s.id) === String(prevGrId))) {
-          document.getElementById('grStudentSelect').value = prevGrId;
-        }
-
-        renderBulkAttendanceList();
-        fillGradeInputs();
-        renderGradesTable();
-      } catch (err) { showToast(err.message); }
-
-      try {
-        const attRows = await api('/api/teacher/attendance');
-        document.getElementById('attendanceHistoryBody').innerHTML = attRows.map(a => `
-          <tr><td>${escapeHtml(a.lesson_date)}</td><td><b>${escapeHtml(a.full_name)}</b></td><td>${escapeHtml(a.group_name || '-')}</td><td>${renderStatusBadge(a.status)}</td></tr>
-        `).join('') || '<tr><td colspan="4">-</td></tr>';
-      } catch (err) { console.error(err); }
-
-      try {
-        const lessons = await api('/api/teacher/lessons');
-        document.getElementById('lessonsTableBody').innerHTML = lessons.map(l => `
+        document.getElementById('bulkAttBody').innerHTML = studentsCache.map(s => `
           <tr>
-            <td>#${l.id}</td>
-            <td><b>${escapeHtml(l.title)}</b><br/><small style="color:var(--muted);">${escapeHtml(l.description || '')}</small></td>
+            <td>
+              <span class="st-cell">
+                <img src="${escapeHtml(getAvatarSrc(s))}" alt="" class="st-avatar" onerror="this.src='/logo.jpg'" />
+                <b>${escapeHtml(s.full_name || '-')}</b>
+              </span>
+            </td>
+            <td>${escapeHtml(s.level || '-')}</td>
+            <td>${escapeHtml(s.group_name || '-')}</td>
+            <td>
+              <select class="bulk-att-select" data-student-id="${s.id}" style="max-width:170px;">
+                <option value="present">Present</option>
+                <option value="absent">Absent</option>
+                <option value="excused">Excused</option>
+              </select>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">O‘quvchilar yo‘q</td></tr>';
+
+        document.getElementById('skStudentSelect').innerHTML = studentsCache
+          .map(s => `<option value="${s.id}">${escapeHtml(s.full_name || '-')} (${escapeHtml(s.level || '-')})</option>`)
+          .join('');
+        if (prevSelectedId && studentsCache.some(s => String(s.id) === String(prevSelectedId))) {
+          document.getElementById('skStudentSelect').value = prevSelectedId;
+        }
+        fillSkillsInputs();
+
+        document.getElementById('skillsTableBody').innerHTML = studentsCache.map((s, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td>
+              <span class="st-cell">
+                <img src="${escapeHtml(getAvatarSrc(s))}" alt="" class="st-avatar" onerror="this.src='/logo.jpg'" />
+                <b>${escapeHtml(s.full_name || '-')}</b>
+              </span>
+            </td>
+            <td>${escapeHtml(s.level || '-')}</td>
+            <td>${s.grammar || 0}%</td>
+            <td>${s.listening || 0}%</td>
+            <td>${s.reading || 0}%</td>
+            <td>${s.vocabulary || 0}%</td>
+            <td>${s.writing || 0}%</td>
+            <td>${s.speaking || 0}%</td>
+            <td><b>${s.avg_score || 0}%</b></td>
+            <td><button type="button" class="btn-select" onclick="selectStudentForSkills(${s.id})">Baholash</button></td>
+          </tr>
+        `).join('') || '<tr><td colspan="11">O‘quvchilar yo‘q</td></tr>';
+
+        const attRows = await api('/api/teacher/attendance');
+        document.getElementById('attHistoryBody').innerHTML = (attRows || []).map(a => `
+          <tr>
+            <td>${escapeHtml(a.lesson_date)}</td>
+            <td><b>${escapeHtml(a.full_name)}</b></td>
+            <td>${escapeHtml(a.group_name)}</td>
+            <td>${escapeHtml(a.status)}</td>
+          </tr>
+        `).join('') || '<tr><td colspan="4">Davomat yozuvlari yo‘q</td></tr>';
+
+        document.getElementById('lessonsBody').innerHTML = (dash.lessons || []).map(l => `
+          <tr>
+            <td><b>${escapeHtml(l.title)}</b></td>
             <td>${escapeHtml(l.level)}</td>
             <td>${escapeHtml(l.file_name || l.material_url || '-')}</td>
-            <td><button type="button" class="btn-del" onclick="deleteLesson(${l.id})">O‘chirish</button></td>
+            <td>${escapeHtml(l.description || '-')}</td>
           </tr>
-        `).join('') || '<tr><td colspan="5">-</td></tr>';
-      } catch (err) { console.error(err); }
+        `).join('') || '<tr><td colspan="4">Darsliklar yo‘q</td></tr>';
 
-      try {
-        const asData = await api('/api/teacher/assignments');
-        document.getElementById('assignmentsListBody').innerHTML = (asData.assignments || []).map((a, idx) => `
-          <tr><td>${idx + 1}</td><td><b>${escapeHtml(a.title)}</b></td><td>${escapeHtml(a.description || '-')}</td><td>${escapeHtml(a.level)}</td><td>${escapeHtml(a.due_date || '-')}</td></tr>
-        `).join('') || '<tr><td colspan="5">-</td></tr>';
-
-        document.getElementById('submissionsBody').innerHTML = (asData.submissions || []).map(sub => `
+        document.getElementById('submissionsBody').innerHTML = (dash.submissions || []).map(sub => `
           <tr>
             <td><b>${escapeHtml(sub.full_name)}</b></td>
             <td>${escapeHtml(sub.assignment_title)}</td>
             <td>${escapeHtml(sub.answer_text || '-')}</td>
             <td>${sub.answer_url ? `<a href="${escapeHtml(sub.answer_url)}" target="_blank">Havola</a>` : '-'}</td>
-            <td><input type="number" id="gradeInp_${sub.id}" value="${sub.grade ?? ''}" min="0" max="100" style="width:78px; padding:6px;" /></td>
-            <td><input type="text" id="fbInp_${sub.id}" value="${escapeHtml(sub.teacher_feedback || '')}" placeholder="Izoh..." style="width:160px; padding:6px;" /></td>
-            <td><button type="button" class="btn-primary" style="padding:7px 14px; font-size:12px;" onclick="gradeSubmission(${sub.id})">Saqlash</button></td>
+            <td><input type="number" id="gradeInp_${sub.id}" value="${sub.grade ?? ''}" min="0" max="100" style="width:76px; padding:6px;" /></td>
+            <td><input type="text" id="fbInp_${sub.id}" value="${escapeHtml(sub.teacher_feedback || '')}" style="width:150px; padding:6px;" /></td>
+            <td><button type="button" class="btn-primary" style="padding:6px 12px; font-size:12px;" onclick="gradeSubmission(${sub.id})">Saqlash</button></td>
           </tr>
-        `).join('') || '<tr><td colspan="7">-</td></tr>';
-      } catch (err) { console.error(err); }
+        `).join('') || '<tr><td colspan="7">Javoblar yo‘q</td></tr>';
+
+        await loadSkillHistory();
+      } catch (err) {
+        showToast(err.message);
+      }
     }
 
     document.getElementById('saveBulkAttBtn').addEventListener('click', async () => {
@@ -613,22 +589,11 @@
       }));
       try {
         await api('/api/teacher/attendance/bulk', 'POST', { lesson_date, records });
-        showToast('Barcha davomat saqlandi!');
-        loadTeacherData();
-      } catch (err) { showToast(err.message); }
-    });
-
-    document.getElementById('singleAttForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      try {
-        await api('/api/teacher/attendance', 'POST', {
-          student_id: document.getElementById('attStudentSelect').value,
-          lesson_date: document.getElementById('attDate').value,
-          status: document.getElementById('attStatus').value
-        });
         showToast('Davomat saqlandi!');
         loadTeacherData();
-      } catch (err) { showToast(err.message); }
+      } catch (err) {
+        showToast(err.message);
+      }
     });
 
     document.getElementById('lessonForm').addEventListener('submit', async (e) => {
@@ -649,26 +614,30 @@
           file_name
         });
         e.target.reset();
-        showToast('Darslik qo‘shildi!');
+        showToast('Darslik yuklandi!');
         loadTeacherData();
-      } catch (err) { showToast(err.message); }
+      } catch (err) {
+        showToast(err.message);
+      }
     });
 
-    document.getElementById('gradesForm').addEventListener('submit', async (e) => {
+    document.getElementById('skillsForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const id = document.getElementById('grStudentSelect').value;
+      const id = document.getElementById('skStudentSelect').value;
       try {
         await api(`/api/teacher/skills/${id}`, 'PUT', {
-          grammar: Number(document.getElementById('grGrammar').value),
-          listening: Number(document.getElementById('grListening').value),
-          reading: Number(document.getElementById('grReading').value),
-          vocabulary: Number(document.getElementById('grVocabulary').value),
-          writing: Number(document.getElementById('grWriting').value),
-          speaking: Number(document.getElementById('grSpeaking').value)
+          grammar: Number(document.getElementById('skGrammar').value),
+          listening: Number(document.getElementById('skListening').value),
+          reading: Number(document.getElementById('skReading').value),
+          vocabulary: Number(document.getElementById('skVocabulary').value),
+          writing: Number(document.getElementById('skWriting').value),
+          speaking: Number(document.getElementById('skSpeaking').value)
         });
-        showToast('Baholar saqlandi!');
+        showToast('Baho saqlandi!');
         loadTeacherData();
-      } catch (err) { showToast(err.message); }
+      } catch (err) {
+        showToast(err.message);
+      }
     });
 
     document.getElementById('assignmentForm').addEventListener('submit', async (e) => {
@@ -683,7 +652,9 @@
         e.target.reset();
         showToast('Vazifa yaratildi!');
         loadTeacherData();
-      } catch (err) { showToast(err.message); }
+      } catch (err) {
+        showToast(err.message);
+      }
     });
 
     loadTeacherData();
