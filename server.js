@@ -677,6 +677,20 @@ app.put('/api/teacher/skills/:id', authMiddleware, teacherOrAdmin, async (req, r
   }
 });
 
+app.get('/api/teacher/skill-evaluations', authMiddleware, teacherOrAdmin, async (req, res) => {
+  try {
+    const rows = await dbAll(
+      `SELECT se.*, u.full_name
+       FROM skill_evaluations se
+       JOIN users u ON u.id = se.student_id
+       ORDER BY se.id DESC LIMIT 200`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.post('/api/teacher/lessons', authMiddleware, teacherOrAdmin, async (req, res) => {
   try {
     await createLessonRecord(req.body);
