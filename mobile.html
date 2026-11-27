@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Empower Academy — Mobile</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1224;
+      --card: #131d36;
+      --card-2: #192646;
+      --text: #e2e8f0;
+      --heading: #f8fafc;
+      --muted: #94a3b8;
+      --border: rgba(250, 204, 21, 0.25);
+      --input: #0e162a;
+      --accent: #e11d48;
+      --blue: #2563eb;
+      --green: #10b981;
+      --amber: #f59e0b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: linear-gradient(180deg, #091020 0%, #0f1932 55%, #091020 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 84px;
+    }
+
+    /* LOGIN SCREEN */
+    .login-wrap {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 24px;
+      padding: 28px 22px;
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+    .login-brand {
+      text-align: center;
+      margin-bottom: 22px;
+    }
+    .login-brand img {
+      width: 64px;
+      height: 64px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 1.5px solid rgba(250, 204, 21, 0.5);
+      margin-bottom: 10px;
+    }
+    .login-brand h1 {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--heading);
+    }
+    .login-brand p {
+      font-size: 12.5px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .err-box {
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+      display: none;
+      text-align: center;
+    }
+
+    /* TOP HEADER */
+    .m-header {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      background: rgba(11, 18, 36, 0.96);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.25);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .m-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+    .m-brand img {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(250, 204, 21, 0.5);
+      flex-shrink: 0;
+    }
+    .m-brand-title {
+      font-size: 15px;
+      font-weight: 900;
+      color: var(--heading);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .m-brand-sub {
+      font-size: 10.5px;
+      color: #fde047;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .m-head-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .icon-btn {
+      background: var(--card-2);
+      color: var(--heading);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 10px;
+      padding: 7px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .logout-mini {
+      background: #e11d48;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 7px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* MAIN CONTENT */
+    .m-main {
+      padding: 14px 14px 20px;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      border-radius: 16px;
+      padding: 14px;
+      color: #fff;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+    .kpi.b { background: linear-gradient(135deg, #2563eb, #3b82f6); }
+    .kpi.g { background: linear-gradient(135deg, #059669, #10b981); }
+    .kpi.p { background: linear-gradient(135deg, #6d28d9, #8b5cf6); }
+    .kpi.a { background: linear-gradient(135deg, #d97706, #f59e0b); }
+    .kpi-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; opacity: 0.92; }
+    .kpi-val { font-size: 20px; font-weight: 900; margin-top: 4px; }
+
+    .m-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .m-card h2 {
+      font-size: 15.5px;
+      font-weight: 800;
+      color: var(--heading);
+      margin-bottom: 10px;
+    }
+
+    .form-group { margin-bottom: 11px; }
+    label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      background: var(--input);
+      color: var(--heading);
+      font-size: 13.5px;
+      font-weight: 600;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus {
+      border-color: #3b82f6;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #2563eb, #e11d48);
+      color: #fff;
+      font-size: 13.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-green {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+    .btn-sm-del {
+      background: rgba(239, 68, 68, 0.18);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .list-item {
+      background: var(--card-2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+    .item-title { font-size: 13.5px; font-weight: 800; color: var(--heading); }
+    .item-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .pill {
+      padding: 4px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .pill-ok { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .pill-low { background: rgba(239, 68, 68, 0.2); color: #fca5a5; }
+    .pill-info { background: rgba(59, 130, 246, 0.2); color: #93c5fd; }
+
+    .m-section { display: none; }
+    .m-section.active { display: block; }
+
+    /* BOTTOM NAVIGATION */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      background: rgba(10, 17, 34, 0.98);
+      border-top: 1px solid rgba(250, 204, 21, 0.25);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      padding: 6px 4px env(safe-area-inset-bottom, 6px);
+    }
+    .b-nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 4px;
+      font-size: 10.5px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 10px;
+    }
+    .b-nav-btn span.ico { font-size: 17px; line-height: 1; }
+    .b-nav-btn.active {
+      color: #fde047;
+      background: rgba(250, 204, 21, 0.1);
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 78px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      color: #fff;
+      border: 1px solid rgba(250, 204, 21, 0.45);
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 700;
+      z-index: 99;
+      display: none;
+      max-width: 90%;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- MOBIL LOGIN -->
+  <div id="mobileLoginScreen" class="login-wrap" style="display:none;">
+    <div class="login-card">
+      <div class="login-brand">
+        <img src="/logo.jpg" alt="Empower Academy" onerror="this.style.display='none'" />
+        <h1>EMPOWER ACADEMY</h1>
+        <p>Mobil ilovaga kirish</p>
+      </div>
+      <div id="mLoginError" class="err-box"></div>
+      <form id="mLoginForm">
+        <div class="form-group">
+          <label>Login</label>
+          <input type="text" id="mUsername" placeholder="Loginni kiriting" required />
+        </div>
+        <div class="form-group">
+          <label>Parol</label>
+          <input type="password" id="mPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-main">Kirish</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MOBIL APP -->
+  <div id="mobileAppScreen" style="display:none;">
+    <header class="m-header">
+      <div class="m-brand">
+        <img src="/logo.jpg" alt="Logo" onerror="this.style.display='none'" />
+        <div style="min-width:0;">
+          <div class="m-brand-title" id="mUserTitle">Empower Academy</div>
+          <div class="m-brand-sub" id="mRoleSubtitle">MOBILE PANEL</div>
+        </div>
+      </div>
+      <div class="m-head-actions">
+        <button type="button" class="icon-btn" id="mRefreshBtn" title="Yangilash">🔄</button>
+        <button type="button" class="logout-mini" id="mLogoutBtn">Chiqish</button>
+      </div>
+    </header>
+
+    <main class="m-main">
+      <!-- 1. ASOSIY (HOME) -->
+      <section id="mTabHome" class="m-section active">
+        <div class="kpi-grid" id="mKpiGrid">
+          <div class="kpi b">
+            <div class="kpi-lbl">O‘quvchilar</div>
+            <div class="kpi-val" id="mKpi1">0</div>
+          </div>
+          <div class="kpi g">
+            <div class="kpi-lbl">Kassa kirim</div>
+            <div class="kpi-val" id="mKpi2">0</div>
+          </div>
+          <div class="kpi p">
+            <div class="kpi-lbl">O‘rtacha ball</div>
+            <div class="kpi-val" id="mKpi3">0%</div>
+          </div>
+          <div class="kpi a">
+            <div class="kpi-lbl">Kam balans</div>
+            <div class="kpi-val" id="mKpi4">0</div>
+          </div>
+        </div>
+
+        <div class="m-card">
+          <h2>🏆 Top o‘quvchilar</h2>
+          <div id="mTopList"></div>
+        </div>
+
+        <div class="m-card">
+          <h2>📢 So‘nggi e’lonlar</h2>
+          <div id="mAnnouncementsList"></div>
+        </div>
+      </section>
+
+      <!-- 2. O'QUVCHILAR / DARS -->
+      <section id="mTabStudents" class="m-section">
+        <div class="m-card" id="mAddStudentCard">
+          <h2>➕ Yangi o‘quvchi qo‘shish</h2>
+          <form id="mAddStudentForm">
+            <div class="form-group">
+              <label>Ism Familiya</label>
+              <input type="text" id="mStName" placeholder="Jasur Karimov" required />
+            </div>
+            <div class="form-group">
+              <label>Login</label>
+              <input type="text" id="mStUser" placeholder="jasur" required />
+            </div>
+            <div class="form-group">
+              <label>Parol</label>
+              <input type="text" id="mStPass" placeholder="12345" required />
+            </div>
+            <div class="form-group">
+              <label>Daraja va Guruh</label>
+              <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:8px;">
+                <select id="mStLevel">
+                  <option value="A1">A1</option><option value="A2">A2</option>
+                  <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
+                </select>
+                <input type="text" id="mStGroup" value="General English" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Oylik to‘lov (so‘m)</label>
+              <input type="number" id="mStFee" value="500000" />
+            </div>
+            <button type="submit" class="btn-main">Saqlash</button>
+          </form>
+        </div>
+
+        <div class="m-card">
+          <h2>👥 O‘quvchilar ro‘yxati</h2>
+          <div class="form-group">
+            <input type="text" id="mSearchInput" placeholder="Ism yoki guruh bo‘yicha qidirish..." />
+          </div>
+          <div id="mStudentsList"></div>
+        </div>
+      </section>
+
+      <!-- 3. BALANS & DAVOMAT -->
+      <section id="mTabFinance" class="m-section">
+        <div class="m-card" id="mBalanceCard">
+          <h2>💳 Balans (Deposit / Charge)</h2>
+          <form id="mBalanceForm">
+            <div class="form-group">
+              <label>O‘quvchi</label>
+              <select id="mFinStudent"></select>
+            </div>
+            <div class="form-group">
+              <label>Amal turi va Summa</label>
+              <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:8px;">
+                <select id="mFinType">
+                  <option value="deposit">Deposit (+)</option>
+                  <option value="charge">Charge (-)</option>
+                </select>
+                <input type="number" id="mFinAmount" placeholder="500000" required />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Izoh</label>
+              <input type="text" id="mFinDesc" placeholder="To‘lov izohi..." />
+            </div>
+            <button type="submit" class="btn-green">Balansni yangilash</button>
+          </form>
+        </div>
+
+        <div class="m-card" id="mAttCard">
+          <h2>📋 Tezkor davomat</h2>
+          <form id="mAttForm">
+            <div class="form-group">
+              <label>O‘quvchi</label>
+              <select id="mAttStudent"></select>
+            </div>
+            <div class="form-group">
+              <label>Sana va Holat</label>
+              <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:8px;">
+                <input type="date" id="mAttDate" required />
+                <select id="mAttStatus">
+                  <option value="present">Present</option>
+                  <option value="absent">Absent</option>
+                  <option value="excused">Excused</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn-main">Davomat saqlash</button>
+          </form>
+        </div>
+
+        <div class="m-card">
+          <h2>🕒 So‘nggi tranzaksiyalar</h2>
+          <div id="mTxList"></div>
+        </div>
+      </section>
+
+      <!-- 4. HISOBOT & OY YOPISH -->
+      <section id="mTabReports" class="m-section">
+        <div class="m-card" id="mCloseMonthCard">
+          <h2>📅 Oylik yakun (Oy yopish)</h2>
+          <div class="form-group">
+            <label>Yopiladigan oy (YYYY-MM)</label>
+            <input type="month" id="mCloseMonthInput" />
+          </div>
+          <div class="form-group">
+            <label>Admin paroli</label>
+            <input type="password" id="mCloseMonthPass" placeholder="Parolni kiriting" />
+          </div>
+          <button type="button" class="btn-main" id="mCloseMonthBtn">Oyni yopish</button>
+        </div>
+
+        <div class="m-card">
+          <h2>📊 Yopilgan oylar arxivi</h2>
+          <div id="mClosingsList"></div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button type="button" class="b-nav-btn active" data-mtab="mTabHome">
+        <span class="ico">🏠</span>
+        <span>Asosiy</span>
+      </button>
+      <button type="button" class="b-nav-btn" data-mtab="mTabStudents">
+        <span class="ico">👥</span>
+        <span>O‘quvchilar</span>
+      </button>
+      <button type="button" class="b-nav-btn" data-mtab="mTabFinance">
+        <span class="ico">💳</span>
+        <span>Kassa/Dav.</span>
+      </button>
+      <button type="button" class="b-nav-btn" data-mtab="mTabReports">
+        <span class="ico">📊</span>
+        <span>Hisobot</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="mToast" class="toast"></div>
+
+  <script>
+    let studentsData = [];
+    let currentRole = localStorage.getItem('role') || '';
+    let currentToken = localStorage.getItem('token') || '';
+
+    function showToast(msg) {
+      const el = document.getElementById('mToast');
+      el.textContent = msg;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 2600);
+    }
+
+    function esc(s) {
+      return String(s ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function api(url, method = 'GET', body = null) {
+      const opts = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + currentToken
+        }
+      };
+      if (body) opts.body = JSON.stringify(body);
+      const res = await fetch(url, opts);
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Xatolik');
+      return data;
+    }
+
+    function showLogin() {
+      document.getElementById('mobileAppScreen').style.display = 'none';
+      document.getElementById('mobileLoginScreen').style.display = 'flex';
+    }
+
+    function showApp() {
+      document.getElementById('mobileLoginScreen').style.display = 'none';
+      document.getElementById('mobileAppScreen').style.display = 'block';
+      document.getElementById('mUserTitle').textContent = localStorage.getItem('full_name') || 'Empower Academy';
+      document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • MOBILE';
+
+      const isAdmin = currentRole === 'admin';
+      document.getElementById('mAddStudentCard').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('mBalanceCard').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('mCloseMonthCard').style.display = isAdmin ? 'block' : 'none';
+    }
+
+    document.getElementById('mLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const errBox = document.getElementById('mLoginError');
+      errBox.style.display = 'none';
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('mUsername').value.trim(),
+            password: document.getElementById('mPassword').value.trim()
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          errBox.textContent = data.error || 'Login yoki parol noto‘g‘ri';
+          errBox.style.display = 'block';
+          return;
+        }
+        currentToken = data.token;
+        currentRole = data.role;
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        localStorage.setItem('full_name', data.full_name || '');
+        showApp();
+        loadMobileData();
+      } catch (err) {
+        errBox.textContent = 'Serverga ulanib bo‘lmadi';
+        errBox.style.display = 'block';
+      }
+    });
+
+    document.getElementById('mLogoutBtn').addEventListener('click', () => {
+      localStorage.clear();
+      currentToken = '';
+      currentRole = '';
+      showLogin();
+    });
+
+    document.getElementById('mRefreshBtn').addEventListener('click', () => {
+      loadMobileData();
+      showToast('Yangilandi');
+    });
+
+    document.querySelectorAll('.b-nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.getAttribute('data-mtab');
+        document.querySelectorAll('.m-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(target)?.classList.add('active');
+        btn.classList.add('active');
+      });
+    });
+
+    function renderStudents(list) {
+      const q = (document.getElementById('mSearchInput').value || '').toLowerCase();
+      const filtered = (list || []).filter(s =>
+        (s.full_name || '').toLowerCase().includes(q) ||
+        (s.group_name || '').toLowerCase().includes(q)
+      );
+
+      document.getElementById('mStudentsList').innerHTML = filtered.map(s => {
+        const avg = s.avg_score ?? Math.round(((Number(s.grammar)||0)+(Number(s.listening)||0)+(Number(s.reading)||0)+(Number(s.vocabulary)||0)+(Number(s.writing)||0)+(Number(s.speaking)||0))/6);
+        const balText = s.balance !== undefined ? `${Number(s.balance).toLocaleString()} so‘m` : '';
+        return `
+          <div class="list-item">
+            <div>
+              <div class="item-title">${esc(s.full_name)} <span class="pill pill-info">${esc(s.level || '-')}</span></div>
+              <div class="item-sub">${esc(s.group_name || '-')} ${balText ? '• ' + balText : ''}</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="pill pill-ok">${avg}%</span>
+              ${currentRole === 'admin' ? `<button type="button" class="btn-sm-del" onclick="delStudentMobile(${s.id})">✕</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('') || '<div class="item-sub">O‘quvchilar topilmadi</div>';
+    }
+
+    document.getElementById('mSearchInput').addEventListener('input', () => renderStudents(studentsData));
+
+    async function delStudentMobile(id) {
+      if (!confirm('O‘quvchi o‘chirilsinmi?')) return;
+      try {
+        await api(`/api/admin/students/${id}`, 'DELETE');
+        showToast('O‘chirildi');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
+    async function loadMobileData() {
+      try {
+        if (currentRole === 'admin') {
+          const [students, tx, closingsRes, anns] = await Promise.all([
+            api('/api/admin/students'),
+            api('/api/admin/transactions'),
+            api('/api/admin/monthly-closings'),
+            api('/api/announcements')
+          ]);
+          studentsData = students || [];
+          const income = (tx || []).filter(t => t.type === 'deposit').reduce((a, b) => a + Number(b.amount || 0), 0);
+          const avgCenter = studentsData.length
+            ? Math.round(studentsData.reduce((a, s) => a + Number(s.avg_score ?? 0), 0) / studentsData.length)
+            : 0;
+          const lowBal = studentsData.filter(s => Number(s.balance || 0) < Number(s.monthly_fee || 0)).length;
+
+          document.getElementById('mKpi1').textContent = studentsData.length;
+          document.getElementById('mKpi2').textContent = income.toLocaleString();
+          document.getElementById('mKpi3').textContent = avgCenter + '%';
+          document.getElementById('mKpi4').textContent = lowBal;
+
+          const opts = studentsData.map(s => `<option value="${s.id}">${esc(s.full_name)} (${esc(s.level)})</option>`).join('');
+          document.getElementById('mFinStudent').innerHTML = opts;
+          document.getElementById('mAttStudent').innerHTML = opts;
+
+          renderStudents(studentsData);
+
+          const top5 = [...studentsData].sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0)).slice(0, 5);
+          document.getElementById('mTopList').innerHTML = top5.map((s, i) => `
+            <div class="list-item">
+              <div><div class="item-title">#${i + 1} ${esc(s.full_name)}</div><div class="item-sub">${esc(s.group_name)} • ${esc(s.level)}</div></div>
+              <span class="pill pill-ok">${s.avg_score || 0}%</span>
+            </div>
+          `).join('') || '<div class="item-sub">Ma’lumot yo‘q</div>';
+
+          document.getElementById('mTxList').innerHTML = (tx || []).slice(0, 8).map(t => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(t.full_name)}</div><div class="item-sub">${esc(t.created_at || '')} • ${esc(t.description || '')}</div></div>
+              <span class="pill ${t.type === 'deposit' ? 'pill-ok' : 'pill-low'}">${t.type === 'deposit' ? '+' : '-'}${Number(t.amount).toLocaleString()}</span>
+            </div>
+          `).join('') || '<div class="item-sub">Tranzaksiyalar yo‘q</div>';
+
+          document.getElementById('mClosingsList').innerHTML = (closingsRes.closings || []).map(c => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(c.month_key)}</div><div class="item-sub">${c.students_count} o‘quvchi • Davomat: ${c.avg_attendance}%</div></div>
+              <span class="pill pill-info">${c.avg_score}%</span>
+            </div>
+          `).join('') || '<div class="item-sub">Yopilgan oylar yo‘q</div>';
+
+          document.getElementById('mAnnouncementsList').innerHTML = (anns || []).slice(0, 5).map(a => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(a.title)}</div><div class="item-sub">${esc(a.message)}</div></div>
+              <span class="pill pill-info">${esc(a.target_level)}</span>
+            </div>
+          `).join('') || '<div class="item-sub">E’lonlar yo‘q</div>';
+        } else if (currentRole === 'teacher') {
+          const dash = await api('/api/teacher/dashboard');
+          studentsData = dash.students || [];
+          document.getElementById('mKpi1').textContent = studentsData.length;
+          document.getElementById('mKpi2').textContent = (dash.lessons || []).length;
+          const avg = studentsData.length ? Math.round(studentsData.reduce((a, s) => a + (s.avg_score || 0), 0) / studentsData.length) : 0;
+          document.getElementById('mKpi3').textContent = avg + '%';
+          document.getElementById('mKpi4').textContent = (dash.assignments || []).length;
+
+          const opts = studentsData.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
+          document.getElementById('mAttStudent').innerHTML = opts;
+          renderStudents(studentsData);
+
+          const top5 = [...studentsData].sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0)).slice(0, 5);
+          document.getElementById('mTopList').innerHTML = top5.map((s, i) => `
+            <div class="list-item">
+              <div><div class="item-title">#${i + 1} ${esc(s.full_name)}</div><div class="item-sub">${esc(s.group_name)}</div></div>
+              <span class="pill pill-ok">${s.avg_score || 0}%</span>
+            </div>
+          `).join('');
+          document.getElementById('mAnnouncementsList').innerHTML = '<div class="item-sub">Ustoz kabineti faol</div>';
+          document.getElementById('mTxList').innerHTML = '<div class="item-sub">Davomatni yuqoridagi formadan saqlang</div>';
+          document.getElementById('mClosingsList').innerHTML = '<div class="item-sub">Hisobotlar admin tomonidan yuritiladi</div>';
+        } else {
+          const dash = await api('/api/student/dashboard');
+          const st = dash.student || {};
+          document.getElementById('mKpi1').textContent = Number(st.balance || 0).toLocaleString();
+          document.getElementById('mKpi2').textContent = (dash.attendanceSummary?.percent ?? 0) + '%';
+          document.getElementById('mKpi3').textContent = (dash.avgScore ?? 0) + '%';
+          document.getElementById('mKpi4').textContent = '#' + (dash.myRank || '-');
+
+          studentsData = dash.rankingList || [];
+          renderStudents(studentsData);
+
+          document.getElementById('mTopList').innerHTML = (dash.rankingList || []).slice(0, 5).map((s, i) => `
+            <div class="list-item">
+              <div><div class="item-title">#${i + 1} ${esc(s.full_name)}</div><div class="item-sub">${esc(s.level)}</div></div>
+              <span class="pill pill-ok">${s.avg_score || 0}%</span>
+            </div>
+          `).join('');
+
+          document.getElementById('mAnnouncementsList').innerHTML = (dash.announcements || []).slice(0, 5).map(a => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(a.title)}</div><div class="item-sub">${esc(a.message)}</div></div>
+            </div>
+          `).join('') || '<div class="item-sub">E’lonlar yo‘q</div>';
+
+          document.getElementById('mTxList').innerHTML = (dash.transactions || []).slice(0, 8).map(t => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(t.description || t.type)}</div><div class="item-sub">${esc(t.created_at || '')}</div></div>
+              <span class="pill ${t.type === 'deposit' ? 'pill-ok' : 'pill-low'}">${t.type === 'deposit' ? '+' : '-'}${Number(t.amount).toLocaleString()}</span>
+            </div>
+          `).join('') || '<div class="item-sub">To‘lovlar yo‘q</div>';
+
+          document.getElementById('mClosingsList').innerHTML = (dash.myMonthlyHistory || []).map(m => `
+            <div class="list-item">
+              <div><div class="item-title">${esc(m.month_key)}</div><div class="item-sub">Davomat: ${m.attendance_percent}%</div></div>
+              <span class="pill pill-info">${m.avg_score}%</span>
+            </div>
+          `).join('') || '<div class="item-sub">Tarix yo‘q</div>';
+        }
+      } catch (err) {
+        if (err.message.includes('Token')) {
+          localStorage.clear();
+          showLogin();
+        } else {
+          showToast(err.message);
+        }
+      }
+    }
+
+    document.getElementById('mAddStudentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/students', 'POST', {
+          full_name: document.getElementById('mStName').value.trim(),
+          username: document.getElementById('mStUser').value.trim(),
+          password: document.getElementById('mStPass').value.trim(),
+          level: document.getElementById('mStLevel').value,
+          group_name: document.getElementById('mStGroup').value.trim(),
+          monthly_fee: Number(document.getElementById('mStFee').value) || 500000
+        });
+        e.target.reset();
+        showToast('O‘quvchi qo‘shildi!');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    document.getElementById('mBalanceForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await api('/api/admin/balance', 'POST', {
+          student_id: Number(document.getElementById('mFinStudent').value),
+          type: document.getElementById('mFinType').value,
+          amount: Number(document.getElementById('mFinAmount').value),
+          description: document.getElementById('mFinDesc').value.trim()
+        });
+        document.getElementById('mFinAmount').value = '';
+        document.getElementById('mFinDesc').value = '';
+        showToast('Balans yangilandi!');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    document.getElementById('mAttForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const url = currentRole === 'admin' ? '/api/admin/attendance' : '/api/teacher/attendance';
+      try {
+        await api(url, 'POST', {
+          student_id: Number(document.getElementById('mAttStudent').value),
+          lesson_date: document.getElementById('mAttDate').value,
+          status: document.getElementById('mAttStatus').value
+        });
+        showToast('Davomat saqlandi!');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    document.getElementById('mCloseMonthBtn').addEventListener('click', async () => {
+      const month_key = document.getElementById('mCloseMonthInput').value;
+      const password = document.getElementById('mCloseMonthPass').value.trim();
+      if (!month_key) return showToast('Oyni tanlang!');
+      if (!password) return showToast('Parolni kiriting!');
+      try {
+        const res = await api('/api/admin/close-month', 'POST', { month_key, password });
+        document.getElementById('mCloseMonthPass').value = '';
+        showToast(res.message || 'Oy yopildi!');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    });
+
+    const today = new Date();
+    document.getElementById('mAttDate').value = today.toISOString().slice(0, 10);
+    document.getElementById('mCloseMonthInput').value =
+      `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+    if (currentToken && currentRole) {
+      showApp();
+      loadMobileData();
+    } else {
+      showLogin();
+    }
+  </script>
+</body>
+</html>
