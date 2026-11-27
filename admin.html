@@ -195,7 +195,7 @@
       padding: 6px 10px; border-radius: 8px; font-weight: 700; font-size: 11px; cursor: pointer;
     }
     table { width: 100%; border-collapse: collapse; margin-top: 8px; }
-    th, td { padding: 11px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--row-border); }
+    th, td { padding: 11px 10px; text-align: left; font-size: 13px; border-bottom: 1px solid var(--row-border); vertical-align: top; }
     th { color: var(--muted); font-weight: 700; }
     .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
     .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
@@ -727,7 +727,7 @@
       <div class="card">
         <h2 data-i18n="closeMonthTitle">Oylik yakun (Закрытие месяца)</h2>
         <p style="font-size:13px; color:var(--muted); margin:6px 0 18px;" data-i18n="closeMonthDesc">
-          Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari va davomatni yangi oyga yangilaydi.
+          Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari, davomat, darslik va vazifalarni yangi oyga yangilaydi.
         </p>
 
         <div class="grid-3" style="align-items:end; margin-bottom:16px;">
@@ -751,7 +751,7 @@
           </div>
         </div>
 
-        <div class="grid-2" style="align-items:center; margin-bottom:18px;">
+        <div class="grid-3" style="align-items:center; margin-bottom:18px;">
           <div class="form-group" style="margin-bottom:0;">
             <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
               <input type="checkbox" id="optClearAttendance" checked />
@@ -759,9 +759,23 @@
             </label>
           </div>
 
-          <div style="text-align:right;">
-            <button type="button" class="btn-close-month" id="closeMonthBtn" data-i18n="btnCloseMonth">Oyni yopish</button>
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+              <input type="checkbox" id="optClearLessons" checked />
+              <span data-i18n="optClearLessons">Darsliklarni tozalash</span>
+            </label>
           </div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+              <input type="checkbox" id="optClearAssignments" checked />
+              <span data-i18n="optClearAssignments">Vazifa va javoblarni tozalash</span>
+            </label>
+          </div>
+        </div>
+
+        <div style="text-align:right; margin-bottom:16px;">
+          <button type="button" class="btn-close-month" id="closeMonthBtn" data-i18n="btnCloseMonth">Oyni yopish</button>
         </div>
 
         <h3 style="font-size:16px; margin-top:12px; color:var(--heading);" data-i18n="closedMonthsArchive">Yopilgan oylar arxivi</h3>
@@ -772,6 +786,33 @@
             </tr>
           </thead>
           <tbody id="monthlyClosingsBody"></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header-flex">
+          <h2 data-i18n="perStudentMonthReportTitle">Har bir o‘quvchi bo‘yicha oylik hisobot (Davomat, Vazifa, Pul)</h2>
+          <div class="filter-bar">
+            <select id="reportMonthFilter">
+              <option value="">Barcha yopilgan oylar</option>
+            </select>
+            <select id="reportStudentFilter">
+              <option value="">Barcha o‘quvchilar</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Oy</th>
+              <th>O‘quvchi</th>
+              <th>Davomat (o‘tgan oy)</th>
+              <th>Uyga vazifa hisoboti</th>
+              <th>Pul / Balans hisoboti</th>
+              <th>Umumiy ball</th>
+            </tr>
+          </thead>
+          <tbody id="studentMonthReportBody"></tbody>
         </table>
       </div>
     </div>
@@ -854,6 +895,7 @@
     let attCache = [];
     let skillEvalsCache = [];
     let monthlyClosingsCache = [];
+    let studentReportsCache = [];
     let yearlyLeadersCache = [];
     let levelsChartInstance = null;
     let topStudentsChartInstance = null;
@@ -890,10 +932,12 @@
         monthlyStatsTitle: 'Oylik statistika', monthlyBadge: 'Oylik', yearlyStatsTitle: 'Yillik statistika', yearlyBadge: 'Yillik',
         flameTopLabel: '🔥 Yilning TOP-1 o‘quvchisi', chartLevels: 'Darajalar bo‘yicha o‘quvchilar', chartTop: 'Top o‘quvchilar reytingi',
         closeMonthTitle: 'Oylik yakun (Закрытие месяца)',
-        closeMonthDesc: 'Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari va davomatni yangi oyga yangilaydi.',
+        closeMonthDesc: 'Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari, davomat, darslik va vazifalarni yangi oyga yangilaydi.',
         lblCloseMonth: 'Yopiladigan oy (YYYY-MM)', optChargeFee: 'Oylik to‘lovni balansdan yechish',
         optResetSkills: 'Bilim ballarini 0 ga yangilash', optClearAttendance: 'Davomatni yangi oydan boshlash',
+        optClearLessons: 'Darsliklarni tozalash', optClearAssignments: 'Vazifa va javoblarni tozalash',
         btnCloseMonth: 'Oyni yopish', closedMonthsArchive: 'Yopilgan oylar arxivi',
+        perStudentMonthReportTitle: 'Har bir o‘quvchi bo‘yicha oylik hisobot (Davomat, Vazifa, Pul)',
         editModalTitle: 'O‘quvchi ma’lumotlarini tahrirlash', lblNewPass: 'Yangi parol (ixtiyoriy)',
         btnCancel: 'Bekor qilish', clearModalTitle: 'Tarixni tozalash (Parol talab qilinadi)',
         clearModalDesc: 'Ushbu bo‘lim tarixini tozalash uchun parolni kiriting:',
@@ -929,10 +973,12 @@
         monthlyStatsTitle: 'Monthly Statistics', monthlyBadge: 'Monthly', yearlyStatsTitle: 'Yearly Statistics', yearlyBadge: 'Yearly',
         flameTopLabel: '🔥 TOP-1 Student of the Year', chartLevels: 'Students by Level', chartTop: 'Top Students Ranking',
         closeMonthTitle: 'Monthly Closing (Закрытие месяца)',
-        closeMonthDesc: 'Close selected month: archives results, deducts monthly fee (updates debt), resets skill scores and attendance for the new month.',
+        closeMonthDesc: 'Close selected month: archives results, deducts monthly fee, resets skills, attendance, lessons and assignments for the new month.',
         lblCloseMonth: 'Month to close (YYYY-MM)', optChargeFee: 'Deduct monthly fee from balance',
         optResetSkills: 'Reset skill scores to 0', optClearAttendance: 'Start attendance fresh for new month',
+        optClearLessons: 'Clear lessons', optClearAssignments: 'Clear assignments & submissions',
         btnCloseMonth: 'Close Month', closedMonthsArchive: 'Closed Months Archive',
+        perStudentMonthReportTitle: 'Per-Student Monthly Report (Attendance, Homework, Finance)',
         editModalTitle: 'Edit Student Info', lblNewPass: 'New Password (optional)',
         btnCancel: 'Cancel', clearModalTitle: 'Clear History (Password Required)',
         clearModalDesc: 'Enter password to permanently clear this section history:',
@@ -968,10 +1014,12 @@
         monthlyStatsTitle: 'Месячная статистика', monthlyBadge: 'Месяц', yearlyStatsTitle: 'Годовая статистика', yearlyBadge: 'Год',
         flameTopLabel: '🔥 ТОП-1 студент года', chartLevels: 'Студенты по уровням', chartTop: 'Топ студентов',
         closeMonthTitle: 'Закрытие месяца',
-        closeMonthDesc: 'Закрытие выбранного месяца: сохраняет архив, списывает ежемесячную оплату (обновляет долг), обнуляет баллы и посещаемость для нового месяца.',
+        closeMonthDesc: 'Закрытие выбранного месяца: сохраняет архив, списывает оплату, обновляет баллы, посещаемость, уроки и задания.',
         lblCloseMonth: 'Закрываемый месяц (YYYY-MM)', optChargeFee: 'Списать ежемесячную оплату с баланса',
         optResetSkills: 'Обнулить баллы навыков (0)', optClearAttendance: 'Начать посещаемость заново в новом месяце',
+        optClearLessons: 'Очистить уроки', optClearAssignments: 'Очистить задания и ответы',
         btnCloseMonth: 'Закрыть месяц', closedMonthsArchive: 'Архив закрытых месяцев',
+        perStudentMonthReportTitle: 'Месячный отчёт по каждому студенту (Посещаемость, ДЗ, Финансы)',
         editModalTitle: 'Редактировать студента', lblNewPass: 'Новый пароль (необязательно)',
         btnCancel: 'Отмена', clearModalTitle: 'Очистка истории (Требуется пароль)',
         clearModalDesc: 'Введите пароль для очистки истории этого раздела:',
@@ -1337,12 +1385,89 @@
       }
     }
 
+    function renderStudentMonthReports() {
+      const tbody = document.getElementById('studentMonthReportBody');
+      if (!tbody) return;
+      const monthVal = document.getElementById('reportMonthFilter')?.value || '';
+      const studentVal = document.getElementById('reportStudentFilter')?.value || '';
+
+      const filtered = (studentReportsCache || []).filter(r => {
+        const okMonth = !monthVal || r.month_key === monthVal;
+        const okStudent = !studentVal || String(r.student_id) === String(studentVal);
+        return okMonth && okStudent;
+      });
+
+      tbody.innerHTML = filtered.map(r => {
+        const hwListText = Array.isArray(r.homework_items) && r.homework_items.length > 0
+          ? r.homework_items.map(h => `${escapeHtml(h.title)}: <b>${h.grade}%</b>`).join(', ')
+          : 'Baholangan vazifa yo‘q';
+        const hwAvgText = r.homework_avg !== null && r.homework_avg !== undefined
+          ? `O‘rtacha: <b>${r.homework_avg}%</b> (${r.homework_graded_count}/${r.homework_total_count} ta)`
+          : `Baholanmagan (${r.homework_total_count || 0} ta yuborilgan)`;
+
+        const debtBadge = Number(r.debt_amount || 0) > 0
+          ? `<br/><span class="badge-low">Qarz: ${Number(r.debt_amount).toLocaleString()} so‘m</span>`
+          : `<br/><span class="badge-ok">Qarz yo‘q</span>`;
+
+        return `
+          <tr>
+            <td><b>${escapeHtml(r.month_key)}</b></td>
+            <td>
+              <b>${escapeHtml(r.full_name)}</b><br/>
+              <small style="color:var(--muted);">${escapeHtml(r.level)} | ${escapeHtml(r.group_name)}</small>
+            </td>
+            <td>
+              <b>${r.attendance_percent || 0}%</b> (${r.present_count || 0}/${r.total_count || 0})<br/>
+              <small style="color:var(--muted);">Keldi: ${r.present_count || 0} • Kelmadi: ${r.absent_count || 0} • Sababli: ${r.excused_count || 0}</small>
+            </td>
+            <td>
+              ${hwAvgText}<br/>
+              <small style="color:var(--muted);">${hwListText}</small>
+            </td>
+            <td>
+              To‘lov: <b>${Number(r.monthly_fee || 0).toLocaleString()}</b> so‘m<br/>
+              <small style="color:var(--muted);">Oldin: ${Number(r.balance_before || 0).toLocaleString()} → Keyin: <b>${Number(r.balance_after || 0).toLocaleString()}</b> so‘m</small>
+              ${debtBadge}
+            </td>
+            <td><b>${r.avg_score || 0}%</b></td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="6">Oy yopilganda har bir o‘quvchi bo‘yicha hisobot shu yerda chiqadi</td></tr>';
+    }
+
     async function loadMonthlyClosings() {
       const tbody = document.getElementById('monthlyClosingsBody');
       try {
         const data = await api('/api/admin/monthly-closings');
         monthlyClosingsCache = Array.isArray(data.closings) ? data.closings : [];
         yearlyLeadersCache = Array.isArray(data.yearly_leaders) ? data.yearly_leaders : [];
+        studentReportsCache = Array.isArray(data.student_reports) ? data.student_reports : [];
+
+        const monthSel = document.getElementById('reportMonthFilter');
+        if (monthSel) {
+          const prevM = monthSel.value;
+          monthSel.innerHTML = `<option value="">Barcha yopilgan oylar</option>` +
+            monthlyClosingsCache.map(m => `<option value="${escapeHtml(m.month_key)}">${escapeHtml(m.month_key)}</option>`).join('');
+          if (prevM) monthSel.value = prevM;
+        }
+
+        const stSel = document.getElementById('reportStudentFilter');
+        if (stSel) {
+          const prevS = stSel.value;
+          const uniqueStudents = [];
+          const seenIds = new Set();
+          for (const rep of studentReportsCache) {
+            if (!seenIds.has(rep.student_id)) {
+              seenIds.add(rep.student_id);
+              uniqueStudents.push({ id: rep.student_id, name: rep.full_name });
+            }
+          }
+          stSel.innerHTML = `<option value="">Barcha o‘quvchilar</option>` +
+            uniqueStudents.map(u => `<option value="${u.id}">${escapeHtml(u.name)}</option>`).join('');
+          if (prevS) stSel.value = prevS;
+        }
+
+        renderStudentMonthReports();
 
         if (tbody) {
           tbody.innerHTML = monthlyClosingsCache.map(r => `
@@ -1364,9 +1489,13 @@
       } catch (err) {
         monthlyClosingsCache = [];
         yearlyLeadersCache = [];
+        studentReportsCache = [];
         if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="color:#dc2626;">${escapeHtml(err.message)}</td></tr>`;
       }
     }
+
+    document.getElementById('reportMonthFilter')?.addEventListener('change', renderStudentMonthReports);
+    document.getElementById('reportStudentFilter')?.addEventListener('change', renderStudentMonthReports);
 
     document.getElementById('closeMonthBtn').addEventListener('click', () => {
       const month_key = document.getElementById('closeMonthInput').value;
@@ -1376,7 +1505,9 @@
         month_key,
         charge_fee: document.getElementById('optChargeFee').checked,
         reset_skills: document.getElementById('optResetSkills').checked,
-        clear_month_attendance: document.getElementById('optClearAttendance').checked
+        clear_month_attendance: document.getElementById('optClearAttendance').checked,
+        clear_lessons: document.getElementById('optClearLessons').checked,
+        clear_assignments: document.getElementById('optClearAssignments').checked
       });
     });
 
