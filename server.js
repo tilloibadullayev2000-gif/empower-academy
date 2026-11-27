@@ -413,6 +413,111 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
   return await recalculateStudentSkillsFromEvaluations(studentId);
 }
 
+// Har bir o'quvchi uchun o'tgan oy davomat, uyga vazifa va pul hisobotini yig'ish
+async function buildStudentMonthDetail(student, monthKey, gradedSubmissionsForScore, chargeFee) {
+  const attRows = await dbAll(
+    `SELECT lesson_date, status FROM attendance
+     WHERE student_id = ? AND strftime('%Y-%m', lesson_date) = ?
+     ORDER BY lesson_date ASC`,
+    [student.id, monthKey]
+  );
+
+  const totalClasses = attRows.length;
+  const presentCount = attRows.filter((r) =>
+    ['present', 'keldi', 'bor', '1', 'true'].includes(String(r.status || '').trim().toLowerCase())
+  ).length;
+  const absentCount = attRows.filter((r) =>
+    ['absent', 'kelmadi', 'yoq'].includes(String(r.status || '').trim().toLowerCase())
+  ).length;
+  const excusedCount = attRows.filter((r) =>
+    ['excused', 'sababli'].includes(String(r.status || '').trim().toLowerCase())
+  ).length;
+  const attendancePercent = totalClasses > 0 ? Math.round((presentCount / totalClasses) * 100) : 0;
+
+  const hwRows = await dbAll(
+    `SELECT sub.id, sub.grade, sub.teacher_feedback, sub.submitted_at, a.title
+     FROM assignment_submissions sub
+     LEFT JOIN assignments a ON a.id = sub.assignment_id
+     WHERE sub.student_id = ?
+     ORDER BY sub.id DESC`,
+    [student.id]
+  );
+
+  const gradedHw = hwRows.filter(
+    (h) => h.grade !== null && h.grade !== undefined && String(h.grade).trim() !== ''
+  );
+  const homeworkAvg = gradedHw.length > 0
+    ? Math.round(gradedHw.reduce((acc, h) => acc + Number(h.grade), 0) / gradedHw.length)
+    : null;
+
+  const scoreInfo = calcStudentOverallScore(student, gradedSubmissionsForScore || []);
+  const monthlyFee = Number(student.monthly_fee) || 0;
+  const balanceBefore = Number(student.balance) || 0;
+  const appliedFee = chargeFee ? monthlyFee : 0;
+  const balanceAfter = balanceBefore - appliedFee;
+
+  return {
+    student_id: student.id,
+    full_name: student.full_name || 'Student',
+    level: student.level || '-',
+    group_name: student.group_name || '-',
+    avg_score: scoreInfo.overallScore,
+    skills_avg: scoreInfo.skillsAvg,
+    homework_avg: homeworkAvg,
+    homework_total_count: hwRows.length,
+    homework_graded_count: gradedHw.length,
+    homework_items: gradedHw.map((h) => ({
+      title: h.title || 'Uyga vazifa',
+      grade: Number(h.grade),
+      feedback: h.teacher_feedback || '',
+      submitted_at: h.submitted_at || ''
+    })),
+    attendance_percent: attendancePercent,
+    present_count: presentCount,
+    absent_count: absentCount,
+    excused_count: excusedCount,
+    total_count: totalClasses,
+    monthly_fee: appliedFee,
+    balance_before: balanceBefore,
+    balance_after: balanceAfter,
+    debt_amount: balanceAfter < 0 ? Math.abs(balanceAfter) : 0
+  };
+}
+
+function parseClosingRow(row) {
+  let meta = {};
+  try {
+    meta = row.skills_json ? JSON.parse(row.skills_json) : {};
+  } catch (_) {
+    meta = {};
+  }
+  const balanceAfter = Number(row.balance_after) || 0;
+  return {
+    id: row.id,
+    month_key: row.month_key,
+    student_id: row.student_id,
+    full_name: row.full_name || 'Student',
+    level: row.level || '-',
+    group_name: row.group_name || '-',
+    avg_score: Number(row.avg_score) || 0,
+    skills_avg: meta.skills_avg ?? 0,
+    homework_avg: meta.homework_avg ?? null,
+    homework_total_count: meta.homework_total_count ?? 0,
+    homework_graded_count: meta.homework_graded_count ?? 0,
+    homework_items: Array.isArray(meta.homework_items) ? meta.homework_items : [],
+    attendance_percent: Number(row.attendance_percent) || 0,
+    present_count: Number(row.present_count) || 0,
+    absent_count: Number(meta.absent_count) || 0,
+    excused_count: Number(meta.excused_count) || 0,
+    total_count: Number(row.total_count) || 0,
+    monthly_fee: Number(row.monthly_fee) || 0,
+    balance_before: Number(row.balance_before) || 0,
+    balance_after: balanceAfter,
+    debt_amount: balanceAfter < 0 ? Math.abs(balanceAfter) : 0,
+    closed_at: row.closed_at
+  };
+}
+
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization || '';
   const token = auth.startsWith('Bearer ') ? auth.slice(7) : null;
@@ -797,11 +902,13 @@ app.put('/api/teacher/submissions/:id/grade', authMiddleware, teacherOrAdmin, as
 });
 
 // ==========================================
-// ADMIN: OYLIK YAKUN & STATISTIKA
+// ADMIN: OYLIK YAKUN, HISOBOTLAR & STATISTIKA
 // ==========================================
 
 app.get('/api/admin/monthly-closings', authMiddleware, adminOnly, async (req, res) => {
   try {
+    const { month_key, student_id } = req.query;
+
     const closings = await dbAll(
       `SELECT month_key,
               COUNT(*) as students_count,
@@ -823,7 +930,24 @@ app.get('/api/admin/monthly-closings', authMiddleware, adminOnly, async (req, re
        ORDER BY yearly_avg DESC, best_score DESC`
     );
 
-    res.json({ closings, yearly_leaders: yearlyLeaders });
+    const conditions = [];
+    const params = [];
+    if (month_key && String(month_key).trim()) {
+      conditions.push(`month_key = ?`);
+      params.push(String(month_key).trim());
+    }
+    if (student_id && String(student_id).trim()) {
+      conditions.push(`student_id = ?`);
+      params.push(Number(student_id));
+    }
+    const whereSql = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+    const detailRows = await dbAll(
+      `SELECT * FROM monthly_closings ${whereSql} ORDER BY month_key DESC, full_name ASC`,
+      params
+    );
+    const studentReports = detailRows.map(parseClosingRow);
+
+    res.json({ closings, yearly_leaders: yearlyLeaders, student_reports: studentReports });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -866,7 +990,9 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       month_key,
       reset_skills = true,
       charge_fee = true,
-      clear_month_attendance = true
+      clear_month_attendance = true,
+      clear_lessons = true,
+      clear_assignments = true
     } = req.body || {};
 
     if (!month_key || !/^\d{4}-\d{2}$/.test(String(month_key).trim())) {
@@ -888,16 +1014,7 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
     );
     const gradedMap = await getGradedSubmissionsByStudentMap();
 
-    const monthAttRows = await dbAll(
-      `SELECT student_id, status FROM attendance WHERE strftime('%Y-%m', lesson_date) = ?`,
-      [cleanMonth]
-    );
-
-    const attByStudent = new Map();
-    for (const row of monthAttRows) {
-      if (!attByStudent.has(row.student_id)) attByStudent.set(row.student_id, []);
-      attByStudent.get(row.student_id).push(row.status);
-    }
+    const studentReports = [];
 
     await dbRun('BEGIN TRANSACTION');
 
@@ -909,20 +1026,13 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       const writing = Number(st.writing) || 0;
       const speaking = Number(st.speaking) || 0;
 
-      const scoreInfo = calcStudentOverallScore(st, gradedMap.get(st.id) || []);
-      const avgScore = scoreInfo.overallScore;
-
-      const stAttList = attByStudent.get(st.id) || [];
-      const totalCount = stAttList.length;
-      const presentCount = stAttList.filter((statusVal) =>
-        ['present', 'keldi', 'bor', '1', 'true'].includes(String(statusVal || '').trim().toLowerCase())
-      ).length;
-      const attendancePercent = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
-
-      const monthlyFee = Number(st.monthly_fee) || 0;
-      const balanceBefore = Number(st.balance) || 0;
-      const appliedFee = charge_fee ? monthlyFee : 0;
-      const balanceAfter = balanceBefore - appliedFee;
+      const report = await buildStudentMonthDetail(
+        st,
+        cleanMonth,
+        gradedMap.get(st.id) || [],
+        Boolean(charge_fee)
+      );
+      studentReports.push(report);
 
       await dbRun(
         `INSERT INTO monthly_closings (
@@ -933,10 +1043,10 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
         [
           cleanMonth,
           st.id,
-          st.full_name || 'Student',
-          st.level || '-',
-          st.group_name || '-',
-          avgScore,
+          report.full_name,
+          report.level,
+          report.group_name,
+          report.avg_score,
           JSON.stringify({
             grammar,
             listening,
@@ -944,22 +1054,27 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
             vocabulary,
             writing,
             speaking,
-            skills_avg: scoreInfo.skillsAvg,
-            homework_avg: scoreInfo.homeworkAvg
+            skills_avg: report.skills_avg,
+            homework_avg: report.homework_avg,
+            homework_total_count: report.homework_total_count,
+            homework_graded_count: report.homework_graded_count,
+            homework_items: report.homework_items,
+            absent_count: report.absent_count,
+            excused_count: report.excused_count
           }),
-          attendancePercent,
-          presentCount,
-          totalCount,
-          appliedFee,
-          balanceBefore,
-          balanceAfter
+          report.attendance_percent,
+          report.present_count,
+          report.total_count,
+          report.monthly_fee,
+          report.balance_before,
+          report.balance_after
         ]
       );
 
-      if (charge_fee && monthlyFee > 0) {
+      if (charge_fee && report.monthly_fee > 0) {
         await dbRun(
           `INSERT INTO transactions (student_id, amount, type, description) VALUES (?, ?, 'charge', ?)`,
-          [st.id, monthlyFee, `${cleanMonth} oy yakuni — oylik to'lov hisoblandi`]
+          [st.id, report.monthly_fee, `${cleanMonth} oy yakuni — oylik to'lov hisoblandi`]
         );
       }
 
@@ -968,7 +1083,7 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
          SET balance = ?, grammar = ?, listening = ?, reading = ?, vocabulary = ?, writing = ?, speaking = ?
          WHERE id = ? AND role = 'student'`,
         [
-          balanceAfter,
+          report.balance_after,
           reset_skills ? 0 : grammar,
           reset_skills ? 0 : listening,
           reset_skills ? 0 : reading,
@@ -988,12 +1103,22 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       await dbRun(`DELETE FROM attendance WHERE strftime('%Y-%m', lesson_date) = ?`, [cleanMonth]);
     }
 
+    if (clear_lessons) {
+      await dbRun(`DELETE FROM lessons`);
+    }
+
+    if (clear_assignments) {
+      await dbRun(`DELETE FROM assignment_submissions`);
+      await dbRun(`DELETE FROM assignments`);
+    }
+
     await dbRun('COMMIT');
 
     res.json({
-      message: `${cleanMonth} oyi yopildi! Qarzdorlik, bilim ballari va davomat yangi oyga yangilandi (yillik statistika saqlab qolindi).`,
+      message: `${cleanMonth} oyi yopildi! Har bir o‘quvchi bo‘yicha davomat, pul va uyga vazifa hisoboti tayyorlandi.`,
       month_key: cleanMonth,
-      processed_students: students.length
+      processed_students: students.length,
+      student_reports: studentReports
     });
   } catch (err) {
     await dbRun('ROLLBACK').catch(() => {});
@@ -1514,7 +1639,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       assignments,
       submissions,
       skillEvaluations,
-      myMonthlyHistory,
+      myMonthlyRaw,
       yearlyTopList
     ] = await Promise.all([
       dbAll(`SELECT * FROM transactions WHERE student_id = ? ORDER BY created_at DESC`, [studentId]),
@@ -1535,8 +1660,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
         [studentId]
       ),
       dbAll(
-        `SELECT month_key, avg_score, attendance_percent
-         FROM monthly_closings WHERE student_id = ? ORDER BY month_key ASC`,
+        `SELECT * FROM monthly_closings WHERE student_id = ? ORDER BY month_key ASC`,
         [studentId]
       ),
       dbAll(
@@ -1549,11 +1673,21 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       )
     ]);
 
+    const myMonthlyParsed = myMonthlyRaw.map(parseClosingRow);
+    const myMonthlyHistory = myMonthlyParsed.map((m) => ({
+      month_key: m.month_key,
+      avg_score: m.avg_score,
+      attendance_percent: m.attendance_percent
+    }));
+    const lastClosedMonthReport = myMonthlyParsed.length > 0
+      ? myMonthlyParsed[myMonthlyParsed.length - 1]
+      : null;
+
     // Baholar tarixi (har bir fan ko'nikmasi va baholangan uyga vazifalar)
     const gradeHistory = [];
     for (const ev of skillEvaluations) {
       for (const key of SKILL_KEYS) {
-        if (ev[key] !== null && ev[key] !== undefined) {
+        if (ev[key] !== null && ev[key] !== undefined && String(ev[key]).trim() !== '') {
           gradeHistory.push({
             date: ev.created_at || '-',
             subject: SKILL_LABELS[key],
@@ -1565,16 +1699,17 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       }
     }
     for (const sub of submissions) {
-      if (sub.grade !== null && sub.grade !== undefined) {
+      if (sub.grade !== null && sub.grade !== undefined && String(sub.grade).trim() !== '') {
         gradeHistory.push({
           date: sub.submitted_at || '-',
           subject: sub.assignment_title || 'Uyga vazifa',
           category: 'Uyga vazifa',
           score: Number(sub.grade) || 0,
-          by: 'O‘qituvchi'
+          by: 'O‘qituvchi / Admin'
         });
       }
     }
+    gradeHistory.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
 
     const prevMonth = myMonthlyHistory.length > 0 ? myMonthlyHistory[myMonthlyHistory.length - 1] : null;
     const improvement = prevMonth ? Number((myAvg - Number(prevMonth.avg_score || 0)).toFixed(1)) : 0;
@@ -1620,6 +1755,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       submissions,
       gradeHistory,
       myMonthlyHistory,
+      lastClosedMonthReport,
       yearlyTopList
     });
   } catch (err) {
