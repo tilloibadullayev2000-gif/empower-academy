@@ -28,6 +28,14 @@ const dbPath = path.join(__dirname, 'empower.db');
 const db = new sqlite3.Database(dbPath);
 
 const SKILL_KEYS = ['grammar', 'listening', 'reading', 'vocabulary', 'writing', 'speaking'];
+const SKILL_LABELS = {
+  grammar: 'Grammar',
+  listening: 'Listening',
+  reading: 'Reading',
+  vocabulary: 'Vocabulary',
+  writing: 'Writing',
+  speaking: 'Speaking'
+};
 
 function dbRun(sql, params = []) {
   return new Promise((resolve, reject) => {
@@ -94,9 +102,52 @@ function saveBase64File(base64Str, prefix = 'file', originalName = '') {
   return `/uploads/${fileName}`;
 }
 
-function calcAvgScore(user) {
+function calcSkillsAvg(user) {
   const skills = SKILL_KEYS.map((k) => Number(user[k]) || 0);
   return Math.round(skills.reduce((a, b) => a + b, 0) / skills.length);
+}
+
+// 50% ko'nikmalar o'rtachasi + 50% baholangan uyga vazifalar o'rtachasi
+function calcStudentOverallScore(user, gradedSubmissions = []) {
+  const skillsAvg = calcSkillsAvg(user);
+  const validGrades = (gradedSubmissions || [])
+    .map((s) => Number(s.grade))
+    .filter((g) => Number.isFinite(g));
+
+  if (validGrades.length === 0) {
+    return {
+      overallScore: skillsAvg,
+      skillsAvg,
+      homeworkAvg: null,
+      gradedHomeworkCount: 0
+    };
+  }
+
+  const homeworkAvg = Math.round(
+    validGrades.reduce((acc, g) => acc + g, 0) / validGrades.length
+  );
+  const overallScore = Math.round(skillsAvg * 0.5 + homeworkAvg * 0.5);
+
+  return {
+    overallScore,
+    skillsAvg,
+    homeworkAvg,
+    gradedHomeworkCount: validGrades.length
+  };
+}
+
+async function getGradedSubmissionsByStudentMap() {
+  const rows = await dbAll(
+    `SELECT student_id, grade FROM assignment_submissions WHERE grade IS NOT NULL`
+  );
+  const map = new Map();
+  for (const r of rows) {
+    const num = Number(r.grade);
+    if (!Number.isFinite(num)) continue;
+    if (!map.has(r.student_id)) map.set(r.student_id, []);
+    map.get(r.student_id).push({ grade: num });
+  }
+  return map;
 }
 
 function clampScore(val) {
@@ -317,7 +368,6 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
     [studentId]
   );
 
-  // Agar oldin baholar tarixda bo'lmagan bo'lsa-yu, users jadvalida ball bor bo'lsa, uni birinchi baho sifatida saqlab qo'yamiz
   const hasAnyNonZero = SKILL_KEYS.some((k) => Number(existing[k]) > 0);
   if (historyRows.length === 0 && hasAnyNonZero) {
     await dbRun(
@@ -511,10 +561,18 @@ app.get('/api/teacher/dashboard', authMiddleware, teacherOrAdmin, async (req, re
               grammar, listening, reading, vocabulary, writing, speaking
        FROM users WHERE role = 'student' ORDER BY id DESC`
     );
-    const enrichedStudents = students.map((s) => ({
-      ...s,
-      avg_score: calcAvgScore(s)
-    }));
+    const gradedMap = await getGradedSubmissionsByStudentMap();
+
+    const enrichedStudents = students.map((s) => {
+      const scoreInfo = calcStudentOverallScore(s, gradedMap.get(s.id) || []);
+      return {
+        ...s,
+        skills_avg: scoreInfo.skillsAvg,
+        homework_avg: scoreInfo.homeworkAvg,
+        avg_score: scoreInfo.overallScore
+      };
+    });
+
     const lessons = await dbAll(`SELECT * FROM lessons ORDER BY id DESC`);
     const assignments = await dbAll(`SELECT * FROM assignments ORDER BY id DESC`);
     const submissions = await dbAll(
@@ -585,7 +643,19 @@ app.get('/api/teacher/students', authMiddleware, teacherOrAdmin, async (req, res
        FROM users WHERE ${conditions.join(' AND ')} ORDER BY id DESC`,
       params
     );
-    res.json(rows.map((s) => ({ ...s, avg_score: calcAvgScore(s) })));
+    const gradedMap = await getGradedSubmissionsByStudentMap();
+
+    res.json(
+      rows.map((s) => {
+        const scoreInfo = calcStudentOverallScore(s, gradedMap.get(s.id) || []);
+        return {
+          ...s,
+          skills_avg: scoreInfo.skillsAvg,
+          homework_avg: scoreInfo.homeworkAvg,
+          avg_score: scoreInfo.overallScore
+        };
+      })
+    );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -718,7 +788,7 @@ app.put('/api/teacher/submissions/:id/grade', authMiddleware, teacherOrAdmin, as
     const { grade, teacher_feedback } = req.body;
     await dbRun(
       `UPDATE assignment_submissions SET grade = ?, teacher_feedback = ? WHERE id = ?`,
-      [Number(grade), teacher_feedback || '', req.params.id]
+      [clampScore(grade), teacher_feedback || '', req.params.id]
     );
     res.json({ message: 'Vazifa baholandi!' });
   } catch (err) {
@@ -816,6 +886,7 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
               grammar, listening, reading, vocabulary, writing, speaking
        FROM users WHERE role = 'student'`
     );
+    const gradedMap = await getGradedSubmissionsByStudentMap();
 
     const monthAttRows = await dbAll(
       `SELECT student_id, status FROM attendance WHERE strftime('%Y-%m', lesson_date) = ?`,
@@ -838,9 +909,8 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       const writing = Number(st.writing) || 0;
       const speaking = Number(st.speaking) || 0;
 
-      const avgScore = Math.round(
-        (grammar + listening + reading + vocabulary + writing + speaking) / 6
-      );
+      const scoreInfo = calcStudentOverallScore(st, gradedMap.get(st.id) || []);
+      const avgScore = scoreInfo.overallScore;
 
       const stAttList = attByStudent.get(st.id) || [];
       const totalCount = stAttList.length;
@@ -867,7 +937,16 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
           st.level || '-',
           st.group_name || '-',
           avgScore,
-          JSON.stringify({ grammar, listening, reading, vocabulary, writing, speaking }),
+          JSON.stringify({
+            grammar,
+            listening,
+            reading,
+            vocabulary,
+            writing,
+            speaking,
+            skills_avg: scoreInfo.skillsAvg,
+            homework_avg: scoreInfo.homeworkAvg
+          }),
           attendancePercent,
           presentCount,
           totalCount,
@@ -990,7 +1069,19 @@ app.get('/api/admin/students', authMiddleware, adminOnly, async (req, res) => {
        FROM users WHERE ${conditions.join(' AND ')} ORDER BY id DESC`,
       params
     );
-    res.json(rows.map((s) => ({ ...s, avg_score: calcAvgScore(s) })));
+    const gradedMap = await getGradedSubmissionsByStudentMap();
+
+    res.json(
+      rows.map((s) => {
+        const scoreInfo = calcStudentOverallScore(s, gradedMap.get(s.id) || []);
+        return {
+          ...s,
+          skills_avg: scoreInfo.skillsAvg,
+          homework_avg: scoreInfo.homeworkAvg,
+          avg_score: scoreInfo.overallScore
+        };
+      })
+    );
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -1313,7 +1404,7 @@ app.put('/api/admin/submissions/:id/grade', authMiddleware, adminOnly, async (re
     const { grade, teacher_feedback } = req.body;
     await dbRun(
       `UPDATE assignment_submissions SET grade = ?, teacher_feedback = ? WHERE id = ?`,
-      [Number(grade), teacher_feedback || '', req.params.id]
+      [clampScore(grade), teacher_feedback || '', req.params.id]
     );
     res.json({ message: 'Vazifa baholandi' });
   } catch (err) {
@@ -1383,15 +1474,28 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
     const student = await dbGet(`SELECT * FROM users WHERE id = ? AND role = 'student'`, [studentId]);
     if (!student) return res.status(404).json({ error: 'O‘quvchi topilmadi' });
 
-    const myAvg = calcAvgScore(student);
-
-    const rankingList = await dbAll(
+    const allStudents = await dbAll(
       `SELECT id, full_name, level, group_name, photo_url,
-              grammar, listening, reading, vocabulary, writing, speaking,
-              ROUND((grammar + listening + reading + vocabulary + writing + speaking) / 6.0) as avg_score
-       FROM users WHERE role = 'student'
-       ORDER BY avg_score DESC`
+              grammar, listening, reading, vocabulary, writing, speaking
+       FROM users WHERE role = 'student'`
     );
+    const gradedMap = await getGradedSubmissionsByStudentMap();
+
+    const myScoreInfo = calcStudentOverallScore(student, gradedMap.get(studentId) || []);
+    const myAvg = myScoreInfo.overallScore;
+
+    const rankingList = allStudents
+      .map((s) => {
+        const info = calcStudentOverallScore(s, gradedMap.get(s.id) || []);
+        return {
+          ...s,
+          skills_avg: info.skillsAvg,
+          homework_avg: info.homeworkAvg,
+          avg_score: info.overallScore
+        };
+      })
+      .sort((a, b) => b.avg_score - a.avg_score);
+
     const myRank = rankingList.findIndex((s) => s.id === studentId) + 1;
 
     const attendanceList = await dbAll(
@@ -1409,6 +1513,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       schedules,
       assignments,
       submissions,
+      skillEvaluations,
       myMonthlyHistory,
       yearlyTopList
     ] = await Promise.all([
@@ -1425,6 +1530,11 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
         [studentId]
       ),
       dbAll(
+        `SELECT id, grammar, listening, reading, vocabulary, writing, speaking, created_by, created_at
+         FROM skill_evaluations WHERE student_id = ? ORDER BY id DESC`,
+        [studentId]
+      ),
+      dbAll(
         `SELECT month_key, avg_score, attendance_percent
          FROM monthly_closings WHERE student_id = ? ORDER BY month_key ASC`,
         [studentId]
@@ -1438,6 +1548,33 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
          ORDER BY yearly_avg DESC, best_score DESC`
       )
     ]);
+
+    // Baholar tarixi (har bir fan ko'nikmasi va baholangan uyga vazifalar)
+    const gradeHistory = [];
+    for (const ev of skillEvaluations) {
+      for (const key of SKILL_KEYS) {
+        if (ev[key] !== null && ev[key] !== undefined) {
+          gradeHistory.push({
+            date: ev.created_at || '-',
+            subject: SKILL_LABELS[key],
+            category: 'Ko‘nikma',
+            score: Number(ev[key]) || 0,
+            by: ev.created_by || 'O‘qituvchi'
+          });
+        }
+      }
+    }
+    for (const sub of submissions) {
+      if (sub.grade !== null && sub.grade !== undefined) {
+        gradeHistory.push({
+          date: sub.submitted_at || '-',
+          subject: sub.assignment_title || 'Uyga vazifa',
+          category: 'Uyga vazifa',
+          score: Number(sub.grade) || 0,
+          by: 'O‘qituvchi'
+        });
+      }
+    }
 
     const prevMonth = myMonthlyHistory.length > 0 ? myMonthlyHistory[myMonthlyHistory.length - 1] : null;
     const improvement = prevMonth ? Number((myAvg - Number(prevMonth.avg_score || 0)).toFixed(1)) : 0;
@@ -1465,6 +1602,9 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       },
       performanceSummary: {
         avgScore: myAvg,
+        skillsAvg: myScoreInfo.skillsAvg,
+        homeworkAvg: myScoreInfo.homeworkAvg,
+        gradedHomeworkCount: myScoreInfo.gradedHomeworkCount,
         improvement,
         skillsTracked: 6
       },
@@ -1478,6 +1618,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
       schedules,
       assignments,
       submissions,
+      gradeHistory,
       myMonthlyHistory,
       yearlyTopList
     });
