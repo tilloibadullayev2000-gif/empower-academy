@@ -11,21 +11,21 @@
   <style>
     :root {
       --bg: #eef4ff;
-      --card: rgba(255, 255, 255, 0.88);
+      --card: rgba(255, 255, 255, 0.90);
       --text: #1e293b;
       --heading: #0f172a;
       --muted: #64748b;
-      --border: rgba(255, 255, 255, 0.72);
+      --border: rgba(255, 215, 0, 0.55);
       --input-bg: rgba(255, 255, 255, 0.92);
       --row-border: #f1f5f9;
     }
     body.dark {
       --bg: #0b1120;
-      --card: rgba(17, 25, 46, 0.88);
+      --card: rgba(17, 25, 46, 0.90);
       --text: #e2e8f0;
       --heading: #f8fafc;
       --muted: #94a3b8;
-      --border: rgba(148, 163, 184, 0.22);
+      --border: rgba(255, 215, 0, 0.35);
       --input-bg: rgba(22, 32, 51, 0.94);
       --row-border: #1e293b;
     }
@@ -87,7 +87,8 @@
       );
     }
 
-    #snowCanvas {
+    /* Orqa fon salyut (Fireworks) va qor canvaslari */
+    #fireworksCanvas {
       position: fixed;
       inset: 0;
       width: 100%;
@@ -96,6 +97,16 @@
       z-index: 2;
     }
 
+    #snowCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    /* Sifatli vektorga asoslangan Oyga uchuvchi Qorbobo va kiyiklar */
     .santa-flight-layer {
       position: fixed;
       inset: 0;
@@ -105,47 +116,48 @@
     }
     .santa-sleigh-runner {
       position: fixed;
-      top: 11%;
-      left: -340px;
+      top: 10%;
+      left: -440px;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       opacity: 0;
-      will-change: transform, opacity;
-      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+      will-change: transform, opacity, left, top;
+      filter: drop-shadow(0 12px 24px rgba(0, 0, 0, 0.42));
     }
     .santa-sleigh-runner.fly {
-      animation: santaFlyAcross 7.5s cubic-bezier(0.22, 0.65, 0.36, 1) forwards;
+      animation: santaFlyAcross 8.5s cubic-bezier(0.22, 0.65, 0.36, 1) forwards;
     }
-    .santa-sprite {
-      font-size: 38px;
-      line-height: 1;
-      transform: scaleX(-1);
-      display: inline-block;
+    .santa-sleigh-svg {
+      width: 310px;
+      height: auto;
+      display: block;
     }
-    .santa-trail {
-      font-size: 16px;
-      letter-spacing: 4px;
-      color: #fef08a;
-      text-shadow: 0 0 10px rgba(250, 204, 21, 0.9);
+    .reindeer-bob {
+      animation: reindeerGallop 0.65s ease-in-out infinite alternate;
+      transform-origin: center;
+    }
+    @keyframes reindeerGallop {
+      0% { transform: translateY(0px) rotate(-1.5deg); }
+      100% { transform: translateY(-4px) rotate(1.8deg); }
     }
     @keyframes santaFlyAcross {
-      0% { left: -340px; top: 14%; opacity: 0; transform: rotate(-4deg) scale(0.92); }
+      0% { left: -440px; top: 18%; opacity: 0; transform: rotate(-6deg) scale(0.88); }
       10% { opacity: 1; }
-      35% { top: 8%; transform: rotate(3deg) scale(1); }
-      65% { top: 13%; transform: rotate(-3deg) scale(1.03); }
+      35% { top: 9%; transform: rotate(-2deg) scale(0.98); }
+      68% { top: 12%; transform: rotate(-5deg) scale(1.02); }
       90% { opacity: 1; }
-      100% { left: calc(100vw + 360px); top: 7%; opacity: 0; transform: rotate(2deg) scale(0.96); }
+      100% { left: calc(100vw + 440px); top: 4%; opacity: 0; transform: rotate(-8deg) scale(0.92); }
     }
 
     .topbar {
-      background: rgba(10, 18, 38, 0.72);
+      background: rgba(10, 18, 38, 0.76);
       backdrop-filter: blur(14px);
       padding: 10px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+      border-bottom: 1.5px solid rgba(255, 215, 0, 0.45);
       position: sticky;
       top: 0;
       z-index: 30;
@@ -233,7 +245,7 @@
     .santa-trigger-btn {
       background: linear-gradient(135deg, #e11d48, #be123c);
       color: #fff;
-      border: none;
+      border: 1px solid rgba(255, 215, 0, 0.5);
       padding: 7px 12px;
       border-radius: 10px;
       font-size: 12px;
@@ -340,7 +352,7 @@
       background: linear-gradient(135deg, #2563eb, #3b82f6);
       color: #ffffff;
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
-      border-color: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 215, 0, 0.55);
     }
     .side-nav-item.tg-help-link {
       background: rgba(16, 185, 129, 0.18);
@@ -367,7 +379,7 @@
     .ny-banner {
       background: linear-gradient(90deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 41, 59, 0.72) 55%, rgba(15, 23, 42, 0.78) 100%);
       backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 215, 0, 0.35);
       border-radius: 16px;
       padding: 10px 16px;
       margin-bottom: 16px;
@@ -409,12 +421,12 @@
       position: relative;
       overflow: hidden;
       box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.28);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
     .kpi-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.32);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.32), 0 0 20px rgba(255, 215, 0, 0.3);
     }
     .kpi-card.blue-card { background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%); }
     .kpi-card.emerald-card { background: linear-gradient(135deg, #059669 0%, #10b981 55%, #34d399 100%); }
@@ -477,7 +489,7 @@
       background: rgba(15, 23, 42, 0.56);
       backdrop-filter: blur(12px);
       border-radius: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
+      border: 1px solid rgba(255, 215, 0, 0.3);
     }
     .tab-btn {
       padding: 8px 14px;
@@ -499,7 +511,7 @@
     .tab-btn.active {
       background: linear-gradient(135deg, #e11d48, #be123c);
       color: #ffffff;
-      box-shadow: 0 6px 16px rgba(225, 29, 72, 0.35);
+      box-shadow: 0 0 14px rgba(255, 215, 0, 0.4), 0 6px 16px rgba(225, 29, 72, 0.35);
     }
 
     .section { display: none; }
@@ -532,17 +544,102 @@
       margin-bottom: 10px;
     }
 
+    /* KARTALARGA O'QITUVCHI PANELIDEK RANGLI YANGI YIL SHULASI */
     .card {
       background: var(--card);
       backdrop-filter: blur(14px);
       border-radius: 22px;
       padding: 22px 24px;
-      box-shadow: 0 14px 34px rgba(8, 16, 38, 0.22);
-      border-left: 1px solid var(--border);
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
       margin-bottom: 18px;
       position: relative;
+      overflow: hidden;
+      border-left: 1.5px solid rgba(255, 215, 0, 0.55);
+      border-right: 1.5px solid rgba(255, 215, 0, 0.55);
+      border-bottom: 1.5px solid rgba(255, 215, 0, 0.55);
+      box-shadow:
+        0 14px 34px rgba(8, 16, 38, 0.22),
+        0 0 18px rgba(255, 215, 0, 0.24),
+        0 0 34px rgba(220, 38, 38, 0.14);
+      animation: nyCardPulse 3.4s ease-in-out infinite;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 3.5px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #ef4444,
+        #ffd700,
+        #22c55e,
+        #38bdf8,
+        #ffd700,
+        transparent
+      );
+      animation: nyLightSlide 4.2s linear infinite;
+      z-index: 4;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -75%;
+      width: 42%;
+      height: 200%;
+      background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 245, 190, 0.24) 50%,
+        rgba(255, 255, 255, 0) 100%
+      );
+      transform: rotate(25deg);
+      animation: nyCardShimmer 6s ease-in-out infinite;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    @keyframes nyLightSlide {
+      0% { left: -100%; }
+      100% { left: 100%; }
+    }
+    @keyframes nyCardShimmer {
+      0% { left: -75%; opacity: 0; }
+      30% { opacity: 1; }
+      65% { left: 135%; opacity: 0.85; }
+      100% { left: 135%; opacity: 0; }
+    }
+    @keyframes nyCardPulse {
+      0%, 100% {
+        box-shadow:
+          0 14px 34px rgba(8, 16, 38, 0.22),
+          0 0 18px rgba(255, 215, 0, 0.24),
+          0 0 32px rgba(220, 38, 38, 0.14);
+      }
+      50% {
+        box-shadow:
+          0 14px 34px rgba(8, 16, 38, 0.24),
+          0 0 26px rgba(255, 215, 0, 0.42),
+          0 0 44px rgba(34, 197, 94, 0.22);
+      }
+    }
+
+    .ny-sparkle {
+      position: absolute;
+      pointer-events: none;
+      font-size: 13px;
+      color: #f59e0b;
+      text-shadow: 0 0 8px rgba(255, 215, 0, 0.95);
+      animation: nySparkleFloat 2.8s ease-in-out infinite;
+      z-index: 5;
+    }
+    @keyframes nySparkleFloat {
+      0%, 100% { transform: translateY(0) scale(0.85); opacity: 0.35; }
+      50% { transform: translateY(-5px) scale(1.15); opacity: 1; }
     }
 
     .quick-actions-grid {
@@ -554,7 +651,7 @@
     .quick-action-btn {
       padding: 14px 16px;
       border-radius: 16px;
-      border: 1.5px solid rgba(148, 163, 184, 0.28);
+      border: 1.5px solid rgba(255, 215, 0, 0.4);
       background: var(--input-bg);
       color: var(--heading);
       font-size: 13px;
@@ -568,6 +665,7 @@
     }
     .quick-action-btn:hover {
       border-color: #2563eb;
+      box-shadow: 0 0 14px rgba(255, 215, 0, 0.35);
       transform: translateY(-2px);
     }
 
@@ -713,7 +811,7 @@
     .btn-save-gradient {
       width: 100%;
       height: 50px;
-      border: none;
+      border: 1px solid rgba(255, 215, 0, 0.55);
       border-radius: 14px;
       background: linear-gradient(90deg, #2563eb 0%, #6366f1 48%, #d946ef 100%);
       color: #ffffff;
@@ -724,12 +822,12 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+      box-shadow: 0 0 16px rgba(255, 215, 0, 0.35), 0 10px 24px rgba(99, 102, 241, 0.35);
       transition: transform 0.15s ease, box-shadow 0.2s ease;
     }
     .btn-save-gradient:hover {
       transform: translateY(-1px);
-      box-shadow: 0 14px 28px rgba(99, 102, 241, 0.45);
+      box-shadow: 0 0 22px rgba(255, 215, 0, 0.6), 0 14px 28px rgba(99, 102, 241, 0.45);
     }
 
     .form-submit-row {
@@ -793,11 +891,15 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #3b5bfd, #2563eb); color: white; border: none;
+      background: linear-gradient(135deg, #3b5bfd, #2563eb); color: white;
+      border: 1px solid rgba(255, 215, 0, 0.45);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
       padding: 11px 22px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
     .btn-success {
-      background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
+      background: linear-gradient(135deg, #10b981, #059669); color: white;
+      border: 1px solid rgba(255, 215, 0, 0.45);
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
       padding: 11px 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
     .btn-close-month {
@@ -892,12 +994,93 @@
   <!-- O'zgaruvchan fon (oboi) -->
   <div class="ny-wallpaper-layer" id="wallpaperLayer" aria-hidden="true"></div>
   <div class="ny-wallpaper-veil" aria-hidden="true"></div>
+  <!-- Salyut va Qor canvaslari -->
+  <canvas id="fireworksCanvas"></canvas>
   <canvas id="snowCanvas"></canvas>
 
+  <!-- Sifatli SVG Oyga uchuvchi Qorbobo va kiyiklar chanasi -->
   <div class="santa-flight-layer" aria-hidden="true">
     <div id="santaSleighRunner" class="santa-sleigh-runner">
-      <span class="santa-trail">✦ ✦ ✦</span>
-      <span class="santa-sprite">🦌🦌🛷🎅</span>
+      <svg class="santa-sleigh-svg" viewBox="0 0 420 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="goldTrail" x1="0" y1="70" x2="180" y2="70" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#FDE047" stop-opacity="0"/>
+            <stop offset="60%" stop-color="#FACC15" stop-opacity="0.55"/>
+            <stop offset="100%" stop-color="#FEF08A" stop-opacity="0.95"/>
+          </linearGradient>
+          <linearGradient id="sleighRed" x1="90" y1="50" x2="210" y2="110" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#EF4444"/>
+            <stop offset="100%" stop-color="#991B1B"/>
+          </linearGradient>
+          <radialGradient id="moonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#FEF9C3" stop-opacity="0.95"/>
+            <stop offset="70%" stop-color="#FDE047" stop-opacity="0.35"/>
+            <stop offset="100%" stop-color="#FACC15" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Oltin yulduzli shula izi -->
+        <path d="M5 92 Q 75 74, 145 88 T 225 82" stroke="url(#goldTrail)" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="38" cy="76" r="2.2" fill="#FEF08A"/>
+        <circle cx="66" cy="96" r="2.8" fill="#FDE047"/>
+        <circle cx="92" cy="70" r="2" fill="#FFFFFF"/>
+        <circle cx="115" cy="94" r="3" fill="#FACC15"/>
+
+        <!-- Sovg'a qopi -->
+        <ellipse cx="144" cy="64" rx="18" ry="15" fill="#15803D"/>
+        <rect x="135" y="47" width="8" height="8" rx="1.5" fill="#FACC15" transform="rotate(-12 135 47)"/>
+        <rect x="145" y="45" width="8" height="8" rx="1.5" fill="#38BDF8" transform="rotate(10 145 45)"/>
+
+        <!-- Qorbobo -->
+        <circle cx="168" cy="58" r="13" fill="#DC2626"/>
+        <!-- Qorbobo boshi va soqoli -->
+        <circle cx="170" cy="43" r="7.5" fill="#FDE68A"/>
+        <path d="M164 45 C164 53, 177 53, 177 45 Z" fill="#FFFFFF"/>
+        <!-- Qorbobo qalpog'i -->
+        <path d="M162 39 C165 29, 175 28, 179 38 Z" fill="#DC2626"/>
+        <rect x="161" y="37" width="18" height="4" rx="2" fill="#FFFFFF"/>
+        <circle cx="160" cy="33" r="3" fill="#FFFFFF"/>
+
+        <!-- Chana (Sleigh) -->
+        <path d="M126 68 C132 88, 188 88, 198 66 L192 64 C184 74, 142 74, 134 62 Z" fill="url(#sleighRed)" stroke="#FACC15" stroke-width="2"/>
+        <!-- Chana chang'ilari (oltin) -->
+        <path d="M118 96 Q 162 96, 206 94 Q 216 93, 218 84" stroke="#FACC15" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+        <line x1="142" y1="84" x2="140" y2="96" stroke="#FACC15" stroke-width="2.5"/>
+        <line x1="180" y1="84" x2="182" y2="95" stroke="#FACC15" stroke-width="2.5"/>
+
+        <!-- Jilov (Reins) -->
+        <path d="M180 56 Q 235 66, 336 56" stroke="#FDE047" stroke-width="1.6" stroke-dasharray="3 2" fill="none"/>
+
+        <!-- 1-Kiyik (orqadagi) -->
+        <g class="reindeer-bob">
+          <ellipse cx="264" cy="68" rx="16" ry="8.5" fill="#92400E"/>
+          <path d="M275 63 L282 49 L288 51 L281 66 Z" fill="#92400E"/>
+          <circle cx="286" cy="49" r="5.5" fill="#A16207"/>
+          <circle cx="291" cy="49" r="2" fill="#FACC15"/>
+          <!-- Shoxlari -->
+          <path d="M284 44 L281 34 M281 38 L277 36 M287 44 L289 34 M289 38 L293 36" stroke="#FDE68A" stroke-width="1.6" stroke-linecap="round"/>
+          <!-- Oyoqlari -->
+          <path d="M252 74 L245 88 M258 75 L254 89 M272 74 L278 88 M277 73 L285 86" stroke="#78350F" stroke-width="2.4" stroke-linecap="round"/>
+        </g>
+
+        <!-- 2-Kiyik (oldindagi Rudolf — qizil burunli) -->
+        <g class="reindeer-bob" style="animation-delay: 0.25s;">
+          <ellipse cx="328" cy="62" rx="17" ry="9" fill="#B45309"/>
+          <path d="M340 57 L348 42 L354 44 L346 60 Z" fill="#B45309"/>
+          <circle cx="352" cy="42" r="6" fill="#D97706"/>
+          <!-- Rudolfning yonib turuvchi qizil burni -->
+          <circle cx="358" cy="42" r="2.8" fill="#EF4444"/>
+          <circle cx="358" cy="42" r="6" fill="#EF4444" opacity="0.35"/>
+          <!-- Shoxlari -->
+          <path d="M350 37 L346 26 M346 31 L342 29 M353 37 L356 26 M356 31 L360 29" stroke="#FEF08A" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Oyoqlari -->
+          <path d="M315 68 L307 83 M322 69 L318 84 M337 68 L344 82 M342 67 L351 80" stroke="#78350F" stroke-width="2.5" stroke-linecap="round"/>
+        </g>
+
+        <!-- Oldinda porlab turgan yarim oy nishoni -->
+        <circle cx="390" cy="36" r="22" fill="url(#moonGlow)"/>
+        <path d="M393 22 A14 14 0 1 0 403 44 A11 11 0 1 1 393 22 Z" fill="#FEF08A"/>
+      </svg>
     </div>
   </div>
 
@@ -961,8 +1144,8 @@
       <!-- Bayram banneri -->
       <div class="ny-banner">
         <div class="ny-banner-text">
-          <span>🎄</span>
-          <span>Yangi Yil bayram muhiti faol — o‘zgaruvchan fon (oboi) va yaltilovchi qor parchalari!</span>
+          <span>🎆</span>
+          <span>Yangi Yil bayram muhiti faol — salyutlar, o‘zgaruvchan fon (oboi) va yaltilovchi qor parchalari!</span>
         </div>
         <div class="ny-banner-pill" id="wallpaperModePill">▶ Avto-oboi (14s)</div>
       </div>
@@ -1797,6 +1980,129 @@
   <div id="toast" class="toast"></div>
 
   <script>
+    /* Kartalarga yaltiroq yulduzcha / qor uchquni shulalarini qo'shish */
+    document.querySelectorAll('.card').forEach(card => {
+      const s1 = document.createElement('span');
+      s1.className = 'ny-sparkle';
+      s1.textContent = '✦';
+      s1.style.top = '12px';
+      s1.style.right = '16px';
+      card.appendChild(s1);
+
+      const s2 = document.createElement('span');
+      s2.className = 'ny-sparkle';
+      s2.textContent = '❄';
+      s2.style.bottom = '12px';
+      s2.style.right = '22px';
+      s2.style.animationDelay = '1.3s';
+      card.appendChild(s2);
+    });
+
+    /* ORQA FON SALYUT (FIREWORKS) ANIMATSIYASI */
+    (function initFireworks() {
+      const canvas = document.getElementById('fireworksCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W = canvas.width = window.innerWidth;
+      let H = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      });
+
+      const colors = ['#ff3b3b', '#ffd700', '#22c55e', '#38bdf8', '#f472b6', '#a855f7', '#fb923c'];
+      const rockets = [];
+      const particles = [];
+
+      function launchRocket() {
+        rockets.push({
+          x: W * (0.1 + Math.random() * 0.8),
+          y: H + 10,
+          vx: (Math.random() - 0.5) * 2.2,
+          vy: -(7 + Math.random() * 4.5),
+          targetY: H * (0.14 + Math.random() * 0.38),
+          color: colors[Math.floor(Math.random() * colors.length)]
+        });
+      }
+
+      function explode(x, y, color) {
+        const count = 44;
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.2;
+          const speed = 1.5 + Math.random() * 4.3;
+          particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            alpha: 1,
+            decay: 0.013 + Math.random() * 0.012,
+            color: Math.random() > 0.25 ? color : '#ffd700',
+            size: 1.8 + Math.random() * 1.9
+          });
+        }
+      }
+
+      let lastLaunch = 0;
+      function animate(ts) {
+        ctx.clearRect(0, 0, W, H);
+
+        if (ts - lastLaunch > 950) {
+          launchRocket();
+          if (Math.random() > 0.55) launchRocket();
+          lastLaunch = ts;
+        }
+
+        for (let i = rockets.length - 1; i >= 0; i--) {
+          const r = rockets[i];
+          r.x += r.vx;
+          r.y += r.vy;
+          r.vy += 0.06;
+
+          ctx.beginPath();
+          ctx.arc(r.x, r.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = r.color;
+          ctx.fill();
+
+          if (r.y <= r.targetY || r.vy >= 0) {
+            explode(r.x, r.y, r.color);
+            rockets.splice(i, 1);
+          }
+        }
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += 0.04;
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.shadowBlur = 9;
+          ctx.shadowColor = p.color;
+          ctx.fill();
+          ctx.restore();
+        }
+
+        requestAnimationFrame(animate);
+      }
+
+      launchRocket();
+      requestAnimationFrame(animate);
+    })();
+
     (function initDynamicWallpaper() {
       const FALLBACK_WALLPAPERS = [
         'data:image/svg+xml;utf8,' + encodeURIComponent(`
@@ -2421,6 +2727,7 @@
       const html = `
         <html xmlns:o="urn:schemas-microsoft-com:office:office"
               xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns:v="urn:schemas-microsoft-com:vml"
               xmlns="http://www.w3.org/TR/REC-html40">
         <head><meta charset="UTF-8" /></head>
         <body><table border="1"><thead><tr>${headHtml}</tr></thead><tbody>${bodyHtml}</tbody></table></body></html>
