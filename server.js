@@ -274,6 +274,35 @@ async function initDb() {
   }
 }
 
+async function recalculateStudentSkillsFromEvaluations(studentId) {
+  const allEvals = await dbAll(
+    `SELECT grammar, listening, reading, vocabulary, writing, speaking FROM skill_evaluations WHERE student_id = ?`,
+    [studentId]
+  );
+
+  const averages = {};
+  for (const key of SKILL_KEYS) {
+    const sum = allEvals.reduce((acc, row) => acc + (Number(row[key]) || 0), 0);
+    averages[key] = allEvals.length > 0 ? Math.round(sum / allEvals.length) : 0;
+  }
+
+  await dbRun(
+    `UPDATE users SET grammar=?, listening=?, reading=?, vocabulary=?, writing=?, speaking=?
+     WHERE id=? AND role='student'`,
+    [
+      averages.grammar,
+      averages.listening,
+      averages.reading,
+      averages.vocabulary,
+      averages.writing,
+      averages.speaking,
+      studentId
+    ]
+  );
+
+  return averages;
+}
+
 async function recordAndRecalculateSkills(studentId, body, actorName = 'system') {
   const existing = await dbGet(
     `SELECT id, grammar, listening, reading, vocabulary, writing, speaking FROM users WHERE id = ? AND role = 'student'`,
@@ -331,32 +360,7 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
     ]
   );
 
-  const allEvals = await dbAll(
-    `SELECT grammar, listening, reading, vocabulary, writing, speaking FROM skill_evaluations WHERE student_id = ?`,
-    [studentId]
-  );
-
-  const averages = {};
-  for (const key of SKILL_KEYS) {
-    const sum = allEvals.reduce((acc, row) => acc + (Number(row[key]) || 0), 0);
-    averages[key] = allEvals.length > 0 ? Math.round(sum / allEvals.length) : 0;
-  }
-
-  await dbRun(
-    `UPDATE users SET grammar=?, listening=?, reading=?, vocabulary=?, writing=?, speaking=?
-     WHERE id=? AND role='student'`,
-    [
-      averages.grammar,
-      averages.listening,
-      averages.reading,
-      averages.vocabulary,
-      averages.writing,
-      averages.speaking,
-      studentId
-    ]
-  );
-
-  return averages;
+  return await recalculateStudentSkillsFromEvaluations(studentId);
 }
 
 function authMiddleware(req, res, next) {
@@ -1117,6 +1121,34 @@ app.get('/api/admin/attendance', authMiddleware, adminOnly, async (req, res) => 
          ORDER BY a.id DESC LIMIT 200`
       )
     );
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/admin/skill-evaluations', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const rows = await dbAll(
+      `SELECT se.*, u.full_name
+       FROM skill_evaluations se
+       JOIN users u ON u.id = se.student_id
+       ORDER BY se.id DESC LIMIT 200`
+    );
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.delete('/api/admin/skill-evaluations/:id', authMiddleware, adminOnly, async (req, res) => {
+  try {
+    const ev = await dbGet(`SELECT student_id FROM skill_evaluations WHERE id = ?`, [req.params.id]);
+    if (!ev) return res.status(404).json({ error: 'Yozuv topilmadi' });
+
+    await dbRun(`DELETE FROM skill_evaluations WHERE id = ?`, [req.params.id]);
+    const averages = await recalculateStudentSkillsFromEvaluations(ev.student_id);
+
+    res.json({ message: 'Baho yozuvi o‘chirildi va o‘rtacha ball qayta hisoblandi!', averages });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
