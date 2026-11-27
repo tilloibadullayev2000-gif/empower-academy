@@ -173,6 +173,7 @@
 
     .badge-ok { background: #dcfce7; color: #15803d; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
     .badge-low { background: #fee2e2; color: #b91c1c; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+    .badge-hw { background: #dbeafe; color: #1d4ed8; padding: 3px 9px; border-radius: 99px; font-size: 11px; font-weight: 700; }
     .submitted-note {
       margin-top: 8px;
       padding: 9px 12px;
@@ -280,7 +281,7 @@
         <div class="stat-card">
           <div class="stat-label" data-i18n="statAvg">O‘rtacha bilim balli</div>
           <div class="stat-value" id="avgSkillScore">0%</div>
-          <div class="stat-sub" id="avgImprovementText">6 ta ko‘nikma</div>
+          <div class="stat-sub" id="avgImprovementText">50% ko‘nikma + 50% vazifa</div>
         </div>
         <div class="stat-card">
           <div class="stat-label" data-i18n="statRank">Reytingdagi o‘rnim</div>
@@ -357,6 +358,25 @@
             <div style="height:185px;"><canvas id="studentYearlyChart"></canvas></div>
           </div>
         </div>
+
+        <div class="card">
+          <div class="card-header-flex">
+            <h2 style="margin-bottom:0;" data-i18n="gradeHistoryTitle">Baholar tarixi (Fanlar va uyga vazifalar)</h2>
+            <span class="badge-hw" data-i18n="formulaBadge">50% Ko‘nikma + 50% Vazifa</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th data-i18n="thDate">Sana</th>
+                <th data-i18n="thSubject">Fan / Vazifa</th>
+                <th data-i18n="thCategory">Turi</th>
+                <th data-i18n="thGrade">Baho</th>
+                <th data-i18n="thBy">Kim qo‘ydi</th>
+              </tr>
+            </thead>
+            <tbody id="gradeHistoryBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div id="lessonsPage" class="page-section">
@@ -423,11 +443,13 @@
       uz: {
         navOverview: 'Umumiy ko‘rsatkich', navLessons: 'Darsliklar bo‘limi', navAssignments: 'Vazifalarim',
         navSchedule: 'Dars jadvali', navAttendance: 'Davomatim', navFinance: 'Buxgalteriyam', logout: 'Chiqish',
-        statAtt: 'Davomat ko‘rsatkichi', statAvg: 'O‘rtacha bilim balli', statSixSkills: '6 ta ko‘nikma',
+        statAtt: 'Davomat ko‘rsatkichi', statAvg: 'O‘rtacha bilim balli', statSixSkills: '50% ko‘nikma + 50% vazifa',
         statRank: 'Reytingdagi o‘rnim', statBalance: 'Shaxsiy balansim', skillsTitle: 'Ko‘nikmalar tahlili',
         topTitle: 'Top o‘quvchilar', thName: 'Ism', thScore: 'Ball', thLevel: 'Daraja',
         annTitle: 'E’lonlar', monthlyTitle: 'Oylik statistika', monthlyBadge: 'Oylik',
         yearlyTitle: 'Yillik statistika', yearlyBadge: 'Yillik', flameTopLabel: '🔥 Yilning TOP-1 o‘quvchisi',
+        gradeHistoryTitle: 'Baholar tarixi (Fanlar va uyga vazifalar)', formulaBadge: '50% Ko‘nikma + 50% Vazifa',
+        thSubject: 'Fan / Vazifa', thCategory: 'Turi', thBy: 'Kim qo‘ydi',
         lessonsTitle: 'Darsliklar va o‘quv materiallari', assignmentsTitle: 'Uy vazifalari va javob yuborish',
         mySubmissionsTitle: 'Yuborgan javoblarim va baholar', thAssignment: 'Vazifa', thAnswer: 'Javob',
         thGrade: 'Baho', thFeedback: 'Izoh', scheduleTitle: 'Haftalik dars jadvali', thGroup: 'Guruh',
@@ -440,11 +462,13 @@
       en: {
         navOverview: 'Overview', navLessons: 'Lessons', navAssignments: 'Assignments',
         navSchedule: 'Schedule', navAttendance: 'Attendance', navFinance: 'Finance', logout: 'Logout',
-        statAtt: 'Attendance Rate', statAvg: 'Average Skill Score', statSixSkills: '6 skills',
+        statAtt: 'Attendance Rate', statAvg: 'Average Skill Score', statSixSkills: '50% skills + 50% homework',
         statRank: 'My Rank', statBalance: 'My Balance', skillsTitle: 'Skills Analysis',
         topTitle: 'Top Students', thName: 'Name', thScore: 'Score', thLevel: 'Level',
         annTitle: 'Announcements', monthlyTitle: 'Monthly Statistics', monthlyBadge: 'Monthly',
         yearlyTitle: 'Yearly Statistics', yearlyBadge: 'Yearly', flameTopLabel: '🔥 TOP-1 Student of the Year',
+        gradeHistoryTitle: 'Grade History (Subjects & Homework)', formulaBadge: '50% Skills + 50% Homework',
+        thSubject: 'Subject / Homework', thCategory: 'Type', thBy: 'Graded By',
         lessonsTitle: 'Lessons & Study Materials', assignmentsTitle: 'Assignments & Submission',
         mySubmissionsTitle: 'My Submissions & Grades', thAssignment: 'Assignment', thAnswer: 'Answer',
         thGrade: 'Grade', thFeedback: 'Feedback', scheduleTitle: 'Weekly Class Schedule', thGroup: 'Group',
@@ -457,11 +481,13 @@
       ru: {
         navOverview: 'Обзор', navLessons: 'Уроки', navAssignments: 'Задания',
         navSchedule: 'Расписание', navAttendance: 'Посещаемость', navFinance: 'Финансы', logout: 'Выход',
-        statAtt: 'Посещаемость', statAvg: 'Средний балл', statSixSkills: '6 навыков',
+        statAtt: 'Посещаемость', statAvg: 'Средний балл', statSixSkills: '50% навыки + 50% ДЗ',
         statRank: 'Моё место', statBalance: 'Мой баланс', skillsTitle: 'Анализ навыков',
         topTitle: 'Топ учеников', thName: 'Имя', thScore: 'Балл', thLevel: 'Уровень',
         annTitle: 'Объявления', monthlyTitle: 'Месячная статистика', monthlyBadge: 'Месяц',
         yearlyTitle: 'Годовая статистика', yearlyBadge: 'Год', flameTopLabel: '🔥 ТОП-1 ученик года',
+        gradeHistoryTitle: 'История оценок (Предметы и ДЗ)', formulaBadge: '50% Навыки + 50% ДЗ',
+        thSubject: 'Предмет / Задание', thCategory: 'Тип', thBy: 'Кто поставил',
         lessonsTitle: 'Уроки и материалы', assignmentsTitle: 'Домашние задания и отправка',
         mySubmissionsTitle: 'Мои ответы и оценки', thAssignment: 'Задание', thAnswer: 'Ответ',
         thGrade: 'Оценка', thFeedback: 'Комментарий', scheduleTitle: 'Расписание занятий', thGroup: 'Группа',
@@ -726,10 +752,11 @@
         }));
       }
 
-      const improvementVal = Number(data.performanceSummary?.improvement ?? 0);
-      const impSign = improvementVal > 0 ? `+${improvementVal}%` : `${improvementVal}%`;
+      const hwAvgText = data.performanceSummary?.homeworkAvg !== null && data.performanceSummary?.homeworkAvg !== undefined
+        ? ` • Vazifa: ${data.performanceSummary.homeworkAvg}%`
+        : '';
       document.getElementById('avgSkillScore').textContent = computedAvg + '%';
-      document.getElementById('avgImprovementText').textContent = `${tr('statSixSkills')} • ${impSign}`;
+      document.getElementById('avgImprovementText').textContent = `${tr('statSixSkills')}${hwAvgText}`;
       document.getElementById('myRankText').textContent = '#' + (data.myRank || 1);
       document.getElementById('totalStudentsText').textContent = `/ ${ranking.length || 1}`;
       document.getElementById('balanceText').textContent = `${Number(st.balance || 0).toLocaleString()} ${tr('currency')}`;
@@ -745,6 +772,22 @@
           </div>
         `;
       }).join('');
+
+      // Baholar tarixi (fanlar ko'nikmalari + baholangan uyga vazifalar)
+      const gradeHistoryList = Array.isArray(data.gradeHistory) ? data.gradeHistory : [];
+      document.getElementById('gradeHistoryBody').innerHTML = gradeHistoryList.map(item => {
+        const isHw = item.category === 'Uyga vazifa';
+        const badgeClass = isHw ? 'badge-hw' : 'badge-ok';
+        return `
+          <tr>
+            <td>${escapeHtml(item.date || '-')}</td>
+            <td><b>${escapeHtml(item.subject || '-')}</b></td>
+            <td><span class="${badgeClass}">${escapeHtml(item.category || '-')}</span></td>
+            <td><b>${Number(item.score) || 0}%</b></td>
+            <td>${escapeHtml(item.by || '-')}</td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="5">-</td></tr>';
 
       const yearlyLeaders = Array.isArray(data.yearlyTopList) ? data.yearlyTopList : [];
       const archiveTop1 = yearlyLeaders[0];
