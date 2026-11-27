@@ -8,100 +8,48 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #eaf0f7;
-      --card: rgba(255, 255, 255, 0.94);
+      --bg: #070e1f;
+      --card: rgba(255, 255, 255, 0.92);
       --text: #1e293b;
       --heading: #0f172a;
       --muted: #64748b;
-      --border: #dde5f0;
-      --input-bg: #f8fafc;
+      --border: rgba(226, 232, 240, 0.9);
+      --input-bg: rgba(248, 250, 252, 0.95);
       --row-border: #eef2f7;
       --tab-active: #e11d48;
-      --winter-glow: linear-gradient(180deg, #e2ebf6 0%, #eef3f9 55%, #f6f8fb 100%);
+      --card-shadow: 0 14px 36px rgba(2, 8, 23, 0.22);
     }
     body.dark {
-      --bg: #090f1d;
-      --card: rgba(15, 23, 42, 0.92);
+      --bg: #050a17;
+      --card: rgba(15, 23, 42, 0.86);
       --text: #e2e8f0;
       --heading: #f8fafc;
       --muted: #94a3b8;
-      --border: #1e293b;
-      --input-bg: #162033;
+      --border: rgba(51, 65, 85, 0.75);
+      --input-bg: rgba(22, 32, 51, 0.92);
       --row-border: #1e293b;
       --tab-active: #e11d48;
-      --winter-glow: linear-gradient(180deg, #070d1b 0%, #0d162b 60%, #111827 100%);
+      --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
     body {
-      background: var(--winter-glow);
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      transition: 0.25s;
+      transition: background 0.25s, color 0.25s;
       position: relative;
       overflow-x: hidden;
     }
 
-    #snowCanvas {
+    #hdWinterScene {
       position: fixed;
       inset: 0;
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 2;
-    }
-
-    /* Sokin kiyiklar + chana + qorbobo silueti */
-    .sleigh-layer {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 3;
-      overflow: hidden;
-    }
-    .sleigh-sil {
-      position: fixed;
-      top: 78px;
-      left: -260px;
-      width: 210px;
-      height: 44px;
-      opacity: 0;
-      color: #334155;
-      filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.14));
-      will-change: transform, opacity;
-    }
-    body.dark .sleigh-sil {
-      color: #f8fafc;
-      filter: drop-shadow(0 0 14px rgba(254, 240, 138, 0.35));
-    }
-    .sleigh-sil.glide {
-      animation: glideAcrossSky 12s linear forwards;
-    }
-    @keyframes glideAcrossSky {
-      0% {
-        left: -240px;
-        top: 92px;
-        opacity: 0;
-        transform: rotate(-3deg);
-      }
-      12% {
-        opacity: 0.42;
-      }
-      50% {
-        top: 68px;
-        opacity: 0.52;
-        transform: rotate(-5deg);
-      }
-      88% {
-        opacity: 0.42;
-      }
-      100% {
-        left: calc(100vw + 250px);
-        top: 86px;
-        opacity: 0;
-        transform: rotate(-2deg);
-      }
+      z-index: 1;
     }
 
     .topbar, .container, .modal-backdrop, .toast {
@@ -113,14 +61,15 @@
 
     .topbar {
       background: var(--card);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       padding: 8px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
       gap: 10px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 6px 24px rgba(2, 8, 23, 0.16);
       border-bottom: 1px solid var(--border);
       position: sticky;
       top: 0;
@@ -131,7 +80,8 @@
     .brand-title { font-size: 16px; font-weight: 800; color: #e11d48; line-height: 1.05; }
     .brand-sub { font-size: 9px; font-weight: 800; color: #e11d48; letter-spacing: 2px; }
     .admin-badge {
-      background: #e11d48; color: #fff; font-size: 10px; font-weight: 800;
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: #fff; font-size: 10px; font-weight: 800;
       padding: 3px 9px; border-radius: 99px; letter-spacing: 0.4px; white-space: nowrap;
     }
     .top-actions { display: flex; gap: 8px; align-items: center; }
@@ -144,13 +94,20 @@
       padding: 7px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
     }
 
-    .container { max-width: 1400px; margin: 18px auto 24px; padding: 0 24px; }
+    .container { max-width: 1400px; margin: 18px auto 28px; padding: 0 24px; }
 
     .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
     .kpi-card {
-      background: var(--card); backdrop-filter: blur(8px); border-radius: 22px; padding: 20px 22px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04); border-left: 5px solid #3b5bfd;
-      border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 22px;
+      padding: 20px 22px;
+      box-shadow: var(--card-shadow);
+      border-left: 5px solid #3b5bfd;
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
     }
     .kpi-card.emerald { border-left-color: #10b981; }
     .kpi-card.rose { border-left-color: #e11d48; }
@@ -162,33 +119,40 @@
     .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
     .tab-btn {
       padding: 10px 16px; border-radius: 13px; border: 1px solid var(--border);
-      background: var(--card); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); transition: 0.2s;
+      background: var(--card); backdrop-filter: blur(12px); color: var(--text);
+      font-weight: 700; font-size: 13px; cursor: pointer;
+      box-shadow: 0 6px 18px rgba(2, 8, 23, 0.14); transition: 0.2s;
     }
     .tab-btn.active {
       background: var(--tab-active); color: #ffffff; border-color: transparent;
-      box-shadow: 0 8px 20px rgba(225, 29, 72, 0.24);
+      box-shadow: 0 8px 22px rgba(225, 29, 72, 0.36);
     }
 
     .section { display: none; }
     .section.active { display: block; }
 
-    /* Har bir bo'lim uchun sokin, nafis rang urg'usi */
-    .section[data-theme="students"] .card { border-top: 3px solid #16a34a; }
-    .section[data-theme="teachers"] .card { border-top: 3px solid #2563eb; }
-    .section[data-theme="finance"] .card { border-top: 3px solid #d97706; }
-    .section[data-theme="attendance"] .card { border-top: 3px solid #0891b2; }
-    .section[data-theme="skills"] .card { border-top: 3px solid #e11d48; }
-    .section[data-theme="lessons"] .card { border-top: 3px solid #059669; }
-    .section[data-theme="assignments"] .card { border-top: 3px solid #ea580c; }
-    .section[data-theme="extra"] .card { border-top: 3px solid #dc2626; }
-    .section[data-theme="analytics"] .card { border-top: 3px solid #7c3aed; }
-    .section[data-theme="close-month"] .card { border-top: 3px solid #be123c; }
+    /* Har bir bo'lim uchun alohida bayramona bezak chizig'i va soyasi */
+    .section[data-season="students"] .card { border-top: 4px solid #16a34a; box-shadow: 0 14px 36px rgba(22, 163, 74, 0.22); }
+    .section[data-season="teachers"] .card { border-top: 4px solid #38bdf8; box-shadow: 0 14px 36px rgba(56, 189, 248, 0.22); }
+    .section[data-season="finance"] .card { border-top: 4px solid #facc15; box-shadow: 0 14px 36px rgba(250, 204, 21, 0.22); }
+    .section[data-season="attendance"] .card { border-top: 4px solid #22d3ee; box-shadow: 0 14px 36px rgba(34, 211, 238, 0.22); }
+    .section[data-season="skills"] .card { border-top: 4px solid #fb7185; box-shadow: 0 14px 36px rgba(251, 113, 133, 0.22); }
+    .section[data-season="lessons"] .card { border-top: 4px solid #34d399; box-shadow: 0 14px 36px rgba(52, 211, 153, 0.22); }
+    .section[data-season="assignments"] .card { border-top: 4px solid #fb923c; box-shadow: 0 14px 36px rgba(251, 146, 60, 0.22); }
+    .section[data-season="extra"] .card { border-top: 4px solid #f87171; box-shadow: 0 14px 36px rgba(248, 113, 113, 0.22); }
+    .section[data-season="analytics"] .card { border-top: 4px solid #a78bfa; box-shadow: 0 14px 36px rgba(167, 139, 250, 0.22); }
+    .section[data-season="close-month"] .card { border-top: 4px solid #e11d48; box-shadow: 0 14px 36px rgba(225, 29, 72, 0.24); }
 
     .card {
-      background: var(--card); backdrop-filter: blur(8px); border-radius: 22px; padding: 24px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-      border-left: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--card);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: var(--card-shadow);
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       margin-bottom: 20px;
     }
     .card-header-flex {
@@ -356,28 +320,7 @@
 </head>
 <body>
 
-  <canvas id="snowCanvas"></canvas>
-
-  <div class="sleigh-layer" aria-hidden="true">
-    <svg id="sleighSil" class="sleigh-sil" viewBox="0 0 220 48" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-      <!-- Kiyiklar + chana + qorbobo silueti -->
-      <path d="M18 32 H66 C71 32 75 28 76 23 L72 22 C71 26 68 28 64 28 H22 C18 28 16 25 16 21 H12 C12 27 15 32 18 32 Z" />
-      <path d="M24 28 V17 H58 L63 22 V28 Z" />
-      <circle cx="34" cy="12" r="4" />
-      <path d="M30 11 L36 7 L39 12 Z" />
-      <line x1="63" y1="22" x2="112" y2="20" stroke="currentColor" stroke-width="1.2" opacity="0.7" />
-      <!-- 1-kiyik -->
-      <ellipse cx="126" cy="22" rx="10" ry="5" />
-      <path d="M135 20 L141 13 L144 14 L138 22 Z" />
-      <path d="M120 26 L117 35 M124 26 L124 35 M131 26 L133 35 M134 26 L137 35" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-      <path d="M141 13 L139 8 M141 13 L145 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-      <!-- 2-kiyik -->
-      <ellipse cx="176" cy="19" rx="10" ry="5" />
-      <path d="M185 17 L191 10 L194 11 L188 19 Z" />
-      <path d="M170 23 L167 32 M174 23 L174 32 M181 23 L183 32 M184 23 L187 32" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
-      <path d="M191 10 L189 5 M191 10 L195 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-    </svg>
-  </div>
+  <canvas id="hdWinterScene"></canvas>
 
   <header class="topbar">
     <div class="brand">
@@ -436,7 +379,7 @@
       <button class="tab-btn" data-tab="closeMonthTab" data-i18n="tabCloseMonth">Oy yopish</button>
     </div>
 
-    <div id="studentsTab" class="section active" data-theme="students">
+    <div id="studentsTab" class="section active" data-season="students">
       <div class="card">
         <h2 data-i18n="addStudentTitle">Yangi o‘quvchini ro‘yxatdan o‘tkazish</h2>
         <form id="addStudentForm">
@@ -488,7 +431,7 @@
       </div>
     </div>
 
-    <div id="teachersTab" class="section" data-theme="teachers">
+    <div id="teachersTab" class="section" data-season="teachers">
       <div class="card">
         <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
         <form id="addTeacherForm">
@@ -533,7 +476,7 @@
       </div>
     </div>
 
-    <div id="financeTab" class="section" data-theme="finance">
+    <div id="financeTab" class="section" data-season="finance">
       <div class="card">
         <h2 data-i18n="balanceFormTitle">O‘quvchi balansini to‘ldirish yoki yechish</h2>
         <form id="balanceForm">
@@ -568,7 +511,7 @@
       </div>
     </div>
 
-    <div id="attendanceTab" class="section" data-theme="attendance">
+    <div id="attendanceTab" class="section" data-season="attendance">
       <div class="card">
         <h2 data-i18n="bulkAttTitle">Birvarakayiga davomat olish (Barcha o‘quvchilar)</h2>
         <div class="grid-2" style="margin-bottom:12px;">
@@ -620,7 +563,7 @@
       </div>
     </div>
 
-    <div id="skillsTab" class="section" data-theme="skills">
+    <div id="skillsTab" class="section" data-season="skills">
       <div class="card">
         <h2 data-i18n="skillsFormTitle">O‘quvchi bilim ballarini yangilash (0 - 100)</h2>
         <div class="skill-preview-box">
@@ -680,7 +623,7 @@
       </div>
     </div>
 
-    <div id="lessonsTab" class="section" data-theme="lessons">
+    <div id="lessonsTab" class="section" data-season="lessons">
       <div class="card">
         <h2 data-i18n="addLessonTitle">Yangi darslik qo‘shish (Fayl yoki Havola)</h2>
         <form id="lessonForm">
@@ -715,7 +658,7 @@
       </div>
     </div>
 
-    <div id="assignmentsTab" class="section" data-theme="assignments">
+    <div id="assignmentsTab" class="section" data-season="assignments">
       <div class="card">
         <h2 data-i18n="addAssignmentTitle">Yangi uy vazifasi / topshiriq berish</h2>
         <form id="assignmentForm">
@@ -758,7 +701,7 @@
       </div>
     </div>
 
-    <div id="extraTab" class="section" data-theme="extra">
+    <div id="extraTab" class="section" data-season="extra">
       <div class="grid-2">
         <div class="card">
           <div class="card-header-flex">
@@ -823,7 +766,7 @@
       </div>
     </div>
 
-    <div id="analyticsTab" class="section" data-theme="analytics">
+    <div id="analyticsTab" class="section" data-season="analytics">
       <div class="grid-2">
         <div class="card">
           <div class="card-header-flex">
@@ -867,7 +810,7 @@
       </div>
     </div>
 
-    <div id="closeMonthTab" class="section" data-theme="close-month">
+    <div id="closeMonthTab" class="section" data-season="close-month">
       <div class="card">
         <h2 data-i18n="closeMonthTitle">Oylik yakun (Закрытие месяца)</h2>
         <p style="font-size:13px; color:var(--muted); margin:6px 0 18px;" data-i18n="closeMonthDesc">
@@ -1010,71 +953,442 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    /* Tinimsiz mayin qor yog'ishi */
-    (function initContinuousSnow() {
-      const canvas = document.getElementById('snowCanvas');
+    (function initHDAnimatedWinterScene() {
+      const canvas = document.getElementById('hdWinterScene');
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
+      let W = window.innerWidth;
+      let H = window.innerHeight;
 
-      const count = Math.min(95, Math.max(45, Math.floor((width * height) / 18000)));
-      const flakes = Array.from({ length: count }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: 1.2 + Math.random() * 2.4,
-        vy: 0.65 + Math.random() * 1.35,
-        vx: -0.35 + Math.random() * 0.7,
-        swing: Math.random() * Math.PI * 2,
-        swingSpeed: 0.008 + Math.random() * 0.015,
-        alpha: 0.32 + Math.random() * 0.42
+      function resize() {
+        W = window.innerWidth;
+        H = window.innerHeight;
+        canvas.width = Math.floor(W * dpr);
+        canvas.height = Math.floor(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      const stars = Array.from({ length: 140 }, () => ({
+        x: Math.random(),
+        y: Math.random() * 0.62,
+        r: 0.6 + Math.random() * 1.9,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.015 + Math.random() * 0.03
       }));
 
-      function drawSnow() {
-        ctx.clearRect(0, 0, width, height);
-        const isDark = document.body.classList.contains('dark');
-        for (const f of flakes) {
-          f.swing += f.swingSpeed;
-          f.x += f.vx + Math.sin(f.swing) * 0.28;
+      const snowFlakes = Array.from({ length: 220 }, (_, idx) => {
+        const layer = idx % 3;
+        return {
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: layer === 2 ? 3.2 + Math.random() * 2.6 : layer === 1 ? 1.8 + Math.random() * 1.5 : 0.9 + Math.random() * 1.0,
+          vy: layer === 2 ? 1.6 + Math.random() * 1.2 : layer === 1 ? 0.95 + Math.random() * 0.7 : 0.5 + Math.random() * 0.4,
+          vx: -0.45 + Math.random() * 0.9,
+          sway: Math.random() * Math.PI * 2,
+          swaySpeed: 0.01 + Math.random() * 0.02,
+          alpha: layer === 2 ? 0.85 : layer === 1 ? 0.65 : 0.42
+        };
+      });
+
+      let santaFlight = {
+        active: false,
+        progress: 0,
+        duration: 13500,
+        lastStart: performance.now() - 15000
+      };
+
+      const magicSparkles = [];
+
+      function drawTree(x, baseY, height, width, shade) {
+        const tiers = 4;
+        for (let i = 0; i < tiers; i++) {
+          const t = i / tiers;
+          const topY = baseY - height + t * (height * 0.58);
+          const botY = baseY - height * (0.48 - t * 0.16);
+          const w = width * (0.38 + t * 0.62);
+
+          ctx.beginPath();
+          ctx.moveTo(x, topY);
+          ctx.lineTo(x - w, botY);
+          ctx.lineTo(x + w, botY);
+          ctx.closePath();
+          ctx.fillStyle = shade;
+          ctx.fill();
+
+          ctx.beginPath();
+          ctx.moveTo(x, topY);
+          ctx.lineTo(x - w * 0.62, topY + (botY - topY) * 0.44);
+          ctx.quadraticCurveTo(x, topY + (botY - topY) * 0.34, x + w * 0.62, topY + (botY - topY) * 0.44);
+          ctx.closePath();
+          ctx.fillStyle = 'rgba(226, 240, 255, 0.82)';
+          ctx.fill();
+        }
+      }
+
+      function drawCozyCabin(x, y, scale, time) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        const cabinGlow = ctx.createRadialGradient(0, -25, 10, 0, -25, 130);
+        cabinGlow.addColorStop(0, 'rgba(251, 191, 36, 0.28)');
+        cabinGlow.addColorStop(1, 'rgba(251, 191, 36, 0)');
+        ctx.fillStyle = cabinGlow;
+        ctx.beginPath();
+        ctx.arc(0, -25, 130, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(24, -76, 12, 26);
+        for (let s = 0; s < 4; s++) {
+          const p = ((time * 0.0005) + s * 0.25) % 1;
+          ctx.beginPath();
+          ctx.arc(30 + Math.sin(p * 6 + s) * 8, -82 - p * 45, 5 + p * 8, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(226, 232, 240, ${(1 - p) * 0.28})`;
+          ctx.fill();
+        }
+
+        ctx.fillStyle = '#3b2316';
+        ctx.fillRect(-48, -46, 96, 46);
+
+        const winGrad = ctx.createLinearGradient(0, -34, 0, -14);
+        winGrad.addColorStop(0, '#fef08a');
+        winGrad.addColorStop(1, '#f59e0b');
+        ctx.fillStyle = winGrad;
+        ctx.shadowColor = '#fbbf24';
+        ctx.shadowBlur = 16;
+        ctx.fillRect(-32, -33, 20, 18);
+        ctx.fillRect(12, -33, 20, 18);
+        ctx.shadowBlur = 0;
+
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-32, -33, 20, 18);
+        ctx.strokeRect(12, -33, 20, 18);
+        ctx.beginPath();
+        ctx.moveTo(-22, -33); ctx.lineTo(-22, -15);
+        ctx.moveTo(-32, -24); ctx.lineTo(-12, -24);
+        ctx.moveTo(22, -33); ctx.lineTo(22, -15);
+        ctx.moveTo(12, -24); ctx.lineTo(32, -24);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(-60, -44);
+        ctx.lineTo(0, -82);
+        ctx.lineTo(60, -44);
+        ctx.closePath();
+        ctx.fillStyle = '#1e293b';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-63, -44);
+        ctx.quadraticCurveTo(-30, -64, 0, -84);
+        ctx.quadraticCurveTo(30, -64, 63, -44);
+        ctx.quadraticCurveTo(30, -52, 0, -72);
+        ctx.quadraticCurveTo(-30, -52, -63, -44);
+        ctx.fillStyle = '#f8fafc';
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function drawReindeer(x, y, scale, stride, isRudolph) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.scale(scale, scale);
+
+        const legSwing = Math.sin(stride) * 7;
+        ctx.strokeStyle = '#1e1b4b';
+        ctx.fillStyle = '#1e1b4b';
+        ctx.lineWidth = 2.6;
+        ctx.lineCap = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(-10, 6); ctx.lineTo(-14 - legSwing, 20);
+        ctx.moveTo(-5, 6); ctx.lineTo(-3 + legSwing * 0.7, 20);
+        ctx.moveTo(10, 6); ctx.lineTo(14 + legSwing, 20);
+        ctx.moveTo(6, 6); ctx.lineTo(4 - legSwing * 0.7, 20);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.ellipse(0, 2, 16, 7.5, -0.08, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(11, -1);
+        ctx.lineTo(20, -13);
+        ctx.lineTo(28, -11);
+        ctx.lineTo(26, -6);
+        ctx.lineTo(16, 3);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.lineWidth = 1.8;
+        ctx.beginPath();
+        ctx.moveTo(19, -13); ctx.lineTo(16, -24);
+        ctx.moveTo(17, -19); ctx.lineTo(12, -21);
+        ctx.moveTo(18, -17); ctx.lineTo(22, -22);
+        ctx.stroke();
+
+        if (isRudolph) {
+          ctx.beginPath();
+          ctx.arc(28.5, -9, 3.2, 0, Math.PI * 2);
+          ctx.fillStyle = '#ff2a5f';
+          ctx.shadowColor = '#ff2a5f';
+          ctx.shadowBlur = 14;
+          ctx.fill();
+          ctx.shadowBlur = 0;
+        }
+
+        ctx.restore();
+      }
+
+      function drawSantaAndSleigh(x, y, scale, angle, time) {
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.scale(scale, scale);
+
+        const stride = time * 0.012;
+
+        ctx.strokeStyle = 'rgba(253, 224, 71, 0.75)';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.moveTo(-25, -4);
+        ctx.quadraticCurveTo(45, 4, 155, -8);
+        ctx.stroke();
+
+        drawReindeer(52, -4 + Math.sin(stride) * 2.5, 0.88, stride, false);
+        drawReindeer(88, -7 + Math.sin(stride + 1.1) * 2.5, 0.92, stride + 1.1, false);
+        drawReindeer(124, -10 + Math.sin(stride + 2.2) * 2.5, 0.96, stride + 2.2, false);
+        drawReindeer(162, -13 + Math.sin(stride + 3.3) * 2.5, 1.0, stride + 3.3, true);
+
+        ctx.strokeStyle = '#facc15';
+        ctx.lineWidth = 3.2;
+        ctx.shadowColor = 'rgba(250, 204, 21, 0.65)';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.moveTo(-76, 16);
+        ctx.lineTo(-16, 16);
+        ctx.quadraticCurveTo(-4, 16, -2, 6);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.beginPath();
+        ctx.moveTo(-74, -6);
+        ctx.quadraticCurveTo(-72, 13, -55, 13);
+        ctx.lineTo(-22, 13);
+        ctx.quadraticCurveTo(-12, 13, -10, -2);
+        ctx.quadraticCurveTo(-24, 2, -38, -2);
+        ctx.lineTo(-56, -12);
+        ctx.closePath();
+        ctx.fillStyle = '#be123c';
+        ctx.fill();
+        ctx.strokeStyle = '#fde047';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.arc(-57, -11, 11, 0, Math.PI * 2);
+        ctx.fillStyle = '#92400e';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(-34, -10, 10, 0, Math.PI * 2);
+        ctx.fillStyle = '#e11d48';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(-31, -22, 6.2, 0, Math.PI * 2);
+        ctx.fillStyle = '#fde68a';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(-28, -19, 5.5, 0, Math.PI);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(-37, -25);
+        ctx.lineTo(-25, -25);
+        ctx.lineTo(-39, -35);
+        ctx.closePath();
+        ctx.fillStyle = '#e11d48';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(-40, -35, 2.5, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      function render(now) {
+        ctx.clearRect(0, 0, W, H);
+
+        const sky = ctx.createLinearGradient(0, 0, 0, H);
+        sky.addColorStop(0, '#04091a');
+        sky.addColorStop(0.45, '#0b1938');
+        sky.addColorStop(0.78, '#172d5c');
+        sky.addColorStop(1, '#26457a');
+        ctx.fillStyle = sky;
+        ctx.fillRect(0, 0, W, H);
+
+        const aurora = ctx.createRadialGradient(W * 0.45, H * 0.22, 30, W * 0.45, H * 0.22, W * 0.55);
+        aurora.addColorStop(0, 'rgba(56, 189, 248, 0.14)');
+        aurora.addColorStop(0.5, 'rgba(16, 185, 129, 0.08)');
+        aurora.addColorStop(1, 'rgba(4, 9, 26, 0)');
+        ctx.fillStyle = aurora;
+        ctx.fillRect(0, 0, W, H);
+
+        for (const s of stars) {
+          s.phase += s.speed;
+          const a = 0.35 + ((Math.sin(s.phase) + 1) * 0.32);
+          ctx.beginPath();
+          ctx.arc(s.x * W, s.y * H, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+          ctx.fill();
+        }
+
+        const moonX = W * 0.82;
+        const moonY = H * 0.19;
+        const moonR = Math.min(72, Math.max(46, W * 0.048));
+
+        const moonHalo = ctx.createRadialGradient(moonX, moonY, moonR * 0.6, moonX, moonY, moonR * 3.4);
+        moonHalo.addColorStop(0, 'rgba(254, 249, 195, 0.42)');
+        moonHalo.addColorStop(0.45, 'rgba(253, 224, 71, 0.14)');
+        moonHalo.addColorStop(1, 'rgba(253, 224, 71, 0)');
+        ctx.fillStyle = moonHalo;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonR * 3.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        const moonBody = ctx.createRadialGradient(moonX - moonR * 0.28, moonY - moonR * 0.28, moonR * 0.1, moonX, moonY, moonR);
+        moonBody.addColorStop(0, '#fffbeb');
+        moonBody.addColorStop(0.7, '#fef08a');
+        moonBody.addColorStop(1, '#facc15');
+        ctx.fillStyle = moonBody;
+        ctx.beginPath();
+        ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = 'rgba(217, 119, 6, 0.12)';
+        ctx.beginPath(); ctx.arc(moonX + moonR * 0.25, moonY - moonR * 0.15, moonR * 0.18, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(moonX - moonR * 0.22, moonY + moonR * 0.24, moonR * 0.14, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(moonX + moonR * 0.1, moonY + moonR * 0.32, moonR * 0.1, 0, Math.PI * 2); ctx.fill();
+
+        if (!santaFlight.active && now - santaFlight.lastStart > 18000) {
+          santaFlight.active = true;
+          santaFlight.progress = 0;
+          santaFlight.lastStart = now;
+        }
+
+        if (santaFlight.active) {
+          santaFlight.progress += 16.6;
+          const t = santaFlight.progress / santaFlight.duration;
+          if (t >= 1) {
+            santaFlight.active = false;
+          } else {
+            const startX = -220;
+            const endX = W + 240;
+            const curX = startX + (endX - startX) * t;
+            const arcOffset = Math.sin(t * Math.PI) * (H * 0.12);
+            const curY = (moonY + H * 0.08) - arcOffset;
+            const tilt = -0.14 + t * 0.18;
+            const sc = Math.min(1.05, Math.max(0.72, W / 1350));
+
+            if (Math.random() < 0.75) {
+              magicSparkles.push({
+                x: curX - 65 * sc,
+                y: curY + (Math.random() - 0.5) * 14,
+                vx: -0.6 - Math.random() * 0.8,
+                vy: (Math.random() - 0.5) * 0.5,
+                life: 1,
+                size: 1.5 + Math.random() * 2.5
+              });
+            }
+
+            drawSantaAndSleigh(curX, curY, sc, tilt, now);
+          }
+        }
+
+        for (let i = magicSparkles.length - 1; i >= 0; i--) {
+          const sp = magicSparkles[i];
+          sp.x += sp.vx;
+          sp.y += sp.vy;
+          sp.life -= 0.022;
+          if (sp.life <= 0) {
+            magicSparkles.splice(i, 1);
+            continue;
+          }
+          ctx.beginPath();
+          ctx.arc(sp.x, sp.y, sp.size * sp.life, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(254, 240, 138, ${sp.life * 0.9})`;
+          ctx.fill();
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        ctx.lineTo(0, H * 0.66);
+        ctx.lineTo(W * 0.18, H * 0.48);
+        ctx.lineTo(W * 0.36, H * 0.63);
+        ctx.lineTo(W * 0.56, H * 0.44);
+        ctx.lineTo(W * 0.77, H * 0.62);
+        ctx.lineTo(W * 0.93, H * 0.47);
+        ctx.lineTo(W, H * 0.58);
+        ctx.lineTo(W, H);
+        ctx.closePath();
+        const mtnBack = ctx.createLinearGradient(0, H * 0.44, 0, H);
+        mtnBack.addColorStop(0, '#3b598a');
+        mtnBack.addColorStop(1, '#1e325c');
+        ctx.fillStyle = mtnBack;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(0, H);
+        ctx.lineTo(0, H * 0.78);
+        ctx.quadraticCurveTo(W * 0.25, H * 0.69, W * 0.52, H * 0.79);
+        ctx.quadraticCurveTo(W * 0.78, H * 0.87, W, H * 0.74);
+        ctx.lineTo(W, H);
+        ctx.closePath();
+        const snowHill = ctx.createLinearGradient(0, H * 0.7, 0, H);
+        snowHill.addColorStop(0, '#dbeafe');
+        snowHill.addColorStop(1, '#93c5fd');
+        ctx.fillStyle = snowHill;
+        ctx.fill();
+
+        drawCozyCabin(W * 0.88, H * 0.8, Math.min(1.05, Math.max(0.7, W / 1300)), now);
+        drawTree(W * 0.06, H * 0.84, 130, 44, '#0f2942');
+        drawTree(W * 0.12, H * 0.86, 105, 36, '#143656');
+        drawTree(W * 0.79, H * 0.83, 115, 38, '#0f2942');
+        drawTree(W * 0.95, H * 0.85, 125, 42, '#143656');
+
+        for (const f of snowFlakes) {
+          f.sway += f.swaySpeed;
+          f.x += f.vx + Math.sin(f.sway) * 0.42;
           f.y += f.vy;
 
-          if (f.y > height + 8) {
-            f.y = -8;
-            f.x = Math.random() * width;
+          if (f.y > H + 10) {
+            f.y = -10;
+            f.x = Math.random() * W;
           }
-          if (f.x > width + 8) f.x = -8;
-          if (f.x < -8) f.x = width + 8;
+          if (f.x > W + 10) f.x = -10;
+          if (f.x < -10) f.x = W + 10;
 
           ctx.beginPath();
           ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-          ctx.fillStyle = isDark
-            ? `rgba(255, 255, 255, ${f.alpha})`
-            : `rgba(255, 255, 255, ${Math.min(0.85, f.alpha + 0.25)})`;
+          ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
           ctx.fill();
         }
-        requestAnimationFrame(drawSnow);
-      }
-      drawSnow();
-    })();
 
-    /* Ora-orada sokin uchib o'tadigan chana + kiyiklar silueti */
-    (function initSleighGlide() {
-      const el = document.getElementById('sleighSil');
-      if (!el) return;
-
-      function triggerGlide() {
-        el.classList.remove('glide');
-        void el.offsetWidth;
-        el.classList.add('glide');
+        requestAnimationFrame(render);
       }
 
-      setTimeout(triggerGlide, 3500);
-      setInterval(triggerGlide, 28000);
+      requestAnimationFrame(render);
     })();
 
     const token = localStorage.getItem('token');
