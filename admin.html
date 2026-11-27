@@ -105,7 +105,6 @@
       z-index: 3;
     }
 
-    /* Qorbobo parvozi, qoluvchi shulasi va tushuvchi padarkalar */
     .santa-flight-layer {
       position: fixed;
       inset: 0;
@@ -861,6 +860,7 @@
     input[type="checkbox"] { width: auto; }
     input:focus, select:focus, textarea:focus { border-color: #2563eb; }
 
+    /* 1-rasmdagidek yagona chiroyli fayl/rasm yuklash bloki */
     .bottom-form-row {
       display: grid;
       grid-template-columns: 1.15fr 1fr;
@@ -879,6 +879,12 @@
       gap: 12px;
       position: relative;
       cursor: pointer;
+      min-height: 54px;
+      transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .upload-drop-box:hover {
+      border-color: #2563eb;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.16);
     }
     body.dark .upload-drop-box {
       background: rgba(22, 32, 51, 0.78);
@@ -890,12 +896,20 @@
       cursor: pointer;
       width: 100%;
       height: 100%;
+      z-index: 2;
     }
     .upload-cloud-ico {
       width: 34px; height: 34px; border-radius: 10px;
       background: rgba(37, 99, 235, 0.12); color: #2563eb;
       display: inline-flex; align-items: center; justify-content: center;
       font-size: 17px; flex-shrink: 0;
+    }
+    .upload-file-badge {
+      width: 38px; height: 38px; border-radius: 10px;
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.14), rgba(16, 185, 129, 0.16));
+      color: #059669;
+      display: none; align-items: center; justify-content: center;
+      font-size: 18px; flex-shrink: 0; font-weight: 800;
     }
 
     .photo-preview-img {
@@ -1091,14 +1105,11 @@
 </head>
 <body>
 
-  <!-- O'zgaruvchan fon (oboi) -->
   <div class="ny-wallpaper-layer" id="wallpaperLayer" aria-hidden="true"></div>
   <div class="ny-wallpaper-veil" aria-hidden="true"></div>
-  <!-- Salyut va Qor canvaslari -->
   <canvas id="fireworksCanvas"></canvas>
   <canvas id="snowCanvas"></canvas>
 
-  <!-- Qorbobo parvozi, qoluvchi shulasi va tushuvchi padarkalar -->
   <div class="santa-flight-layer" id="santaFlightLayer" aria-hidden="true">
     <div id="santaLingeringGlow" class="santa-lingering-glow"></div>
     <div id="santaSleighRunner" class="santa-sleigh-runner">
@@ -1299,7 +1310,7 @@
         <button class="tab-btn" data-tab="settingsTab">Sozlamalar</button>
       </div>
 
-      <!-- 0. BOSH SAHIFA (DASHBOARD) -->
+      <!-- 0. BOSH SAHIFA -->
       <div id="homeDashboardTab" class="section active" data-ny-theme="home">
         <div class="card">
           <div class="ny-section-ribbon">🏠 Bosh sahifa — Markaz boshqaruv paneli</div>
@@ -1417,7 +1428,7 @@
               <label data-i18n="lblPhoto">O‘quvchi rasmi (Profil uchun)</label>
               <div class="bottom-form-row">
                 <div class="upload-drop-box">
-                  <span class="upload-cloud-ico">☁️</span>
+                  <span class="upload-cloud-ico" id="stCloudIco">☁️</span>
                   <img id="stPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
                   <div style="min-width:0; flex:1;">
                     <div id="stPhotoName" style="font-size:12.5px; font-weight:700; color:var(--heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rasm yuklash yoki fayl tanlash</div>
@@ -1461,25 +1472,70 @@
       <!-- 2. O'QITUVCHILAR -->
       <div id="teachersTab" class="section" data-ny-theme="teachers">
         <div class="card">
-          <div class="ny-section-ribbon">❄️ Yangi Yil — Ustozlar jamoasi</div>
-          <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
-          <form id="addTeacherForm" style="margin-top:14px;">
+          <div class="form-hero-header">
+            <div>
+              <div class="ny-section-ribbon">❄️ Yangi Yil — Ustozlar jamoasi</div>
+              <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
+              <div class="form-hero-sub">Tajribali ustozlarni bazaga biriktirish</div>
+            </div>
+            <div class="calligraphy-note" aria-hidden="true">Bilim ulashuvchi ustozlar... ✦</div>
+          </div>
+
+          <form id="addTeacherForm">
             <div class="grid-3">
-              <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="tchName" placeholder="Azizbek Ustoz" required /></div>
-              <div class="form-group"><label data-i18n="lblUsername">Login</label><input type="text" id="tchUser" placeholder="ustoz1" required /></div>
-              <div class="form-group"><label data-i18n="lblPassword">Parol</label><input type="text" id="tchPass" placeholder="12345" required /></div>
-              <div class="form-group"><label data-i18n="lblPhone">Telefon nomer</label><input type="text" id="tchPhone" placeholder="+998 90 123 45 67" /></div>
               <div class="form-group">
-                <label data-i18n="lblTeacherPhoto">O‘qituvchi rasmi</label>
-                <input type="file" id="tchPhoto" accept="image/*" />
-                <div class="photo-preview-row" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
-                  <img id="tchPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
-                  <span id="tchPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
+                <label data-i18n="lblFullName">Ism Familiya</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">👨‍🏫</span>
+                  <input type="text" id="tchName" placeholder="Azizbek Ustoz" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblUsername">Login</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">@</span>
+                  <input type="text" id="tchUser" placeholder="ustoz1" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblPassword">Parol</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">🔒</span>
+                  <input type="text" id="tchPass" placeholder="12345" required />
                 </div>
               </div>
             </div>
-            <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnAddTeacher">+ O‘qituvchini qo‘shish</button>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <div class="bottom-form-row">
+                <div>
+                  <label data-i18n="lblPhone">Telefon nomer</label>
+                  <div class="input-with-ico">
+                    <span class="field-ico">📞</span>
+                    <input type="text" id="tchPhone" placeholder="+998 90 123 45 67" />
+                  </div>
+                </div>
+
+                <div>
+                  <label data-i18n="lblTeacherPhoto">O‘qituvchi rasmi</label>
+                  <div class="upload-drop-box">
+                    <span class="upload-cloud-ico" id="tchCloudIco">☁️</span>
+                    <img id="tchPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+                    <div style="min-width:0; flex:1;">
+                      <div id="tchPhotoName" style="font-size:12.5px; font-weight:700; color:var(--heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rasm yuklash yoki fayl tanlash</div>
+                      <div style="font-size:11px; color:var(--muted);">JPG, PNG • Maks. 2MB</div>
+                    </div>
+                    <input type="file" id="tchPhoto" accept="image/*" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-submit-row" style="margin-top:14px;">
+                <button type="submit" class="btn-save-gradient">
+                  <span>➤</span>
+                  <span data-i18n="btnAddTeacher">+ O‘qituvchini qo‘shish</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1515,7 +1571,10 @@
             </div>
             <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="finDesc" placeholder="..." /></div>
             <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+              <button type="submit" class="btn-save-gradient">
+                <span>➤</span>
+                <span data-i18n="btnSave">Saqlash</span>
+              </button>
             </div>
           </form>
         </div>
@@ -1573,7 +1632,10 @@
               </div>
             </div>
             <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+              <button type="submit" class="btn-save-gradient">
+                <span>➤</span>
+                <span data-i18n="btnSave">Saqlash</span>
+              </button>
             </div>
           </form>
         </div>
@@ -1624,7 +1686,10 @@
               <div class="form-group"><label>Speaking</label><input type="number" id="skSpeaking" class="skill-input" min="0" max="100" required /></div>
             </div>
             <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+              <button type="submit" class="btn-save-gradient">
+                <span>➤</span>
+                <span data-i18n="btnSave">Saqlash</span>
+              </button>
             </div>
           </form>
         </div>
@@ -1667,7 +1732,7 @@
           <h2 data-i18n="addLessonTitle">Yangi darslik qo‘shish</h2>
           <form id="lessonForm" style="margin-top:14px;">
             <div class="grid-3">
-              <div class="form-group"><label data-i18n="lblTitle">Nomi / Sarlavha</label><input type="text" id="lesTitle" required /></div>
+              <div class="form-group"><label data-i18n="lblTitle">Nomi / Sarlavha</label><input type="text" id="lesTitle" placeholder="Unit 1 — Present Perfect" required /></div>
               <div class="form-group">
                 <label data-i18n="lblLevel">Daraja</label>
                 <select id="lesLevel">
@@ -1675,14 +1740,28 @@
                   <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
                 </select>
               </div>
-              <div class="form-group"><label data-i18n="lblFile">Fayl yuklash</label><input type="file" id="lesFile" /></div>
-            </div>
-            <div class="grid-2">
               <div class="form-group"><label data-i18n="lblUrl">Havola (URL)</label><input type="url" id="lesUrl" placeholder="https://..." /></div>
-              <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="lesDesc" /></div>
             </div>
-            <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="lesDesc" placeholder="Darslik haqida qisqacha izoh..." /></div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label data-i18n="lblFile">Darslik fayli (PDF, DOC, rasm yoki audio)</label>
+              <div class="bottom-form-row">
+                <div class="upload-drop-box">
+                  <span class="upload-cloud-ico" id="lesCloudIco">☁️</span>
+                  <span class="upload-file-badge" id="lesFileBadge">📄</span>
+                  <div style="min-width:0; flex:1;">
+                    <div id="lesFileName" style="font-size:12.5px; font-weight:700; color:var(--heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Fayl yuklash yoki tanlash</div>
+                    <div style="font-size:11px; color:var(--muted);">PDF, DOCX, PPTX, JPG, PNG</div>
+                  </div>
+                  <input type="file" id="lesFile" />
+                </div>
+
+                <button type="submit" class="btn-save-gradient">
+                  <span>➤</span>
+                  <span data-i18n="btnSave">Saqlash</span>
+                </button>
+              </div>
             </div>
           </form>
         </div>
@@ -1719,7 +1798,10 @@
             </div>
             <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="asDesc" /></div>
             <div class="form-submit-row">
-              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+              <button type="submit" class="btn-save-gradient">
+                <span>➤</span>
+                <span data-i18n="btnSave">Saqlash</span>
+              </button>
             </div>
           </form>
         </div>
@@ -1769,7 +1851,10 @@
               </div>
               <div class="form-group"><label data-i18n="lblMessage">Xabar matni</label><textarea id="annMsg" rows="3" required></textarea></div>
               <div class="form-submit-row">
-                <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+                <button type="submit" class="btn-save-gradient">
+                  <span>➤</span>
+                  <span data-i18n="btnSave">Saqlash</span>
+                </button>
               </div>
             </form>
             <table style="margin-top:16px;">
@@ -1799,7 +1884,10 @@
               </div>
               <div class="form-group"><label data-i18n="lblRoom">Xona / Ustoz</label><input type="text" id="schRoom" required /></div>
               <div class="form-submit-row">
-                <button type="submit" class="btn-success" data-i18n="btnSave">Saqlash</button>
+                <button type="submit" class="btn-save-gradient">
+                  <span>➤</span>
+                  <span data-i18n="btnSave">Saqlash</span>
+                </button>
               </div>
             </form>
             <table style="margin-top:16px;">
@@ -2036,7 +2124,18 @@
         </div>
         <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="editGroup" required /></div>
         <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov (so‘m)</label><input type="number" id="editFee" required /></div>
-        <div class="form-group"><label data-i18n="lblPhoto">Yangi rasm (ixtiyoriy)</label><input type="file" id="editPhoto" accept="image/*" /></div>
+        <div class="form-group">
+          <label data-i18n="lblPhoto">Yangi rasm (ixtiyoriy)</label>
+          <div class="upload-drop-box">
+            <span class="upload-cloud-ico" id="editCloudIco">☁️</span>
+            <img id="editPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+            <div style="min-width:0; flex:1;">
+              <div id="editPhotoName" style="font-size:12.5px; font-weight:700; color:var(--heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Yangi rasm yuklash yoki tanlash</div>
+              <div style="font-size:11px; color:var(--muted);">JPG, PNG • Maks. 2MB</div>
+            </div>
+            <input type="file" id="editPhoto" accept="image/*" />
+          </div>
+        </div>
         <div class="form-group"><label data-i18n="lblNewPass">Yangi parol (ixtiyoriy)</label><input type="text" id="editNewPass" /></div>
         <div class="modal-actions">
           <button type="button" class="btn-cancel" id="closeEditModalBtn" data-i18n="btnCancel">Bekor qilish</button>
@@ -2487,7 +2586,7 @@
         lblDate: 'Sana', btnSaveBulk: 'Barchasini birga saqlash', singleAttTitle: 'Bitta o‘quvchiga davomat',
         lblStatus: 'Holati', attHistoryTitle: 'Oxirgi davomat yozuvlari', skillsFormTitle: 'Bilim ballarini yangilash (0 - 100)',
         lblSelectedPreview: 'TANLANGAN O‘QUVCHI KO‘RSATKICHI', rankingTableTitle: 'O‘quvchilar bilim reytingi va o‘rtacha ballar jadvali',
-        addLessonTitle: 'Yangi darslik qo‘shish', lblTitle: 'Nomi / Sarlavha', lblFile: 'Fayl yuklash', lblUrl: 'Havola (URL)',
+        addLessonTitle: 'Yangi darslik qo‘shish', lblTitle: 'Nomi / Sarlavha', lblFile: 'Darslik fayli (PDF, DOC, rasm yoki audio)', lblUrl: 'Havola (URL)',
         lessonsHistoryTitle: 'Yuklangan darsliklar tarixi', addAssignmentTitle: 'Yangi uy vazifasi berish', lblDue: 'Muddat',
         assignmentsHistoryTitle: 'Yuborilgan topshiriqlar tarixi', submissionsHistoryTitle: 'O‘quvchilar yuborgan javoblar tarixi & baholash',
         annTitle: 'E’lon joylash', lblMessage: 'Xabar matni', scheduleTitle: 'Haftalik dars jadvali', lblDay: 'Hafta kuni',
@@ -2679,58 +2778,75 @@
       imgEl.src = src;
     }
 
-    function resetStudentPhotoPreview() {
-      const preview = document.getElementById('stPhotoPreview');
-      const label = document.getElementById('stPhotoName');
-      if (preview) {
-        preview.src = '';
-        preview.style.display = 'none';
-      }
-      if (label) label.textContent = 'Rasm yuklash yoki fayl tanlash';
+    function bindImageDropBox(inputId, previewId, cloudId, nameId, defaultText) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const cloud = document.getElementById(cloudId);
+      const label = document.getElementById(nameId);
+      if (!input) return;
+
+      input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+          if (preview) { preview.src = ''; preview.style.display = 'none'; }
+          if (cloud) cloud.style.display = 'inline-flex';
+          if (label) label.textContent = defaultText;
+          return;
+        }
+        if (label) label.textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (preview) { preview.src = reader.result; preview.style.display = 'block'; }
+          if (cloud) cloud.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      });
     }
 
-    document.getElementById('stPhoto').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      const preview = document.getElementById('stPhotoPreview');
-      const label = document.getElementById('stPhotoName');
-      if (!file) {
-        resetStudentPhotoPreview();
-        return;
-      }
-      label.textContent = file.name;
-      const reader = new FileReader();
-      reader.onload = () => {
-        preview.src = reader.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    function resetTeacherPhotoPreview() {
-      const preview = document.getElementById('tchPhotoPreview');
-      const label = document.getElementById('tchPhotoName');
-      if (preview) {
-        preview.src = '';
-        preview.style.display = 'none';
-      }
-      if (label) label.textContent = 'Rasm tanlanmagan';
+    function resetDropBox(inputId, previewId, cloudId, nameId, defaultText, badgeId = null) {
+      const input = document.getElementById(inputId);
+      const preview = document.getElementById(previewId);
+      const cloud = document.getElementById(cloudId);
+      const label = document.getElementById(nameId);
+      const badge = badgeId ? document.getElementById(badgeId) : null;
+      if (input) input.value = '';
+      if (preview) { preview.src = ''; preview.style.display = 'none'; }
+      if (badge) badge.style.display = 'none';
+      if (cloud) cloud.style.display = 'inline-flex';
+      if (label) label.textContent = defaultText;
     }
 
-    document.getElementById('tchPhoto').addEventListener('change', (e) => {
+    bindImageDropBox('stPhoto', 'stPhotoPreview', 'stCloudIco', 'stPhotoName', 'Rasm yuklash yoki fayl tanlash');
+    bindImageDropBox('tchPhoto', 'tchPhotoPreview', 'tchCloudIco', 'tchPhotoName', 'Rasm yuklash yoki fayl tanlash');
+    bindImageDropBox('editPhoto', 'editPhotoPreview', 'editCloudIco', 'editPhotoName', 'Yangi rasm yuklash yoki tanlash');
+
+    document.getElementById('lesFile').addEventListener('change', (e) => {
       const file = e.target.files[0];
-      const preview = document.getElementById('tchPhotoPreview');
-      const label = document.getElementById('tchPhotoName');
+      const cloud = document.getElementById('lesCloudIco');
+      const badge = document.getElementById('lesFileBadge');
+      const label = document.getElementById('lesFileName');
       if (!file) {
-        resetTeacherPhotoPreview();
+        resetDropBox('lesFile', null, 'lesCloudIco', 'lesFileName', 'Fayl yuklash yoki tanlash', 'lesFileBadge');
         return;
       }
-      label.textContent = file.name;
-      const reader = new FileReader();
-      reader.onload = () => {
-        preview.src = reader.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+      if (label) label.textContent = file.name;
+      if (file.type && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (badge) {
+            badge.innerHTML = `<img src="${reader.result}" alt="Fayl" style="width:38px;height:38px;border-radius:10px;object-fit:cover;" />`;
+            badge.style.display = 'inline-flex';
+          }
+          if (cloud) cloud.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        if (badge) {
+          badge.textContent = '📎';
+          badge.style.display = 'inline-flex';
+        }
+        if (cloud) cloud.style.display = 'none';
+      }
     });
 
     function activateSection(targetId, clickedSideBtn = null) {
@@ -2974,7 +3090,7 @@
           photo_name: photoName
         });
         e.target.reset();
-        resetTeacherPhotoPreview();
+        resetDropBox('tchPhoto', 'tchPhotoPreview', 'tchCloudIco', 'tchPhotoName', 'Rasm yuklash yoki fayl tanlash');
         showToast('Yangi o‘qituvchi qo‘shildi!');
         loadTeachersTable();
       } catch (err) {
@@ -3304,7 +3420,7 @@
       document.getElementById('editLevel').value = st.level || 'B1';
       document.getElementById('editGroup').value = st.group_name || '';
       document.getElementById('editFee').value = st.monthly_fee ?? 500000;
-      document.getElementById('editPhoto').value = '';
+      resetDropBox('editPhoto', 'editPhotoPreview', 'editCloudIco', 'editPhotoName', 'Yangi rasm yuklash yoki tanlash');
       document.getElementById('editNewPass').value = '';
       document.getElementById('editModal').classList.add('open');
     }
@@ -3634,7 +3750,7 @@
           photo_name: photoName
         });
         e.target.reset();
-        resetStudentPhotoPreview();
+        resetDropBox('stPhoto', 'stPhotoPreview', 'stCloudIco', 'stPhotoName', 'Rasm yuklash yoki fayl tanlash');
         showToast('OK!');
         loadAllAdminData();
       } catch (err) { showToast(err.message); }
@@ -3698,7 +3814,9 @@
           material_url: document.getElementById('lesUrl').value, description: document.getElementById('lesDesc').value,
           file_base64: fileBase64, file_name: fileName
         });
-        e.target.reset(); showToast('OK!'); loadAllAdminData();
+        e.target.reset();
+        resetDropBox('lesFile', null, 'lesCloudIco', 'lesFileName', 'Fayl yuklash yoki tanlash', 'lesFileBadge');
+        showToast('OK!'); loadAllAdminData();
       } catch (err) { showToast(err.message); }
     });
 
