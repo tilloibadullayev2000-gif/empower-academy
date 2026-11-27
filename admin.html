@@ -3,142 +3,88 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Panel — Empower Academy</title>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <title>Empower Academy — New Year Admin Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Great+Vibes&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0f172a;
-      --card: rgba(255, 255, 255, 0.84);
+      --bg: #eef4ff;
+      --card: rgba(255, 255, 255, 0.88);
       --text: #1e293b;
       --heading: #0f172a;
-      --muted: #475569;
-      --border: rgba(255, 255, 255, 0.55);
+      --muted: #64748b;
+      --border: rgba(255, 255, 255, 0.72);
       --input-bg: rgba(255, 255, 255, 0.92);
-      --row-border: rgba(15, 23, 42, 0.1);
-      --accent: #e11d48;
-      --accent-soft: rgba(225, 29, 72, 0.14);
-      --veil: rgba(10, 18, 36, 0.24);
+      --row-border: #f1f5f9;
     }
     body.dark {
-      --bg: #070d1a;
-      --card: rgba(15, 23, 42, 0.80);
+      --bg: #0b1120;
+      --card: rgba(17, 25, 46, 0.88);
       --text: #e2e8f0;
       --heading: #f8fafc;
       --muted: #94a3b8;
-      --border: rgba(148, 163, 184, 0.24);
-      --input-bg: rgba(22, 32, 51, 0.9);
-      --row-border: rgba(148, 163, 184, 0.16);
-      --accent: #fb7185;
-      --accent-soft: rgba(251, 113, 133, 0.18);
-      --veil: rgba(6, 11, 25, 0.36);
+      --border: rgba(148, 163, 184, 0.22);
+      --input-bg: rgba(22, 32, 51, 0.94);
+      --row-border: #1e293b;
     }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Segoe UI', sans-serif; }
 
     body {
-      background: transparent;
+      background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      transition: color 0.25s;
       position: relative;
       overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
-    /* O'zgaruvchan fon (oboi) qatlami */
     .ny-wallpaper-layer {
       position: fixed;
       inset: 0;
-      pointer-events: none;
       z-index: 0;
+      pointer-events: none;
       overflow: hidden;
-      background: var(--bg);
     }
     .ny-wallpaper-slide {
       position: absolute;
-      inset: -12px;
+      inset: -24px;
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
       opacity: 0;
       transform: scale(1.03);
       transition: opacity 1.35s ease-in-out, transform 14s ease-out;
-      will-change: opacity, transform;
+      filter: saturate(1.12) contrast(1.04) brightness(0.95);
     }
     .ny-wallpaper-slide.active {
       opacity: 1;
       transform: scale(1);
     }
+    body.dark .ny-wallpaper-slide {
+      filter: saturate(1.08) contrast(1.05) brightness(0.58);
+    }
+
     .ny-wallpaper-veil {
       position: fixed;
       inset: 0;
-      background: var(--veil);
-      pointer-events: none;
       z-index: 1;
-      transition: background 0.35s ease;
-    }
-
-    .ny-moon {
-      position: fixed;
-      top: 68px;
-      right: 6%;
-      width: 76px;
-      height: 76px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 32% 32%, #fffbeb, #fde68a 65%, #f59e0b 100%);
-      box-shadow: 0 0 35px rgba(253, 224, 71, 0.65), 0 0 80px rgba(251, 191, 36, 0.3);
       pointer-events: none;
-      z-index: 2;
-      opacity: 0.85;
+      background: linear-gradient(
+        180deg,
+        rgba(8, 16, 36, 0.34) 0%,
+        rgba(15, 23, 42, 0.16) 45%,
+        rgba(8, 16, 36, 0.36) 100%
+      );
     }
-    body.dark .ny-moon {
-      opacity: 0.95;
-      box-shadow: 0 0 42px rgba(254, 249, 195, 0.85), 0 0 95px rgba(250, 204, 21, 0.42);
-    }
-
-    /* Qorbobo + kiyiklar oyga uchib o'tish animatsiyasi */
-    .santa-flight-layer {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 5;
-      overflow: hidden;
-    }
-    .santa-sleigh-runner {
-      position: fixed;
-      top: 9%;
-      left: -340px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      opacity: 0;
-      filter: drop-shadow(0 6px 16px rgba(250, 204, 21, 0.45));
-      will-change: transform, opacity;
-    }
-    .santa-sleigh-runner.fly {
-      animation: flyAcrossMoon 9.5s cubic-bezier(0.22, 0.72, 0.35, 1) forwards;
-    }
-    @keyframes flyAcrossMoon {
-      0% { left: -340px; top: 16%; opacity: 0; transform: rotate(-6deg) scale(0.92); }
-      10% { opacity: 1; }
-      50% { top: 8%; opacity: 1; transform: rotate(-10deg) scale(1.04); }
-      90% { opacity: 1; }
-      100% { left: calc(100vw + 360px); top: 14%; opacity: 0; transform: rotate(-5deg) scale(0.96); }
-    }
-    .santa-trail {
-      font-size: 16px;
-      letter-spacing: 6px;
-      opacity: 0.85;
-      animation: sparklePulse 0.7s infinite alternate;
-    }
-    @keyframes sparklePulse {
-      from { opacity: 0.45; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1.08); }
-    }
-    .santa-sprite {
-      font-size: 32px;
-      line-height: 1;
-      user-select: none;
+    body.dark .ny-wallpaper-veil {
+      background: linear-gradient(
+        180deg,
+        rgba(5, 10, 24, 0.56) 0%,
+        rgba(9, 15, 34, 0.42) 50%,
+        rgba(5, 10, 24, 0.62) 100%
+      );
     }
 
     #snowCanvas {
@@ -147,151 +93,457 @@
       width: 100%;
       height: 100%;
       pointer-events: none;
-      z-index: 4;
+      z-index: 2;
     }
 
-    .topbar, .container, .modal-backdrop, .toast {
-      position: relative;
-      z-index: 10;
+    .santa-flight-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 950;
+      overflow: hidden;
     }
-    .modal-backdrop { position: fixed; z-index: 1000; }
-    .toast { position: fixed; z-index: 1200; }
+    .santa-sleigh-runner {
+      position: fixed;
+      top: 11%;
+      left: -340px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      will-change: transform, opacity;
+      filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.35));
+    }
+    .santa-sleigh-runner.fly {
+      animation: santaFlyAcross 7.5s cubic-bezier(0.22, 0.65, 0.36, 1) forwards;
+    }
+    .santa-sprite {
+      font-size: 38px;
+      line-height: 1;
+      transform: scaleX(-1);
+      display: inline-block;
+    }
+    .santa-trail {
+      font-size: 16px;
+      letter-spacing: 4px;
+      color: #fef08a;
+      text-shadow: 0 0 10px rgba(250, 204, 21, 0.9);
+    }
+    @keyframes santaFlyAcross {
+      0% { left: -340px; top: 14%; opacity: 0; transform: rotate(-4deg) scale(0.92); }
+      10% { opacity: 1; }
+      35% { top: 8%; transform: rotate(3deg) scale(1); }
+      65% { top: 13%; transform: rotate(-3deg) scale(1.03); }
+      90% { opacity: 1; }
+      100% { left: calc(100vw + 360px); top: 7%; opacity: 0; transform: rotate(2deg) scale(0.96); }
+    }
 
     .topbar {
-      background: var(--card);
-      backdrop-filter: blur(12px);
-      padding: 8px 24px;
+      background: rgba(10, 18, 38, 0.72);
+      backdrop-filter: blur(14px);
+      padding: 10px 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.14);
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.14);
       position: sticky;
       top: 0;
       z-index: 30;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-logo-img { max-height: 34px; width: auto; object-fit: contain; border-radius: 7px; }
 
-    /* EMPOWER ustiga suyanib turgan do'ppili Qorbobo */
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      position: relative;
+      padding-top: 12px;
+    }
+    .brand-logo-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      object-fit: cover;
+      border: 1.5px solid rgba(255,255,255,0.28);
+      background: #fff;
+    }
     .brand-title-wrap {
       position: relative;
       display: inline-flex;
       flex-direction: column;
-      padding-top: 14px;
-      padding-right: 26px;
+      line-height: 1;
+    }
+    .brand-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.4px;
+    }
+    .brand-sub {
+      font-size: 9px;
+      font-weight: 800;
+      letter-spacing: 2.2px;
+      color: #cbd5e1;
+      margin-top: 2px;
     }
     .leaning-santa-doppi {
       position: absolute;
-      top: -12px;
-      right: -6px;
-      width: 48px;
-      height: 46px;
+      top: -22px;
+      right: -18px;
+      width: 34px;
+      height: 32px;
       pointer-events: none;
       transform: rotate(10deg);
-      transform-origin: bottom left;
-      animation: santaLeanWave 3.2s ease-in-out infinite;
-      filter: drop-shadow(0 3px 6px rgba(15, 23, 42, 0.25));
+      transform-origin: bottom center;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+      animation: santaLeanNod 3.2s ease-in-out infinite;
     }
-    @keyframes santaLeanWave {
-      0%, 100% { transform: rotate(9deg) translateY(0); }
-      50% { transform: rotate(14deg) translateY(-1.5px); }
+    @keyframes santaLeanNod {
+      0%, 100% { transform: rotate(10deg) translateY(0px); }
+      50% { transform: rotate(15deg) translateY(-1.5px); }
     }
-    .brand-title { font-size: 16px; font-weight: 900; color: #e11d48; line-height: 1.05; letter-spacing: 0.4px; }
-    .brand-sub { font-size: 9px; font-weight: 800; color: #059669; letter-spacing: 2px; margin-top: 1px; }
 
     .admin-badge {
-      background: linear-gradient(135deg, #e11d48, #059669);
-      color: #fff; font-size: 10px; font-weight: 800;
-      padding: 3px 9px; border-radius: 99px; letter-spacing: 0.4px; white-space: nowrap;
+      background: linear-gradient(135deg, #dc2626, #16a34a);
+      color: #fff;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 5px 11px;
+      border-radius: 99px;
+      letter-spacing: 0.4px;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.35);
+      white-space: nowrap;
     }
-    .top-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    .lang-select, .theme-btn, .santa-trigger-btn, .wall-btn {
-      background: var(--input-bg); color: var(--text); border: 1.5px solid var(--border);
-      padding: 6px 11px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
-      transition: 0.2s;
+
+    .top-santa-greeting {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .top-santa-emoji {
+      font-size: 24px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.35));
+    }
+    .top-ny-script {
+      font-family: 'Great Vibes', cursive;
+      font-size: 28px;
+      line-height: 1;
+      color: #fde047;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.55), 0 0 16px rgba(250, 204, 21, 0.4);
+      transform: rotate(-4deg);
+      display: inline-block;
+    }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .wall-btn {
+      background: rgba(30, 41, 59, 0.78);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 7px 11px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
     .santa-trigger-btn {
-      background: linear-gradient(135deg, rgba(225, 29, 72, 0.16), rgba(16, 185, 129, 0.18));
-      border-color: rgba(225, 29, 72, 0.35);
-      color: var(--heading);
+      background: linear-gradient(135deg, #e11d48, #be123c);
+      color: #fff;
+      border: none;
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(225, 29, 72, 0.35);
     }
-    .wall-btn {
-      background: linear-gradient(135deg, rgba(2, 132, 199, 0.16), rgba(234, 179, 8, 0.18));
-      border-color: rgba(2, 132, 199, 0.35);
-      color: var(--heading);
+    .lang-select {
+      padding: 7px 11px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      background: rgba(241, 245, 249, 0.95);
+      color: #0f172a;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      width: auto;
     }
-    .santa-trigger-btn:hover, .wall-btn:hover { transform: translateY(-1px); }
+    .theme-btn {
+      background: rgba(30, 41, 59, 0.82);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      padding: 7px 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
     .logout-btn {
-      background: #fef2f2; color: #ef4444; border: none;
-      padding: 7px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;
+      background: #ffffff;
+      color: #dc2626;
+      border: none;
+      padding: 7px 13px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .icon-bell-btn {
+      position: relative;
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(30, 41, 59, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .bell-dot {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 9.5px;
+      font-weight: 800;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 99px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+    .profile-circle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #fff;
+      font-weight: 800;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid rgba(255,255,255,0.45);
     }
 
-    .container { max-width: 1400px; margin: 18px auto 28px; padding: 0 24px; }
+    .app-shell {
+      display: flex;
+      min-height: calc(100vh - 64px);
+      position: relative;
+      z-index: 10;
+    }
+
+    .sidebar {
+      width: 92px;
+      flex-shrink: 0;
+      padding: 16px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.42);
+      backdrop-filter: blur(12px);
+      border-right: 1px solid rgba(255, 255, 255, 0.12);
+    }
+    .side-nav-item {
+      width: 72px;
+      padding: 10px 6px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 700;
+      transition: all 0.2s ease;
+    }
+    .side-nav-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .side-nav-item.active {
+      background: linear-gradient(135deg, #2563eb, #3b82f6);
+      color: #ffffff;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.45);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+    .side-ico {
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .container {
+      flex: 1;
+      min-width: 0;
+      max-width: 1340px;
+      margin: 0 auto;
+      padding: 16px 24px 36px;
+    }
 
     .ny-banner {
-      background: linear-gradient(120deg, rgba(15, 23, 42, 0.84), rgba(30, 58, 138, 0.78), rgba(159, 18, 57, 0.80));
-      backdrop-filter: blur(10px);
-      color: #fff;
-      border-radius: 20px;
-      padding: 12px 20px;
-      margin-bottom: 18px;
+      background: linear-gradient(90deg, rgba(15, 23, 42, 0.78) 0%, rgba(30, 41, 59, 0.72) 55%, rgba(15, 23, 42, 0.78) 100%);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 16px;
+      padding: 10px 16px;
+      margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       flex-wrap: wrap;
-      gap: 10px;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
-      border: 1px solid rgba(255, 255, 255, 0.24);
+      color: #f8fafc;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     }
-    .ny-banner-text { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .ny-banner-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
     .ny-banner-pill {
-      background: rgba(254, 240, 138, 0.22);
-      color: #fef08a;
-      border: 1px solid rgba(254, 240, 138, 0.45);
+      background: rgba(245, 158, 11, 0.22);
+      color: #fde047;
+      border: 1px solid rgba(250, 204, 21, 0.4);
       padding: 4px 12px;
       border-radius: 99px;
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 800;
     }
 
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 22px; }
-    .kpi-card {
-      background: var(--card); backdrop-filter: blur(10px); border-radius: 22px; padding: 20px 22px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14); border-left: 5px solid #3b5bfd;
-      border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
     }
-    .kpi-card.emerald { border-left-color: #10b981; }
-    .kpi-card.rose { border-left-color: #e11d48; }
-    .kpi-card.amber { border-left-color: #f59e0b; }
-    .kpi-label { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-    .kpi-val { font-size: 26px; font-weight: 800; color: var(--heading); margin: 6px 0; }
-    .kpi-note { font-size: 12px; color: #059669; font-weight: 700; }
+    .kpi-card {
+      border-radius: 20px;
+      padding: 18px 20px;
+      color: #ffffff;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.32);
+    }
+    .kpi-card.blue-card { background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%); }
+    .kpi-card.emerald-card { background: linear-gradient(135deg, #059669 0%, #10b981 55%, #34d399 100%); }
+    .kpi-card.purple-card { background: linear-gradient(135deg, #6d28d9 0%, #8b5cf6 55%, #a855f7 100%); }
+    .kpi-card.amber-card { background: linear-gradient(135deg, #d97706 0%, #f59e0b 55%, #fbbf24 100%); }
 
-    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .kpi-top-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .kpi-icon-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.22);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .kpi-label {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      opacity: 0.96;
+    }
+    .kpi-val {
+      font-size: 28px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      line-height: 1.1;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    .kpi-note {
+      font-size: 11.5px;
+      font-weight: 600;
+      opacity: 0.94;
+    }
+    .kpi-decor {
+      position: absolute;
+      right: 12px;
+      bottom: 8px;
+      font-size: 30px;
+      opacity: 0.85;
+      pointer-events: none;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.2));
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 18px;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding: 6px;
+      background: rgba(15, 23, 42, 0.56);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
     .tab-btn {
-      padding: 10px 16px; border-radius: 13px; border: 1px solid var(--border);
-      background: var(--card); backdrop-filter: blur(10px); color: var(--text); font-weight: 700; font-size: 13px; cursor: pointer;
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12); transition: 0.2s;
+      padding: 8px 14px;
+      border-radius: 11px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.86);
+      font-weight: 700;
+      font-size: 12.5px;
+      cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
     }
     .tab-btn.active {
       background: linear-gradient(135deg, #e11d48, #be123c);
       color: #ffffff;
-      border-color: transparent;
-      box-shadow: 0 8px 20px rgba(225, 29, 72, 0.35);
+      box-shadow: 0 6px 16px rgba(225, 29, 72, 0.35);
     }
 
     .section { display: none; }
-    .section.active { display: block; animation: fadeTab 0.25s ease; }
-    @keyframes fadeTab {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .section.active { display: block; }
 
-    .section[data-ny-theme="students"] .card { border-top: 4px solid #16a34a; }
-    .section[data-ny-theme="teachers"] .card { border-top: 4px solid #0284c7; }
+    .section[data-ny-theme="students"] .card { border-top: 4px solid #3b82f6; }
+    .section[data-ny-theme="teachers"] .card { border-top: 4px solid #10b981; }
     .section[data-ny-theme="finance"] .card { border-top: 4px solid #eab308; }
     .section[data-ny-theme="attendance"] .card { border-top: 4px solid #06b6d4; }
     .section[data-ny-theme="skills"] .card { border-top: 4px solid #e11d48; }
@@ -309,52 +561,161 @@
       font-weight: 800;
       padding: 4px 11px;
       border-radius: 99px;
-      background: var(--accent-soft);
-      color: var(--accent);
+      background: rgba(254, 243, 199, 0.92);
+      color: #b45309;
+      border: 1px solid rgba(245, 158, 11, 0.35);
       margin-bottom: 10px;
     }
 
     .card {
       background: var(--card);
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(14px);
       border-radius: 22px;
-      padding: 24px;
-      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.14);
+      padding: 22px 24px;
+      box-shadow: 0 14px 34px rgba(8, 16, 38, 0.22);
       border-left: 1px solid var(--border);
       border-right: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
+      position: relative;
     }
+
+    .form-hero-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+    .form-hero-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+      font-weight: 600;
+    }
+    .calligraphy-note {
+      font-family: 'Caveat', cursive;
+      font-size: 26px;
+      font-weight: 700;
+      color: #334155;
+      line-height: 1;
+      transform: rotate(-2deg);
+    }
+    body.dark .calligraphy-note { color: #e2e8f0; }
+
     .card-header-flex {
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px; margin-bottom: 14px;
     }
-    .card h2 { font-size: 18px; font-weight: 700; color: var(--heading); margin-bottom: 0; }
+    .card h2 { font-size: 19px; font-weight: 800; color: var(--heading); margin-bottom: 0; }
     .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
     .filter-bar input, .filter-bar select { width: auto; min-width: 170px; padding: 9px 13px; font-size: 13px; }
 
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 16px; }
     .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
 
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 6px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--heading); margin-bottom: 6px; }
+
+    .input-with-ico {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .input-with-ico .field-ico {
+      position: absolute;
+      left: 12px;
+      font-size: 14px;
+      pointer-events: none;
+      opacity: 0.75;
+    }
+    .input-with-ico input,
+    .input-with-ico select {
+      padding-left: 34px;
+    }
+
     input, select, textarea {
-      width: 100%; padding: 11px 14px; border-radius: 12px;
-      border: 1.5px solid rgba(148, 163, 184, 0.35); background: var(--input-bg); color: var(--heading); font-size: 14px; outline: none;
+      width: 100%; padding: 10px 14px; border-radius: 12px;
+      border: 1.5px solid rgba(148, 163, 184, 0.35);
+      background: var(--input-bg); color: var(--heading);
+      font-size: 13.5px; font-weight: 600; outline: none;
     }
     input[type="checkbox"] { width: auto; }
-    input:focus, select:focus, textarea:focus { border-color: #e11d48; }
+    input:focus, select:focus, textarea:focus { border-color: #2563eb; }
 
-    .photo-preview-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+    .bottom-form-row {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-top: 6px;
+    }
+
+    .upload-drop-box {
+      border: 1.5px dashed rgba(100, 116, 139, 0.45);
+      background: rgba(255, 255, 255, 0.72);
+      border-radius: 14px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+    body.dark .upload-drop-box {
+      background: rgba(22, 32, 51, 0.78);
+    }
+    .upload-drop-box input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .upload-cloud-ico {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: rgba(37, 99, 235, 0.12); color: #2563eb;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 17px; flex-shrink: 0;
+    }
+
     .photo-preview-img {
-      width: 52px; height: 52px; border-radius: 50%; object-fit: cover;
-      border: 2px solid #e11d48; background: var(--input-bg); display: none;
+      width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+      border: 2px solid #e11d48; background: var(--input-bg); display: none; flex-shrink: 0;
     }
     .st-name-cell, .rank-st-cell { display: inline-flex; align-items: center; gap: 8px; }
     .st-avatar, .rank-st-avatar {
       width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
       border: 1.5px solid var(--border); background: var(--input-bg); flex-shrink: 0;
+    }
+
+    .btn-save-gradient {
+      width: 100%;
+      height: 50px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(90deg, #2563eb 0%, #6366f1 48%, #d946ef 100%);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 10px 24px rgba(99, 102, 241, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
+    }
+    .btn-save-gradient:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 28px rgba(99, 102, 241, 0.45);
+    }
+
+    .form-submit-row {
+      margin-top: 8px;
     }
 
     .skill-preview-box {
@@ -415,11 +776,11 @@
 
     .btn-primary {
       background: linear-gradient(135deg, #3b5bfd, #2563eb); color: white; border: none;
-      padding: 11px 22px; border-radius: 12px; font-weight: 600; cursor: pointer;
+      padding: 11px 22px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
     .btn-success {
       background: linear-gradient(135deg, #10b981, #059669); color: white; border: none;
-      padding: 11px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
+      padding: 11px 20px; border-radius: 12px; font-weight: 700; cursor: pointer;
     }
     .btn-close-month {
       background: linear-gradient(135deg, #e11d48, #f97316); color: white; border: none;
@@ -482,10 +843,28 @@
       border-radius: 14px; font-size: 14px; font-weight: 600;
       display: none; z-index: 1200;
     }
-    @media (max-width: 960px) {
-      .kpi-grid, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+
+    @media (max-width: 1050px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .bottom-form-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 820px) {
+      .app-shell { flex-direction: column; }
+      .sidebar {
+        width: 100%;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 10px 16px 4px;
+        gap: 8px;
+      }
+      .side-nav-item {
+        min-width: 84px;
+        width: auto;
+        flex-shrink: 0;
+      }
+      .container { padding: 12px 16px 28px; }
+      .grid-3, .grid-2 { grid-template-columns: 1fr; }
       .grid-6 { grid-template-columns: repeat(2, 1fr); }
-      .ny-moon { width: 56px; height: 56px; top: 58px; right: 16px; }
     }
   </style>
 </head>
@@ -494,7 +873,6 @@
   <!-- O'zgaruvchan fon (oboi) -->
   <div class="ny-wallpaper-layer" id="wallpaperLayer" aria-hidden="true"></div>
   <div class="ny-wallpaper-veil" aria-hidden="true"></div>
-  <div class="ny-moon" aria-hidden="true"></div>
   <canvas id="snowCanvas"></canvas>
 
   <div class="santa-flight-layer" aria-hidden="true">
@@ -505,35 +883,42 @@
   </div>
 
   <header class="topbar">
-    <div class="brand">
-      <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
-      <div class="brand-title-wrap">
-        <!-- EMPOWER logotipi ustiga suyanib turgan do'ppili Qorbobo -->
-        <svg class="leaning-santa-doppi" viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M18 56 C18 42, 26 35, 36 35 C45 35, 51 42, 52 56 Z" fill="#dc2626"/>
-          <path d="M27 35 L33 46 L39 35 Z" fill="#f8fafc"/>
-          <rect x="20" y="45" width="30" height="5" rx="2" fill="#1e293b"/>
-          <rect x="31" y="44" width="7" height="7" rx="1.5" fill="#facc15"/>
-          <circle cx="35" cy="25" r="10.5" fill="#fed7aa"/>
-          <circle cx="32" cy="24" r="1.3" fill="#0f172a"/>
-          <circle cx="38" cy="24" r="1.3" fill="#0f172a"/>
-          <circle cx="35" cy="26.5" r="1.8" fill="#fb7185"/>
-          <path d="M24 27 C24 36, 29 41, 35 41 C41 41, 46 36, 46 27 C43 30, 39 31, 35 31 C31 31, 27 30, 24 27 Z" fill="#ffffff"/>
-          <path d="M24 18 C24 11, 46 11, 46 18 L47 21 L23 21 Z" fill="#111827"/>
-          <path d="M23.5 18.5 Q35 21.5 46.5 18.5" stroke="#f8fafc" stroke-width="1.6" fill="none" stroke-dasharray="3 2"/>
-          <path d="M29 15.5 C29 14, 31 14, 31 15.5 C31 17, 29 17, 29 15.5 Z" fill="#f8fafc"/>
-          <path d="M34 14.5 C34 13, 36 13, 36 14.5 C36 16, 34 16, 34 14.5 Z" fill="#f8fafc"/>
-          <path d="M39 15.5 C39 14, 41 14, 41 15.5 C41 17, 39 17, 39 15.5 Z" fill="#f8fafc"/>
-          <path d="M21 42 C13 43, 10 49, 13 54" stroke="#dc2626" stroke-width="5.5" stroke-linecap="round" fill="none"/>
-          <circle cx="13.5" cy="54.5" r="3.2" fill="#f8fafc"/>
-        </svg>
-        <div class="brand-title">EMPOWER</div>
-        <div class="brand-sub">ACADEMY</div>
+    <div class="brand-cluster">
+      <div class="brand">
+        <img src="/logo.jpg" alt="Empower Academy" class="brand-logo-img" onerror="this.style.display='none'" />
+        <div class="brand-title-wrap">
+          <svg class="leaning-santa-doppi" viewBox="0 0 64 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M18 56 C18 42, 26 35, 36 35 C45 35, 51 42, 52 56 Z" fill="#dc2626"/>
+            <path d="M27 35 L33 46 L39 35 Z" fill="#f8fafc"/>
+            <rect x="20" y="45" width="30" height="5" rx="2" fill="#1e293b"/>
+            <rect x="31" y="44" width="7" height="7" rx="1.5" fill="#facc15"/>
+            <circle cx="35" cy="25" r="10.5" fill="#fed7aa"/>
+            <circle cx="32" cy="24" r="1.3" fill="#0f172a"/>
+            <circle cx="38" cy="24" r="1.3" fill="#0f172a"/>
+            <circle cx="35" cy="26.5" r="1.8" fill="#fb7185"/>
+            <path d="M24 27 C24 36, 29 41, 35 41 C41 41, 46 36, 46 27 C43 30, 39 31, 35 31 C31 31, 27 30, 24 27 Z" fill="#ffffff"/>
+            <path d="M24 18 C24 11, 46 11, 46 18 L47 21 L23 21 Z" fill="#111827"/>
+            <path d="M23.5 18.5 Q35 21.5 46.5 18.5" stroke="#f8fafc" stroke-width="1.6" fill="none" stroke-dasharray="3 2"/>
+            <path d="M29 15.5 C29 14, 31 14, 31 15.5 C31 17, 29 17, 29 15.5 Z" fill="#f8fafc"/>
+            <path d="M34 14.5 C34 13, 36 13, 36 14.5 C36 16, 34 16, 34 14.5 Z" fill="#f8fafc"/>
+            <path d="M39 15.5 C39 14, 41 14, 41 15.5 C41 17, 39 17, 39 15.5 Z" fill="#f8fafc"/>
+            <path d="M21 42 C13 43, 10 49, 13 54" stroke="#dc2626" stroke-width="5.5" stroke-linecap="round" fill="none"/>
+            <circle cx="13.5" cy="54.5" r="3.2" fill="#f8fafc"/>
+          </svg>
+          <div class="brand-title">EMPOWER</div>
+          <div class="brand-sub">ACADEMY</div>
+        </div>
+        <span class="admin-badge">🎄 NEW YEAR ADMIN</span>
       </div>
-      <span class="admin-badge">🎄 NEW YEAR ADMIN</span>
+
+      <div class="top-santa-greeting" aria-hidden="true">
+        <span class="top-santa-emoji">🎅</span>
+        <span class="top-ny-script">Happy New Year!</span>
+      </div>
     </div>
+
     <div class="top-actions">
-      <button type="button" class="wall-btn" id="nextWallpaperBtn" title="Keyingi fon rasmi (oboi)">🖼️ Oboi: <span id="wallpaperLabel">1/1</span></button>
+      <button type="button" class="wall-btn" id="nextWallpaperBtn" title="Fon rasmi (oboi)">🖼️ Oboi: <span id="wallpaperLabel">1/1</span></button>
       <button type="button" class="santa-trigger-btn" id="triggerSantaBtn" title="Qorbobo va kiyiklarni uchirish">🦌🎅 Oyga uchirish</button>
       <select id="langSelect" class="lang-select">
         <option value="uz">🇺🇿 O‘zbekcha</option>
@@ -542,594 +927,728 @@
       </select>
       <button class="theme-btn" id="themeToggleBtn">Dark / Light</button>
       <button class="logout-btn" id="logoutBtn" data-i18n="logout">Chiqish</button>
+      <button type="button" class="icon-bell-btn" title="Eslatmalar" onclick="activateSection('extraTab')">
+        🔔<span class="bell-dot" id="topBellCount">3</span>
+      </button>
+      <span class="profile-circle" title="Admin">A</span>
     </div>
   </header>
 
-  <div class="container">
-    <div class="ny-banner">
-      <div class="ny-banner-text">
-        <span>🎄</span>
-        <span>Yangi Yil bayram muhiti faol — o‘zgaruvchan fon (oboi), do‘ppili Qorbobo va yaltilovchi qor parchalari!</span>
-      </div>
-      <div class="ny-banner-pill" id="wallpaperModePill">🖼️ Avto-oboi (14s)</div>
-    </div>
+  <div class="app-shell">
+    <!-- Chap yon menyu -->
+    <aside class="sidebar" aria-label="Asosiy menyu">
+      <button type="button" class="side-nav-item active" data-sync-tab="studentsTab">
+        <span class="side-ico">🏠</span>
+        <span>Bosh sahifa</span>
+      </button>
+      <button type="button" class="side-nav-item" data-sync-tab="studentsTab">
+        <span class="side-ico">👥</span>
+        <span>O‘quvchilar</span>
+      </button>
+      <button type="button" class="side-nav-item" data-sync-tab="lessonsTab">
+        <span class="side-ico">📚</span>
+        <span>Kurslar</span>
+      </button>
+      <button type="button" class="side-nav-item" data-sync-tab="analyticsTab">
+        <span class="side-ico">📊</span>
+        <span>Hisobotlar</span>
+      </button>
+      <button type="button" class="side-nav-item" data-sync-tab="closeMonthTab">
+        <span class="side-ico">⚙️</span>
+        <span>Sozlamalar</span>
+      </button>
+      <button type="button" class="side-nav-item" data-sync-tab="extraTab">
+        <span class="side-ico">🎧</span>
+        <span>Yordam</span>
+      </button>
+    </aside>
 
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label" data-i18n="kpiTotalStudents">Jami o‘quvchilar</div>
-        <div class="kpi-val" id="kpiTotalStudents">0</div>
-        <div class="kpi-note" data-i18n="kpiActiveBase">Faol o‘quvchilar bazasi</div>
-      </div>
-      <div class="kpi-card emerald">
-        <div class="kpi-label" data-i18n="kpiTotalIncome">Jami kassa kirim</div>
-        <div class="kpi-val" id="kpiTotalIncome">0 so‘m</div>
-        <div class="kpi-note" data-i18n="kpiPaidNote">Hisobga tushgan to‘lovlar</div>
-      </div>
-      <div class="kpi-card rose">
-        <div class="kpi-label" data-i18n="kpiAvgScore">Markaz o‘rtacha balli</div>
-        <div class="kpi-val" id="kpiAvgScore">0%</div>
-        <div class="kpi-note" data-i18n="kpiSkillsNote">Barcha fanlar kesimida</div>
-      </div>
-      <div class="kpi-card amber">
-        <div class="kpi-label" data-i18n="kpiLowBalance">Balansi kam o‘quvchilar</div>
-        <div class="kpi-val" id="kpiLowBalance">0</div>
-        <div class="kpi-note" style="color:#d97706;" data-i18n="kpiLowNote">To‘lov eslatmasi kerak</div>
-      </div>
-    </div>
-
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
-      <button class="tab-btn" data-tab="teachersTab" data-i18n="tabTeachers">O‘qituvchilar</button>
-      <button class="tab-btn" data-tab="financeTab" data-i18n="tabFinance">Balans & Buxgalteriya</button>
-      <button class="tab-btn" data-tab="attendanceTab" data-i18n="tabAttendance">Davomat</button>
-      <button class="tab-btn" data-tab="skillsTab" data-i18n="tabSkills">Bilim & Reyting</button>
-      <button class="tab-btn" data-tab="lessonsTab" data-i18n="tabLessons">Darsliklar</button>
-      <button class="tab-btn" data-tab="assignmentsTab" data-i18n="tabAssignments">Vazifalar & Baholash</button>
-      <button class="tab-btn" data-tab="extraTab" data-i18n="tabExtra">E’lonlar & Jadval</button>
-      <button class="tab-btn" data-tab="analyticsTab" data-i18n="tabAnalytics">Statistika</button>
-      <button class="tab-btn" data-tab="closeMonthTab" data-i18n="tabCloseMonth">Oy yopish</button>
-    </div>
-
-    <div id="studentsTab" class="section active" data-ny-theme="students">
-      <div class="card">
-        <div class="ny-section-ribbon">🎄 Yangi Yil — O‘quvchilar bo‘limi</div>
-        <h2 data-i18n="addStudentTitle">Yangi o‘quvchini ro‘yxatdan o‘tkazish</h2>
-        <form id="addStudentForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="stName" placeholder="Jasur Karimov" required /></div>
-            <div class="form-group"><label data-i18n="lblUsername">Login (Username)</label><input type="text" id="stUser" placeholder="jasur" required /></div>
-            <div class="form-group"><label data-i18n="lblPassword">Parol</label><input type="text" id="stPass" placeholder="12345" required /></div>
-            <div class="form-group">
-              <label data-i18n="lblLevel">Daraja (Level)</label>
-              <select id="stLevel">
-                <option value="A1">A1</option><option value="A2">A2</option>
-                <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
-              </select>
-            </div>
-            <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="stGroup" value="General English" /></div>
-            <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov (so‘m)</label><input type="number" id="stFee" value="500000" /></div>
-          </div>
-          <div class="form-group" style="max-width: 420px;">
-            <label data-i18n="lblPhoto">O‘quvchi rasmi (Profil uchun)</label>
-            <input type="file" id="stPhoto" accept="image/*" />
-            <div class="photo-preview-row">
-              <img id="stPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
-              <span id="stPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
-            </div>
-          </div>
-          <button type="submit" class="btn-primary" data-i18n="btnAddStudent">+ O‘quvchini qo‘shish</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">🎁 O‘quvchilar bazasi</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="allStudentsTitle">Barcha o‘quvchilar ro‘yxati</h2>
-          <div class="filter-bar">
-            <input type="text" id="searchStudentInput" placeholder="Ism, login yoki guruh..." />
-            <select id="filterLevelSelect">
-              <option value="ALL">ALL</option>
-              <option value="A1">A1</option><option value="A2">A2</option>
-              <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
-            </select>
-            <button type="button" class="btn-excel" id="exportStudentsExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
-          </div>
+    <div class="container">
+      <!-- Bayram banneri -->
+      <div class="ny-banner">
+        <div class="ny-banner-text">
+          <span>🎄</span>
+          <span>Yangi Yil bayram muhiti faol — o‘zgaruvchan fon (oboi), do‘ppili Qorbobo va yaltilovchi qor parchalari!</span>
         </div>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Ism Familiya</th><th>Login</th><th>Level</th><th>Group</th><th>Balance</th><th>Score</th><th>Actions</th></tr>
-          </thead>
-          <tbody id="studentsTableBody"></tbody>
-        </table>
+        <div class="ny-banner-pill" id="wallpaperModePill">▶ Avto-oboi (14s)</div>
       </div>
-    </div>
 
-    <div id="teachersTab" class="section" data-ny-theme="teachers">
-      <div class="card">
-        <div class="ny-section-ribbon">❄️ Yangi Yil — Ustozlar jamoasi</div>
-        <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
-        <form id="addTeacherForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="tchName" placeholder="Azizbek Ustoz" required /></div>
-            <div class="form-group"><label data-i18n="lblUsername">Login (Username)</label><input type="text" id="tchUser" placeholder="ustoz1" required /></div>
-            <div class="form-group"><label data-i18n="lblPassword">Parol</label><input type="text" id="tchPass" placeholder="12345" required /></div>
-            <div class="form-group"><label data-i18n="lblPhone">Telefon nomer</label><input type="text" id="tchPhone" placeholder="+998 90 123 45 67" /></div>
-            <div class="form-group">
-              <label data-i18n="lblTeacherPhoto">O‘qituvchi rasmi</label>
-              <input type="file" id="tchPhoto" accept="image/*" />
-              <div class="photo-preview-row">
-                <img id="tchPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
-                <span id="tchPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
+      <!-- 4 ta rang-barang KPI karta -->
+      <div class="kpi-grid">
+        <div class="kpi-card blue-card">
+          <div class="kpi-top-row">
+            <span class="kpi-icon-badge">👥</span>
+            <div class="kpi-label" data-i18n="kpiTotalStudents">JAMI O‘QUVCHILAR</div>
+          </div>
+          <div class="kpi-val" id="kpiTotalStudents">0</div>
+          <div class="kpi-note" data-i18n="kpiActiveBase">▲ Faol o‘quvchilar bazasi</div>
+          <span class="kpi-decor" aria-hidden="true">❄️</span>
+        </div>
+
+        <div class="kpi-card emerald-card">
+          <div class="kpi-top-row">
+            <span class="kpi-icon-badge">💳</span>
+            <div class="kpi-label" data-i18n="kpiTotalIncome">JAMI KASSA KIRIM</div>
+          </div>
+          <div class="kpi-val" id="kpiTotalIncome">0 so‘m</div>
+          <div class="kpi-note" data-i18n="kpiPaidNote">▲ Hisobga tushgan to‘lovlar</div>
+          <span class="kpi-decor" aria-hidden="true">🎁</span>
+        </div>
+
+        <div class="kpi-card purple-card">
+          <div class="kpi-top-row">
+            <span class="kpi-icon-badge">📈</span>
+            <div class="kpi-label" data-i18n="kpiAvgScore">MARKAZ O‘RTACHA BALLI</div>
+          </div>
+          <div class="kpi-val" id="kpiAvgScore">0%</div>
+          <div class="kpi-note" data-i18n="kpiSkillsNote">▲ Barcha fanlar kesimida</div>
+          <span class="kpi-decor" aria-hidden="true">🏆</span>
+        </div>
+
+        <div class="kpi-card amber-card">
+          <div class="kpi-top-row">
+            <span class="kpi-icon-badge">⭐</span>
+            <div class="kpi-label" data-i18n="kpiLowBalance">BALANSI KAM O‘QUVCHILAR</div>
+          </div>
+          <div class="kpi-val" id="kpiLowBalance">0</div>
+          <div class="kpi-note" data-i18n="kpiLowNote">▲ To‘lov eslatmasi kerak</div>
+          <span class="kpi-decor" aria-hidden="true">🕒</span>
+        </div>
+      </div>
+
+      <!-- Gorizontal bo'lim tablari -->
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="studentsTab" data-i18n="tabStudents">O‘quvchilar</button>
+        <button class="tab-btn" data-tab="teachersTab" data-i18n="tabTeachers">O‘qituvchilar</button>
+        <button class="tab-btn" data-tab="financeTab" data-i18n="tabFinance">Balans & Buxgalteriya</button>
+        <button class="tab-btn" data-tab="attendanceTab" data-i18n="tabAttendance">Davomat</button>
+        <button class="tab-btn" data-tab="skillsTab" data-i18n="tabSkills">Bilim & Reyting</button>
+        <button class="tab-btn" data-tab="lessonsTab" data-i18n="tabLessons">Darsliklar</button>
+        <button class="tab-btn" data-tab="assignmentsTab" data-i18n="tabAssignments">Vazifalar & Baholash</button>
+        <button class="tab-btn" data-tab="extraTab" data-i18n="tabExtra">E’lonlar & Jadval</button>
+        <button class="tab-btn" data-tab="analyticsTab" data-i18n="tabAnalytics">Statistika</button>
+        <button class="tab-btn" data-tab="closeMonthTab" data-i18n="tabCloseMonth">Oy yopish</button>
+      </div>
+
+      <!-- 1. O'QUVCHILAR -->
+      <div id="studentsTab" class="section active" data-ny-theme="students">
+        <div class="card">
+          <div class="form-hero-header">
+            <div>
+              <div class="ny-section-ribbon">🎄 Yangi Yil — O‘quvchilar bo‘limi</div>
+              <h2 data-i18n="addStudentTitle">Yangi o‘quvchini ro‘yxatdan o‘tkazish</h2>
+              <div class="form-hero-sub">Iste’dodli bolajonlar uchun yangi imkoniyat</div>
+            </div>
+            <div class="calligraphy-note" aria-hidden="true">Kelajak uchun birinchi qadam... ♡</div>
+          </div>
+
+          <form id="addStudentForm">
+            <div class="grid-3">
+              <div class="form-group">
+                <label data-i18n="lblFullName">Ism Familiya</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">👤</span>
+                  <input type="text" id="stName" placeholder="Jasur Karimov" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblUsername">Login</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">@</span>
+                  <input type="text" id="stUser" placeholder="jasur" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblPassword">Parol</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">🔒</span>
+                  <input type="text" id="stPass" placeholder="12345" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblLevel">Daraja</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">🎓</span>
+                  <select id="stLevel">
+                    <option value="A1">A1</option><option value="A2">A2</option>
+                    <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblGroup">Guruh nomi</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">👥</span>
+                  <input type="text" id="stGroup" value="General English" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label data-i18n="lblFee">Oylik to‘lov (so‘m)</label>
+                <div class="input-with-ico">
+                  <span class="field-ico">🪙</span>
+                  <input type="number" id="stFee" value="500000" />
+                </div>
               </div>
             </div>
-          </div>
-          <button type="submit" class="btn-primary" data-i18n="btnAddTeacher">+ O‘qituvchini qo‘shish</button>
-        </form>
-      </div>
 
-      <div class="card">
-        <div class="ny-section-ribbon">🌟 Ustozlar ro‘yxati</div>
-        <h2 data-i18n="allTeachersTitle">Barcha o‘qituvchilar ro‘yxati</h2>
-        <table>
-          <thead>
-            <tr><th>ID</th><th>Rasm</th><th>Ism Familiya</th><th>Login</th><th>Telefon nomer</th><th>Amal</th></tr>
-          </thead>
-          <tbody id="teachersTableBody"></tbody>
-        </table>
-      </div>
-    </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label data-i18n="lblPhoto">O‘quvchi rasmi (Profil uchun)</label>
+              <div class="bottom-form-row">
+                <div class="upload-drop-box">
+                  <span class="upload-cloud-ico">☁️</span>
+                  <img id="stPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+                  <div style="min-width:0; flex:1;">
+                    <div id="stPhotoName" style="font-size:12.5px; font-weight:700; color:var(--heading); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">Rasm yuklash yoki fayl tanlash</div>
+                    <div style="font-size:11px; color:var(--muted);">JPG, PNG • Maks. 2MB</div>
+                  </div>
+                  <input type="file" id="stPhoto" accept="image/*" />
+                </div>
 
-    <div id="financeTab" class="section" data-ny-theme="finance">
-      <div class="card">
-        <div class="ny-section-ribbon">🪙 Yangi Yil — Kassa va hisob-kitob</div>
-        <h2 data-i18n="balanceFormTitle">O‘quvchi balansini to‘ldirish yoki yechish</h2>
-        <form id="balanceForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchini tanlang</label><select id="finStudentSelect"></select></div>
-            <div class="form-group">
-              <label data-i18n="lblTxType">Amal turi</label>
-              <select id="finType">
-                <option value="deposit">Deposit (+)</option>
-                <option value="charge">Charge (-)</option>
-              </select>
+                <button type="submit" class="btn-save-gradient">
+                  <span>➤</span>
+                  <span data-i18n="btnAddStudent">Saqlash</span>
+                </button>
+              </div>
             </div>
-            <div class="form-group"><label data-i18n="lblAmount">Summa (so‘m)</label><input type="number" id="finAmount" placeholder="500000" required /></div>
-          </div>
-          <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="finDesc" placeholder="..." /></div>
-          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">💳 Operatsiyalar tarixi</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="txHistoryTitle">Oxirgi buxgalteriya operatsiyalari</h2>
-          <div class="filter-bar">
-            <button type="button" class="btn-excel" id="exportFinanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
-            <button type="button" class="btn-clear-hist" onclick="openClearModal('transactions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Type</th><th>Amount</th><th>Note</th></tr></thead>
-          <tbody id="transactionsAdminBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="attendanceTab" class="section" data-ny-theme="attendance">
-      <div class="card">
-        <div class="ny-section-ribbon">❄️ Yangi Yil — Qishki davomat</div>
-        <h2 data-i18n="bulkAttTitle">Birvarakayiga davomat olish (Barcha o‘quvchilar)</h2>
-        <div class="grid-2" style="margin-bottom:12px;">
-          <div class="form-group">
-            <label data-i18n="lblDate">Dars sanasi</label>
-            <input type="date" id="bulkAttDate" />
-          </div>
-          <div class="form-group" style="display:flex; align-items:flex-end;">
-            <button type="button" class="btn-success" id="saveBulkAttBtn" data-i18n="btnSaveBulk">Barchasini birga saqlash</button>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Student</th><th>Group</th><th>Level</th><th>Status</th></tr></thead>
-          <tbody id="bulkAttendanceBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">📝 Yakka davomat</div>
-        <h2 data-i18n="singleAttTitle">Bitta o‘quvchiga davomat belgilash</h2>
-        <form id="attendanceForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchi</label><select id="attStudentSelect"></select></div>
-            <div class="form-group"><label data-i18n="lblDate">Sana</label><input type="date" id="attDate" required /></div>
-            <div class="form-group">
-              <label data-i18n="lblStatus">Holati</label>
-              <select id="attStatus">
-                <option value="present">Present</option>
-                <option value="absent">Absent</option>
-                <option value="excused">Excused</option>
-              </select>
-            </div>
-          </div>
-          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">📋 Davomat jurnali</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="attHistoryTitle">Oxirgi davomat yozuvlari</h2>
-          <div class="filter-bar">
-            <button type="button" class="btn-excel" id="exportAttendanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
-            <button type="button" class="btn-clear-hist" onclick="openClearModal('attendance')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-          </div>
-        </div>
-        <table>
-          <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Status</th></tr></thead>
-          <tbody id="attendanceAdminBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="skillsTab" class="section" data-ny-theme="skills">
-      <div class="card">
-        <div class="ny-section-ribbon">🏆 Yangi Yil — Bilim va yutuqlar</div>
-        <h2 data-i18n="skillsFormTitle">O‘quvchi bilim ballarini yangilash (0 - 100)</h2>
-        <div class="skill-preview-box">
-          <div>
-            <div style="font-size:12px; color:var(--muted); font-weight:700;" data-i18n="lblSelectedPreview">TANLANGAN O‘QUVCHI KO‘RSATKICHI</div>
-            <div id="previewStudentName" style="font-size:16px; font-weight:800; margin-top:2px;">-</div>
-          </div>
-          <div style="text-align:right;">
-            <span class="preview-score" id="previewAvgScore">0%</span>
-            <div id="previewStatusTag" style="font-size:12px; font-weight:700; color:#2563eb;">-</div>
-          </div>
+          </form>
         </div>
 
-        <form id="skillsForm">
-          <div class="form-group" style="max-width: 360px;">
-            <label data-i18n="lblSelectStudent">O‘quvchini tanlang</label>
-            <select id="skStudentSelect"></select>
-          </div>
-          <div class="grid-6">
-            <div class="form-group"><label>Grammar</label><input type="number" id="skGrammar" class="skill-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Listening</label><input type="number" id="skListening" class="skill-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Reading</label><input type="number" id="skReading" class="skill-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Vocabulary</label><input type="number" id="skVocabulary" class="skill-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Writing</label><input type="number" id="skWriting" class="skill-input" min="0" max="100" required /></div>
-            <div class="form-group"><label>Speaking</label><input type="number" id="skSpeaking" class="skill-input" min="0" max="100" required /></div>
-          </div>
-          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">🥇 Reyting jadvali</div>
-        <h2 data-i18n="rankingTableTitle">O‘quvchilar bilim reytingi va o‘rtacha ballar jadvali</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>#</th><th>Student</th><th>Level</th>
-              <th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th>
-              <th>Average</th><th>Action</th>
-            </tr>
-          </thead>
-          <tbody id="skillsRankingBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">🕒 Baholash tarixi</div>
-        <div class="card-header-flex">
-          <h2>Qo‘yilgan baholar tarixi (Har bir baholash yozuvi)</h2>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Vaqt</th><th>O‘quvchi</th><th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th><th>Kim qo‘ydi</th><th>Amal</th>
-            </tr>
-          </thead>
-          <tbody id="skillEvaluationsBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="lessonsTab" class="section" data-ny-theme="lessons">
-      <div class="card">
-        <div class="ny-section-ribbon">📚 Yangi Yil — Qishki darsliklar</div>
-        <h2 data-i18n="addLessonTitle">Yangi darslik qo‘shish (Fayl yoki Havola)</h2>
-        <form id="lessonForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblTitle">Darslik nomi</label><input type="text" id="lesTitle" required /></div>
-            <div class="form-group">
-              <label data-i18n="lblLevel">Daraja</label>
-              <select id="lesLevel">
-                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
-                <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
-              </select>
-            </div>
-            <div class="form-group"><label data-i18n="lblFile">Fayl yuklash</label><input type="file" id="lesFile" /></div>
-          </div>
-          <div class="grid-2">
-            <div class="form-group"><label data-i18n="lblUrl">Havola (URL)</label><input type="url" id="lesUrl" placeholder="https://..." /></div>
-            <div class="form-group"><label data-i18n="lblDesc">Tavsif</label><input type="text" id="lesDesc" /></div>
-          </div>
-          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">📂 Materiallar arxivi</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="lessonsHistoryTitle">Yuklangan darsliklar tarixi</h2>
-          <button type="button" class="btn-clear-hist" onclick="openClearModal('lessons')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-        </div>
-        <table>
-          <thead><tr><th>ID</th><th>Title</th><th>Level</th><th>File / URL</th><th>Action</th></tr></thead>
-          <tbody id="lessonsAdminBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="assignmentsTab" class="section" data-ny-theme="assignments">
-      <div class="card">
-        <div class="ny-section-ribbon">🎁 Yangi Yil — Topshiriqlar va sovg‘a ballar</div>
-        <h2 data-i18n="addAssignmentTitle">Yangi uy vazifasi / topshiriq berish</h2>
-        <form id="assignmentForm">
-          <div class="grid-3">
-            <div class="form-group"><label data-i18n="lblTitle">Vazifa sarlavhasi</label><input type="text" id="asTitle" required /></div>
-            <div class="form-group">
-              <label data-i18n="lblLevel">Daraja</label>
-              <select id="asLevel">
-                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
-                <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
-              </select>
-            </div>
-            <div class="form-group"><label data-i18n="lblDue">Muddat</label><input type="date" id="asDue" /></div>
-          </div>
-          <div class="form-group"><label data-i18n="lblDesc">Vazifa sharti / tavsifi</label><input type="text" id="asDesc" /></div>
-          <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
-        </form>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">📌 Berilgan vazifalar</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="assignmentsHistoryTitle">Yuborilgan topshiriqlar tarixi</h2>
-          <button type="button" class="btn-clear-hist" onclick="openClearModal('assignments')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-        </div>
-        <table>
-          <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Level</th><th>Due</th><th>Created</th><th>Action</th></tr></thead>
-          <tbody id="assignmentsHistoryBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">✅ Javoblar va baholash</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="submissionsHistoryTitle">O‘quvchilar yuborgan javoblar tarixi & baholash</h2>
-          <button type="button" class="btn-clear-hist" onclick="openClearModal('submissions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-        </div>
-        <table>
-          <thead><tr><th>Student</th><th>Assignment</th><th>Answer</th><th>Link</th><th>Grade (0-100)</th><th>Feedback</th><th>Action</th></tr></thead>
-          <tbody id="submissionsAdminBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="extraTab" class="section" data-ny-theme="extra">
-      <div class="grid-2">
         <div class="card">
-          <div class="ny-section-ribbon">🔔 Yangi Yil — Bayram e’lonlari</div>
+          <div class="ny-section-ribbon">🎁 O‘quvchilar bazasi</div>
           <div class="card-header-flex">
-            <h2 data-i18n="annTitle">O‘quvchilarga e’lon joylash</h2>
-            <button type="button" class="btn-clear-hist" onclick="openClearModal('announcements')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-          </div>
-          <form id="announcementForm">
-            <div class="form-group"><label data-i18n="lblTitle">Sarlavha</label><input type="text" id="annTitle" required /></div>
-            <div class="form-group">
-              <label data-i18n="lblLevel">Daraja</label>
-              <select id="annLevel">
-                <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+            <h2 data-i18n="allStudentsTitle">Barcha o‘quvchilar ro‘yxati</h2>
+            <div class="filter-bar">
+              <input type="text" id="searchStudentInput" placeholder="Ism, login yoki guruh..." />
+              <select id="filterLevelSelect">
+                <option value="ALL">ALL</option>
+                <option value="A1">A1</option><option value="A2">A2</option>
                 <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
               </select>
+              <button type="button" class="btn-excel" id="exportStudentsExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
             </div>
-            <div class="form-group"><label data-i18n="lblMessage">Xabar matni</label><textarea id="annMsg" rows="3" required></textarea></div>
-            <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+          </div>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Ism Familiya</th><th>Login</th><th>Level</th><th>Group</th><th>Balance</th><th>Score</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="studentsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 2. O'QITUVCHILAR -->
+      <div id="teachersTab" class="section" data-ny-theme="teachers">
+        <div class="card">
+          <div class="ny-section-ribbon">❄️ Yangi Yil — Ustozlar jamoasi</div>
+          <h2 data-i18n="addTeacherTitle">Yangi o‘qituvchi qo‘shish</h2>
+          <form id="addTeacherForm" style="margin-top:14px;">
+            <div class="grid-3">
+              <div class="form-group"><label data-i18n="lblFullName">Ism Familiya</label><input type="text" id="tchName" placeholder="Azizbek Ustoz" required /></div>
+              <div class="form-group"><label data-i18n="lblUsername">Login</label><input type="text" id="tchUser" placeholder="ustoz1" required /></div>
+              <div class="form-group"><label data-i18n="lblPassword">Parol</label><input type="text" id="tchPass" placeholder="12345" required /></div>
+              <div class="form-group"><label data-i18n="lblPhone">Telefon nomer</label><input type="text" id="tchPhone" placeholder="+998 90 123 45 67" /></div>
+              <div class="form-group">
+                <label data-i18n="lblTeacherPhoto">O‘qituvchi rasmi</label>
+                <input type="file" id="tchPhoto" accept="image/*" />
+                <div class="photo-preview-row" style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+                  <img id="tchPhotoPreview" alt="Rasm ko‘rinishi" class="photo-preview-img" />
+                  <span id="tchPhotoName" style="font-size:12px; color:var(--muted);">Rasm tanlanmagan</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnAddTeacher">+ O‘qituvchini qo‘shish</button>
+            </div>
           </form>
-          <table style="margin-top:16px;">
-            <thead><tr><th>Announcement</th><th>Level</th><th>Action</th></tr></thead>
-            <tbody id="announcementsAdminBody"></tbody>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">🌟 Ustozlar ro‘yxati</div>
+          <h2 data-i18n="allTeachersTitle">Barcha o‘qituvchilar ro‘yxati</h2>
+          <table>
+            <thead>
+              <tr><th>ID</th><th>Rasm</th><th>Ism Familiya</th><th>Login</th><th>Telefon nomer</th><th>Amal</th></tr>
+            </thead>
+            <tbody id="teachersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 3. BALANS & BUXGALTERIYA -->
+      <div id="financeTab" class="section" data-ny-theme="finance">
+        <div class="card">
+          <div class="ny-section-ribbon">🪙 Yangi Yil — Kassa va hisob-kitob</div>
+          <h2 data-i18n="balanceFormTitle">Balansni to‘ldirish yoki yechish</h2>
+          <form id="balanceForm" style="margin-top:14px;">
+            <div class="grid-3">
+              <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchini tanlang</label><select id="finStudentSelect"></select></div>
+              <div class="form-group">
+                <label data-i18n="lblTxType">Amal turi</label>
+                <select id="finType">
+                  <option value="deposit">Deposit (+)</option>
+                  <option value="charge">Charge (-)</option>
+                </select>
+              </div>
+              <div class="form-group"><label data-i18n="lblAmount">Summa (so‘m)</label><input type="number" id="finAmount" placeholder="500000" required /></div>
+            </div>
+            <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="finDesc" placeholder="..." /></div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">💳 Operatsiyalar tarixi</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="txHistoryTitle">Oxirgi buxgalteriya operatsiyalari</h2>
+            <div class="filter-bar">
+              <button type="button" class="btn-excel" id="exportFinanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
+              <button type="button" class="btn-clear-hist" onclick="openClearModal('transactions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Type</th><th>Amount</th><th>Note</th></tr></thead>
+            <tbody id="transactionsAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 4. DAVOMAT -->
+      <div id="attendanceTab" class="section" data-ny-theme="attendance">
+        <div class="card">
+          <div class="ny-section-ribbon">❄️ Yangi Yil — Qishki davomat</div>
+          <h2 data-i18n="bulkAttTitle">Birvarakayiga davomat olish</h2>
+          <div class="grid-2" style="margin:14px 0 12px;">
+            <div class="form-group">
+              <label data-i18n="lblDate">Sana</label>
+              <input type="date" id="bulkAttDate" />
+            </div>
+            <div class="form-group" style="display:flex; align-items:flex-end;">
+              <button type="button" class="btn-success" id="saveBulkAttBtn" data-i18n="btnSaveBulk">Barchasini birga saqlash</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Student</th><th>Group</th><th>Level</th><th>Status</th></tr></thead>
+            <tbody id="bulkAttendanceBody"></tbody>
           </table>
         </div>
 
         <div class="card">
-          <div class="ny-section-ribbon">🗓️ Qishki dars jadvali</div>
+          <div class="ny-section-ribbon">📝 Yakka davomat</div>
+          <h2 data-i18n="singleAttTitle">Bitta o‘quvchiga davomat</h2>
+          <form id="attendanceForm" style="margin-top:14px;">
+            <div class="grid-3">
+              <div class="form-group"><label data-i18n="lblSelectStudent">O‘quvchini tanlang</label><select id="attStudentSelect"></select></div>
+              <div class="form-group"><label data-i18n="lblDate">Sana</label><input type="date" id="attDate" required /></div>
+              <div class="form-group">
+                <label data-i18n="lblStatus">Holati</label>
+                <select id="attStatus">
+                  <option value="present">Present</option>
+                  <option value="absent">Absent</option>
+                  <option value="excused">Excused</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">📋 Davomat jurnali</div>
           <div class="card-header-flex">
-            <h2 data-i18n="scheduleTitle">Haftalik dars jadvali</h2>
-            <button type="button" class="btn-clear-hist" onclick="openClearModal('schedules')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+            <h2 data-i18n="attHistoryTitle">Oxirgi davomat yozuvlari</h2>
+            <div class="filter-bar">
+              <button type="button" class="btn-excel" id="exportAttendanceExcelBtn" data-i18n="btnExcel">Excel (.xls) yuklash</button>
+              <button type="button" class="btn-clear-hist" onclick="openClearModal('attendance')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+            </div>
           </div>
-          <form id="scheduleForm">
-            <div class="grid-2">
-              <div class="form-group"><label data-i18n="lblGroup">Guruh</label><input type="text" id="schGroup" required /></div>
+          <table>
+            <thead><tr><th>Date</th><th>Student</th><th>Group</th><th>Status</th></tr></thead>
+            <tbody id="attendanceAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. BILIM & REYTING -->
+      <div id="skillsTab" class="section" data-ny-theme="skills">
+        <div class="card">
+          <div class="ny-section-ribbon">🏆 Yangi Yil — Bilim va yutuqlar</div>
+          <h2 data-i18n="skillsFormTitle">Bilim ballarini yangilash (0 - 100)</h2>
+          <div class="skill-preview-box" style="margin-top:14px;">
+            <div>
+              <div style="font-size:12px; color:var(--muted); font-weight:700;" data-i18n="lblSelectedPreview">TANLANGAN O‘QUVCHI KO‘RSATKICHI</div>
+              <div id="previewStudentName" style="font-size:16px; font-weight:800; margin-top:2px;">-</div>
+            </div>
+            <div style="text-align:right;">
+              <span class="preview-score" id="previewAvgScore">0%</span>
+              <div id="previewStatusTag" style="font-size:12px; font-weight:700; color:#2563eb;">-</div>
+            </div>
+          </div>
+
+          <form id="skillsForm">
+            <div class="form-group" style="max-width: 360px;">
+              <label data-i18n="lblSelectStudent">O‘quvchini tanlang</label>
+              <select id="skStudentSelect"></select>
+            </div>
+            <div class="grid-6">
+              <div class="form-group"><label>Grammar</label><input type="number" id="skGrammar" class="skill-input" min="0" max="100" required /></div>
+              <div class="form-group"><label>Listening</label><input type="number" id="skListening" class="skill-input" min="0" max="100" required /></div>
+              <div class="form-group"><label>Reading</label><input type="number" id="skReading" class="skill-input" min="0" max="100" required /></div>
+              <div class="form-group"><label>Vocabulary</label><input type="number" id="skVocabulary" class="skill-input" min="0" max="100" required /></div>
+              <div class="form-group"><label>Writing</label><input type="number" id="skWriting" class="skill-input" min="0" max="100" required /></div>
+              <div class="form-group"><label>Speaking</label><input type="number" id="skSpeaking" class="skill-input" min="0" max="100" required /></div>
+            </div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">🥇 Reyting jadvali</div>
+          <h2 data-i18n="rankingTableTitle">O‘quvchilar bilim reytingi va o‘rtacha ballar jadvali</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>Student</th><th>Level</th>
+                <th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th>
+                <th>Average</th><th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="skillsRankingBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">🕒 Baholash tarixi</div>
+          <div class="card-header-flex">
+            <h2>Qo‘yilgan baholar tarixi (Har bir baholash yozuvi)</h2>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Vaqt</th><th>O‘quvchi</th><th>Grammar</th><th>Listening</th><th>Reading</th><th>Vocab</th><th>Writing</th><th>Speaking</th><th>Kim qo‘ydi</th><th>Amal</th>
+              </tr>
+            </thead>
+            <tbody id="skillEvaluationsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 6. DARSLIKLAR -->
+      <div id="lessonsTab" class="section" data-ny-theme="lessons">
+        <div class="card">
+          <div class="ny-section-ribbon">📚 Yangi Yil — Qishki darsliklar</div>
+          <h2 data-i18n="addLessonTitle">Yangi darslik qo‘shish</h2>
+          <form id="lessonForm" style="margin-top:14px;">
+            <div class="grid-3">
+              <div class="form-group"><label data-i18n="lblTitle">Nomi / Sarlavha</label><input type="text" id="lesTitle" required /></div>
               <div class="form-group">
                 <label data-i18n="lblLevel">Daraja</label>
-                <select id="schLevel">
-                  <option value="A1">A1</option><option value="A2">A2</option>
+                <select id="lesLevel">
+                  <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                  <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
+                </select>
+              </div>
+              <div class="form-group"><label data-i18n="lblFile">Fayl yuklash</label><input type="file" id="lesFile" /></div>
+            </div>
+            <div class="grid-2">
+              <div class="form-group"><label data-i18n="lblUrl">Havola (URL)</label><input type="url" id="lesUrl" placeholder="https://..." /></div>
+              <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="lesDesc" /></div>
+            </div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">📂 Materiallar arxivi</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="lessonsHistoryTitle">Yuklangan darsliklar tarixi</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('lessons')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <table>
+            <thead><tr><th>ID</th><th>Title</th><th>Level</th><th>File / URL</th><th>Action</th></tr></thead>
+            <tbody id="lessonsAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 7. VAZIFALAR & BAHOLASH -->
+      <div id="assignmentsTab" class="section" data-ny-theme="assignments">
+        <div class="card">
+          <div class="ny-section-ribbon">🎁 Yangi Yil — Topshiriqlar va sovg‘a ballar</div>
+          <h2 data-i18n="addAssignmentTitle">Yangi uy vazifasi berish</h2>
+          <form id="assignmentForm" style="margin-top:14px;">
+            <div class="grid-3">
+              <div class="form-group"><label data-i18n="lblTitle">Nomi / Sarlavha</label><input type="text" id="asTitle" required /></div>
+              <div class="form-group">
+                <label data-i18n="lblLevel">Daraja</label>
+                <select id="asLevel">
+                  <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
+                  <option value="B1">B1</option><option value="B2" selected>B2</option><option value="C1">C1</option>
+                </select>
+              </div>
+              <div class="form-group"><label data-i18n="lblDue">Muddat</label><input type="date" id="asDue" /></div>
+            </div>
+            <div class="form-group"><label data-i18n="lblDesc">Izoh</label><input type="text" id="asDesc" /></div>
+            <div class="form-submit-row">
+              <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">📌 Berilgan vazifalar</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="assignmentsHistoryTitle">Yuborilgan topshiriqlar tarixi</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('assignments')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Title</th><th>Description</th><th>Level</th><th>Due</th><th>Created</th><th>Action</th></tr></thead>
+            <tbody id="assignmentsHistoryBody"></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">✅ Javoblar va baholash</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="submissionsHistoryTitle">O‘quvchilar yuborgan javoblar tarixi & baholash</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('submissions')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <table>
+            <thead><tr><th>Student</th><th>Assignment</th><th>Answer</th><th>Link</th><th>Grade (0-100)</th><th>Feedback</th><th>Action</th></tr></thead>
+            <tbody id="submissionsAdminBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 8. E'LONLAR & JADVAL -->
+      <div id="extraTab" class="section" data-ny-theme="extra">
+        <div class="grid-2">
+          <div class="card">
+            <div class="ny-section-ribbon">🔔 Yangi Yil — Bayram e’lonlari</div>
+            <div class="card-header-flex">
+              <h2 data-i18n="annTitle">E’lon joylash</h2>
+              <button type="button" class="btn-clear-hist" onclick="openClearModal('announcements')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+            </div>
+            <form id="announcementForm">
+              <div class="form-group"><label data-i18n="lblTitle">Nomi / Sarlavha</label><input type="text" id="annTitle" required /></div>
+              <div class="form-group">
+                <label data-i18n="lblLevel">Daraja</label>
+                <select id="annLevel">
+                  <option value="ALL">ALL</option><option value="A1">A1</option><option value="A2">A2</option>
                   <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
                 </select>
               </div>
-              <div class="form-group"><label data-i18n="lblDay">Hafta kuni</label><input type="text" id="schDay" placeholder="Mon / Wed / Fri" required /></div>
-              <div class="form-group"><label data-i18n="lblTime">Vaqt</label><input type="text" id="schTime" placeholder="14:00 - 15:30" required /></div>
+              <div class="form-group"><label data-i18n="lblMessage">Xabar matni</label><textarea id="annMsg" rows="3" required></textarea></div>
+              <div class="form-submit-row">
+                <button type="submit" class="btn-primary" data-i18n="btnSave">Saqlash</button>
+              </div>
+            </form>
+            <table style="margin-top:16px;">
+              <thead><tr><th>Announcement</th><th>Level</th><th>Action</th></tr></thead>
+              <tbody id="announcementsAdminBody"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="ny-section-ribbon">🗓️ Qishki dars jadvali</div>
+            <div class="card-header-flex">
+              <h2 data-i18n="scheduleTitle">Haftalik dars jadvali</h2>
+              <button type="button" class="btn-clear-hist" onclick="openClearModal('schedules')" data-i18n="btnClearHistory">Tarixni tozalash</button>
             </div>
-            <div class="form-group"><label data-i18n="lblRoom">Xona / Ustoz</label><input type="text" id="schRoom" required /></div>
-            <button type="submit" class="btn-success" data-i18n="btnSave">Saqlash</button>
-          </form>
-          <table style="margin-top:16px;">
-            <thead><tr><th>Group</th><th>Day & Time</th><th>Room/Teacher</th><th>Action</th></tr></thead>
-            <tbody id="schedulesAdminBody"></tbody>
+            <form id="scheduleForm">
+              <div class="grid-2">
+                <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="schGroup" required /></div>
+                <div class="form-group">
+                  <label data-i18n="lblLevel">Daraja</label>
+                  <select id="schLevel">
+                    <option value="A1">A1</option><option value="A2">A2</option>
+                    <option value="B1">B1</option><option value="B2">B2</option><option value="C1">C1</option>
+                  </select>
+                </div>
+                <div class="form-group"><label data-i18n="lblDay">Hafta kuni</label><input type="text" id="schDay" placeholder="Mon / Wed / Fri" required /></div>
+                <div class="form-group"><label data-i18n="lblTime">Vaqt</label><input type="text" id="schTime" placeholder="14:00 - 15:30" required /></div>
+              </div>
+              <div class="form-group"><label data-i18n="lblRoom">Xona / Ustoz</label><input type="text" id="schRoom" required /></div>
+              <div class="form-submit-row">
+                <button type="submit" class="btn-success" data-i18n="btnSave">Saqlash</button>
+              </div>
+            </form>
+            <table style="margin-top:16px;">
+              <thead><tr><th>Group</th><th>Day & Time</th><th>Room/Teacher</th><th>Action</th></tr></thead>
+              <tbody id="schedulesAdminBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="ny-section-ribbon">🛡️ Audit jurnali</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="clearLogsTitle">Tarixni tozalash auditi</h2>
+            <button type="button" class="btn-clear-hist" onclick="openClearModal('clear_logs')" data-i18n="btnClearHistory">Tarixni tozalash</button>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Section</th><th>Cleared By</th><th>Time</th></tr></thead>
+            <tbody id="clearLogsBody"></tbody>
           </table>
         </div>
       </div>
 
-      <div class="card">
-        <div class="ny-section-ribbon">🛡️ Audit jurnali</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="clearLogsTitle">Tarixni tozalash auditi (Kim va qachon tozalagani)</h2>
-          <button type="button" class="btn-clear-hist" onclick="openClearModal('clear_logs')" data-i18n="btnClearHistory">Tarixni tozalash</button>
-        </div>
-        <table>
-          <thead><tr><th>#</th><th>Section</th><th>Cleared By</th><th>Time</th></tr></thead>
-          <tbody id="clearLogsBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="analyticsTab" class="section" data-ny-theme="analytics">
-      <div class="grid-2">
-        <div class="card">
-          <div class="ny-section-ribbon">✨ Yangi Yil — Oylik ko‘rsatkich</div>
-          <div class="card-header-flex">
-            <h2 data-i18n="monthlyStatsTitle">Oylik statistika</h2>
-            <span class="badge-ok" data-i18n="monthlyBadge">Oylik</span>
-          </div>
-          <div style="height:280px;"><canvas id="monthlyChart"></canvas></div>
-        </div>
-
-        <div class="card">
-          <div class="ny-section-ribbon">🎆 Yillik yakun yulduzi</div>
-          <div class="card-header-flex">
-            <h2 data-i18n="yearlyStatsTitle">Yillik statistika</h2>
-            <span class="badge-low" data-i18n="yearlyBadge">Yillik</span>
-          </div>
-
-          <div class="flame-champion-box">
-            <div class="admin-top-left">
-              <img id="yearlyTopStudentPhoto" src="" alt="TOP-1 rasm" class="admin-top-photo" />
-              <span id="yearlyTopStudentLetter" class="admin-top-letter">🔥</span>
-              <div>
-                <div class="flame-label" data-i18n="flameTopLabel">🔥 Yilning TOP-1 o‘quvchisi</div>
-                <div class="flame-student-name" id="yearlyTopStudentName">🔥 -</div>
-              </div>
+      <!-- 9. STATISTIKA -->
+      <div id="analyticsTab" class="section" data-ny-theme="analytics">
+        <div class="grid-2">
+          <div class="card">
+            <div class="ny-section-ribbon">✨ Yangi Yil — Oylik ko‘rsatkich</div>
+            <div class="card-header-flex">
+              <h2 data-i18n="monthlyStatsTitle">Oylik statistika</h2>
+              <span class="badge-ok" data-i18n="monthlyBadge">Oylik</span>
             </div>
-            <div class="flame-score-pill" id="yearlyTopStudentScore">0%</div>
+            <div style="height:280px;"><canvas id="monthlyChart"></canvas></div>
           </div>
 
-          <div style="height:210px;"><canvas id="yearlyChart"></canvas></div>
+          <div class="card">
+            <div class="ny-section-ribbon">🎆 Yillik yakun yulduzi</div>
+            <div class="card-header-flex">
+              <h2 data-i18n="yearlyStatsTitle">Yillik statistika</h2>
+              <span class="badge-low" data-i18n="yearlyBadge">Yillik</span>
+            </div>
+
+            <div class="flame-champion-box">
+              <div class="admin-top-left">
+                <img id="yearlyTopStudentPhoto" src="" alt="TOP-1 rasm" class="admin-top-photo" />
+                <span id="yearlyTopStudentLetter" class="admin-top-letter">🔥</span>
+                <div>
+                  <div class="flame-label" data-i18n="flameTopLabel">🔥 Yilning TOP-1 o‘quvchisi</div>
+                  <div class="flame-student-name" id="yearlyTopStudentName">🔥 -</div>
+                </div>
+              </div>
+              <div class="flame-score-pill" id="yearlyTopStudentScore">0%</div>
+            </div>
+
+            <div style="height:210px;"><canvas id="yearlyChart"></canvas></div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 20px;">
+          <div class="card">
+            <div class="ny-section-ribbon">❄️ Darajalar taqsimoti</div>
+            <h2 data-i18n="chartLevels">Darajalar bo‘yicha o‘quvchilar</h2>
+            <div style="height:260px;"><canvas id="levelsChart"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="ny-section-ribbon">🎅 Top o‘quvchilar</div>
+            <h2 data-i18n="chartTop">Top o‘quvchilar reytingi</h2>
+            <div style="height:260px;"><canvas id="topStudentsChart"></canvas></div>
+          </div>
         </div>
       </div>
 
-      <div class="grid-2" style="margin-top: 20px;">
+      <!-- 10. OY YOPISH -->
+      <div id="closeMonthTab" class="section" data-ny-theme="close-month">
         <div class="card">
-          <div class="ny-section-ribbon">❄️ Darajalar taqsimoti</div>
-          <h2 data-i18n="chartLevels">Darajalar bo‘yicha o‘quvchilar</h2>
-          <div style="height:260px;"><canvas id="levelsChart"></canvas></div>
+          <div class="ny-section-ribbon">🎆 Yangi Yil — Oy va yil yakuni</div>
+          <h2 data-i18n="closeMonthTitle">Oylik yakun (Закрытие месяца)</h2>
+          <p style="font-size:13px; color:var(--muted); margin:6px 0 18px;" data-i18n="closeMonthDesc">
+            Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari, davomat, darslik va vazifalarni yangi oyga yangilaydi.
+          </p>
+
+          <div class="grid-3" style="align-items:end; margin-bottom:16px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label for="closeMonthInput" data-i18n="lblCloseMonth">Yopiladigan oy (YYYY-MM)</label>
+              <input type="month" id="closeMonthInput" />
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+                <input type="checkbox" id="optChargeFee" checked />
+                <span data-i18n="optChargeFee">Oylik to‘lovni balansdan yechish</span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+                <input type="checkbox" id="optResetSkills" checked />
+                <span data-i18n="optResetSkills">Bilim ballarini 0 ga yangilash</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="grid-3" style="align-items:center; margin-bottom:18px;">
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+                <input type="checkbox" id="optClearAttendance" checked />
+                <span data-i18n="optClearAttendance">Davomatni yangi oydan boshlash</span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+                <input type="checkbox" id="optClearLessons" checked />
+                <span data-i18n="optClearLessons">Darsliklarni tozalash</span>
+              </label>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0;">
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
+                <input type="checkbox" id="optClearAssignments" checked />
+                <span data-i18n="optClearAssignments">Vazifa va javoblarni tozalash</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="text-align:right; margin-bottom:16px;">
+            <button type="button" class="btn-close-month" id="closeMonthBtn" data-i18n="btnCloseMonth">Oyni yopish</button>
+          </div>
+
+          <h3 style="font-size:16px; margin-top:12px; color:var(--heading);" data-i18n="closedMonthsArchive">Yopilgan oylar arxivi</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Oy</th><th>O‘quvchilar</th><th>O‘rtacha ball</th><th>Davomat</th><th>Jami qarzdorlik</th><th>Yopilgan vaqt</th><th>Amal</th>
+              </tr>
+            </thead>
+            <tbody id="monthlyClosingsBody"></tbody>
+          </table>
         </div>
+
         <div class="card">
-          <div class="ny-section-ribbon">🎅 Top o‘quvchilar</div>
-          <h2 data-i18n="chartTop">Top o‘quvchilar reytingi</h2>
-          <div style="height:260px;"><canvas id="topStudentsChart"></canvas></div>
+          <div class="ny-section-ribbon">📊 O‘quvchilar oylik hisoboti</div>
+          <div class="card-header-flex">
+            <h2 data-i18n="perStudentMonthReportTitle">Har bir o‘quvchi bo‘yicha oylik hisobot (Davomat, Vazifa, Pul)</h2>
+            <div class="filter-bar">
+              <select id="reportMonthFilter">
+                <option value="">Barcha yopilgan oylar</option>
+              </select>
+              <select id="reportStudentFilter">
+                <option value="">Barcha o‘quvchilar</option>
+              </select>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Oy</th>
+                <th>O‘quvchi</th>
+                <th>Davomat (o‘tgan oy)</th>
+                <th>Uyga vazifa hisoboti</th>
+                <th>Pul / Balans hisoboti</th>
+                <th>Umumiy ball</th>
+              </tr>
+            </thead>
+            <tbody id="studentMonthReportBody"></tbody>
+          </table>
         </div>
-      </div>
-    </div>
-
-    <div id="closeMonthTab" class="section" data-ny-theme="close-month">
-      <div class="card">
-        <div class="ny-section-ribbon">🎆 Yangi Yil — Oy va yil yakuni</div>
-        <h2 data-i18n="closeMonthTitle">Oylik yakun (Закрытие месяца)</h2>
-        <p style="font-size:13px; color:var(--muted); margin:6px 0 18px;" data-i18n="closeMonthDesc">
-          Tanlangan oyni yopish: natijalarni arxivga saqlaydi, oylik to‘lovni balansdan yechadi (qarzdorlik yangilanadi), bilim ballari, davomat, darslik va vazifalarni yangi oyga yangilaydi.
-        </p>
-
-        <div class="grid-3" style="align-items:end; margin-bottom:16px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label for="closeMonthInput" data-i18n="lblCloseMonth">Yopiladigan oy (YYYY-MM)</label>
-            <input type="month" id="closeMonthInput" />
-          </div>
-
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
-              <input type="checkbox" id="optChargeFee" checked />
-              <span data-i18n="optChargeFee">Oylik to‘lovni balansdan yechish</span>
-            </label>
-          </div>
-
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
-              <input type="checkbox" id="optResetSkills" checked />
-              <span data-i18n="optResetSkills">Bilim ballarini 0 ga yangilash</span>
-            </label>
-          </div>
-        </div>
-
-        <div class="grid-3" style="align-items:center; margin-bottom:18px;">
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
-              <input type="checkbox" id="optClearAttendance" checked />
-              <span data-i18n="optClearAttendance">Davomatni yangi oydan boshlash</span>
-            </label>
-          </div>
-
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
-              <input type="checkbox" id="optClearLessons" checked />
-              <span data-i18n="optClearLessons">Darsliklarni tozalash</span>
-            </label>
-          </div>
-
-          <div class="form-group" style="margin-bottom:0;">
-            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; color:var(--heading); font-size:13px;">
-              <input type="checkbox" id="optClearAssignments" checked />
-              <span data-i18n="optClearAssignments">Vazifa va javoblarni tozalash</span>
-            </label>
-          </div>
-        </div>
-
-        <div style="text-align:right; margin-bottom:16px;">
-          <button type="button" class="btn-close-month" id="closeMonthBtn" data-i18n="btnCloseMonth">Oyni yopish</button>
-        </div>
-
-        <h3 style="font-size:16px; margin-top:12px; color:var(--heading);" data-i18n="closedMonthsArchive">Yopilgan oylar arxivi</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Oy</th><th>O‘quvchilar</th><th>O‘rtacha ball</th><th>Davomat</th><th>Jami qarzdorlik</th><th>Yopilgan vaqt</th><th>Amal</th>
-            </tr>
-          </thead>
-          <tbody id="monthlyClosingsBody"></tbody>
-        </table>
-      </div>
-
-      <div class="card">
-        <div class="ny-section-ribbon">📊 O‘quvchilar oylik hisoboti</div>
-        <div class="card-header-flex">
-          <h2 data-i18n="perStudentMonthReportTitle">Har bir o‘quvchi bo‘yicha oylik hisobot (Davomat, Vazifa, Pul)</h2>
-          <div class="filter-bar">
-            <select id="reportMonthFilter">
-              <option value="">Barcha yopilgan oylar</option>
-            </select>
-            <select id="reportStudentFilter">
-              <option value="">Barcha o‘quvchilar</option>
-            </select>
-          </div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Oy</th>
-              <th>O‘quvchi</th>
-              <th>Davomat (o‘tgan oy)</th>
-              <th>Uyga vazifa hisoboti</th>
-              <th>Pul / Balans hisoboti</th>
-              <th>Umumiy ball</th>
-            </tr>
-          </thead>
-          <tbody id="studentMonthReportBody"></tbody>
-        </table>
       </div>
     </div>
   </div>
 
+  <!-- Tahrirlash modali -->
   <div id="editModal" class="modal-backdrop">
     <div class="modal-box">
       <h2 style="margin-bottom:16px;" data-i18n="editModalTitle">O‘quvchi ma’lumotlarini tahrirlash</h2>
@@ -1144,7 +1663,7 @@
           </select>
         </div>
         <div class="form-group"><label data-i18n="lblGroup">Guruh nomi</label><input type="text" id="editGroup" required /></div>
-        <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov</label><input type="number" id="editFee" required /></div>
+        <div class="form-group"><label data-i18n="lblFee">Oylik to‘lov (so‘m)</label><input type="number" id="editFee" required /></div>
         <div class="form-group"><label data-i18n="lblPhoto">Yangi rasm (ixtiyoriy)</label><input type="file" id="editPhoto" accept="image/*" /></div>
         <div class="form-group"><label data-i18n="lblNewPass">Yangi parol (ixtiyoriy)</label><input type="text" id="editNewPass" /></div>
         <div class="modal-actions">
@@ -1155,6 +1674,7 @@
     </div>
   </div>
 
+  <!-- Parol bilan tasdiqlash modali -->
   <div id="clearHistoryModal" class="modal-backdrop">
     <div class="modal-box">
       <h2 id="authModalTitle" style="margin-bottom:10px; color:#dc2626;" data-i18n="clearModalTitle">Tarixni tozalash (Parol talab qilinadi)</h2>
@@ -1178,14 +1698,13 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    /* O'zgaruvchan fon (oboi) — qolgan rasm + zahira SVG */
     (function initDynamicWallpaper() {
       const FALLBACK_WALLPAPERS = [
         'data:image/svg+xml;utf8,' + encodeURIComponent(`
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
             <defs>
               <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="#0f172a"/>
+                <stop offset="0%" stop-color="#0b1636"/>
                 <stop offset="55%" stop-color="#1e3a8a"/>
                 <stop offset="100%" stop-color="#064e3b"/>
               </linearGradient>
@@ -1252,7 +1771,7 @@
           manualHoldUntil = Date.now() + 25000;
           if (pill) pill.textContent = `🖼️ Qo‘lda tanlangan (${currentIndex + 1}/${slides.length})`;
         } else if (pill) {
-          pill.textContent = '🖼️ Avto-oboi (14s)';
+          pill.textContent = '▶ Avto-oboi (14s)';
         }
       }
 
@@ -1266,7 +1785,6 @@
       }, 14000);
     })();
 
-    /* Yaltilovchi 6 qirrali qor parchalari animatsiyasi */
     (function initContinuousSnow() {
       const canvas = document.getElementById('snowCanvas');
       if (!canvas) return;
@@ -1305,7 +1823,6 @@
         ctx.rotate(f.rot);
 
         const strokeColor = `rgba(255, 255, 255, ${currentAlpha})`;
-
         ctx.strokeStyle = strokeColor;
         ctx.lineWidth = Math.max(1.2, f.size * 0.12);
         ctx.lineCap = 'round';
@@ -1319,7 +1836,6 @@
         for (let i = 0; i < 6; i++) {
           ctx.save();
           ctx.rotate((i * Math.PI) / 3);
-
           ctx.beginPath();
           ctx.moveTo(0, 0);
           ctx.lineTo(0, -r);
@@ -1331,7 +1847,6 @@
           ctx.moveTo(0, -branchPos);
           ctx.lineTo(branchLen, -branchPos - branchLen * 0.85);
           ctx.stroke();
-
           ctx.restore();
         }
 
@@ -1339,7 +1854,6 @@
         ctx.arc(0, 0, Math.max(1.2, r * 0.14), 0, Math.PI * 2);
         ctx.fillStyle = strokeColor;
         ctx.fill();
-
         ctx.restore();
       }
 
@@ -1366,7 +1880,6 @@
       drawSnow();
     })();
 
-    /* Qorbobo + kiyiklar oyga uchib o'tish animatsiyasi */
     function launchSantaSleigh() {
       const runner = document.getElementById('santaSleighRunner');
       if (!runner) return;
@@ -1417,9 +1930,9 @@
 
     const i18n = {
       uz: {
-        logout: 'Chiqish', kpiTotalStudents: 'Jami o‘quvchilar', kpiActiveBase: 'Faol o‘quvchilar bazasi',
-        kpiTotalIncome: 'Jami kassa kirim', kpiPaidNote: 'Hisobga tushgan to‘lovlar', kpiAvgScore: 'Markaz o‘rtacha balli',
-        kpiSkillsNote: 'Barcha fanlar kesimida', kpiLowBalance: 'Balansi kam o‘quvchilar', kpiLowNote: 'To‘lov eslatmasi kerak',
+        logout: 'Chiqish', kpiTotalStudents: 'JAMI O‘QUVCHILAR', kpiActiveBase: '▲ Faol o‘quvchilar bazasi',
+        kpiTotalIncome: 'JAMI KASSA KIRIM', kpiPaidNote: '▲ Hisobga tushgan to‘lovlar', kpiAvgScore: 'MARKAZ O‘RTACHA BALLI',
+        kpiSkillsNote: '▲ Barcha fanlar kesimida', kpiLowBalance: 'BALANSI KAM O‘QUVCHILAR', kpiLowNote: '▲ To‘lov eslatmasi kerak',
         tabStudents: 'O‘quvchilar', tabTeachers: 'O‘qituvchilar', tabFinance: 'Balans & Buxgalteriya',
         tabAttendance: 'Davomat', tabSkills: 'Bilim & Reyting',
         tabLessons: 'Darsliklar', tabAssignments: 'Vazifalar & Baholash', tabExtra: 'E’lonlar & Jadval', tabAnalytics: 'Statistika',
@@ -1430,7 +1943,7 @@
         lblPassword: 'Parol', lblPhone: 'Telefon nomer', lblTeacherPhoto: 'O‘qituvchi rasmi',
         lblLevel: 'Daraja', lblGroup: 'Guruh nomi', lblFee: 'Oylik to‘lov (so‘m)',
         lblPhoto: 'O‘quvchi rasmi (Profil uchun)',
-        btnAddStudent: '+ O‘quvchini qo‘shish', allStudentsTitle: 'Barcha o‘quvchilar ro‘yxati',
+        btnAddStudent: 'Saqlash', allStudentsTitle: 'Barcha o‘quvchilar ro‘yxati',
         btnExcel: 'Excel (.xls) yuklash', btnClearHistory: 'Tarixni tozalash', balanceFormTitle: 'Balansni to‘ldirish yoki yechish',
         lblSelectStudent: 'O‘quvchini tanlang', lblTxType: 'Amal turi', lblAmount: 'Summa (so‘m)', lblDesc: 'Izoh',
         btnSave: 'Saqlash', txHistoryTitle: 'Oxirgi buxgalteriya operatsiyalari', bulkAttTitle: 'Birvarakayiga davomat olish',
@@ -1458,9 +1971,9 @@
         noClosedMonthsLabel: 'Yopilgan oylar yo‘q'
       },
       en: {
-        logout: 'Logout', kpiTotalStudents: 'Total Students', kpiActiveBase: 'Active student database',
-        kpiTotalIncome: 'Total Cash Inflow', kpiPaidNote: 'Received payments', kpiAvgScore: 'Center Average Score',
-        kpiSkillsNote: 'Across all 6 skills', kpiLowBalance: 'Low Balance Students', kpiLowNote: 'Payment reminder needed',
+        logout: 'Logout', kpiTotalStudents: 'TOTAL STUDENTS', kpiActiveBase: '▲ Active student database',
+        kpiTotalIncome: 'TOTAL CASH INFLOW', kpiPaidNote: '▲ Received payments', kpiAvgScore: 'CENTER AVERAGE SCORE',
+        kpiSkillsNote: '▲ Across all 6 skills', kpiLowBalance: 'LOW BALANCE STUDENTS', kpiLowNote: '▲ Payment reminder needed',
         tabStudents: 'Students', tabTeachers: 'Teachers', tabFinance: 'Balance & Finance',
         tabAttendance: 'Attendance', tabSkills: 'Skills & Ranking',
         tabLessons: 'Lessons', tabAssignments: 'Assignments & Grading', tabExtra: 'Announcements & Schedule', tabAnalytics: 'Statistics',
@@ -1471,7 +1984,7 @@
         lblPassword: 'Password', lblPhone: 'Phone Number', lblTeacherPhoto: 'Teacher Photo',
         lblLevel: 'Level', lblGroup: 'Group Name', lblFee: 'Monthly Fee (UZS)',
         lblPhoto: 'Student Photo (For Profile)',
-        btnAddStudent: '+ Add Student', allStudentsTitle: 'All Students List',
+        btnAddStudent: 'Save', allStudentsTitle: 'All Students List',
         btnExcel: 'Export Excel (.xls)', btnClearHistory: 'Clear History', balanceFormTitle: 'Deposit or Charge Balance',
         lblSelectStudent: 'Select Student', lblTxType: 'Action Type', lblAmount: 'Amount (UZS)', lblDesc: 'Note',
         btnSave: 'Save', txHistoryTitle: 'Recent Finance Transactions', bulkAttTitle: 'Bulk Attendance (All Students)',
@@ -1499,9 +2012,9 @@
         noClosedMonthsLabel: 'No closed months'
       },
       ru: {
-        logout: 'Выход', kpiTotalStudents: 'Всего студентов', kpiActiveBase: 'Активная база студентов',
-        kpiTotalIncome: 'Общий приход кассы', kpiPaidNote: 'Полученные оплаты', kpiAvgScore: 'Средний балл центра',
-        kpiSkillsNote: 'По всем 6 навыкам', kpiLowBalance: 'Низкий баланс', kpiLowNote: 'Нужно напомнить об оплате',
+        logout: 'Выход', kpiTotalStudents: 'ВСЕГО СТУДЕНТОВ', kpiActiveBase: '▲ Активная база студентов',
+        kpiTotalIncome: 'ОБЩИЙ ПРИХОД КАССЫ', kpiPaidNote: '▲ Полученные оплаты', kpiAvgScore: 'СРЕДНИЙ БАЛЛ ЦЕНТРА',
+        kpiSkillsNote: '▲ По всем 6 навыкам', kpiLowBalance: 'НИЗКИЙ БАЛАНС', kpiLowNote: '▲ Нужно напомнить об оплате',
         tabStudents: 'Студенты', tabTeachers: 'Учителя', tabFinance: 'Баланс и Финансы',
         tabAttendance: 'Посещаемость', tabSkills: 'Навыки и Рейтинг',
         tabLessons: 'Уроки', tabAssignments: 'Задания и Оценки', tabExtra: 'Объявления и Расписание', tabAnalytics: 'Статистика',
@@ -1512,7 +2025,7 @@
         lblPassword: 'Пароль', lblPhone: 'Номер телефона', lblTeacherPhoto: 'Фото учителя',
         lblLevel: 'Уровень', lblGroup: 'Группа', lblFee: 'Оплата в месяц (сум)',
         lblPhoto: 'Фото студента (Для профиля)',
-        btnAddStudent: '+ Добавить студента', allStudentsTitle: 'Список всех студентов',
+        btnAddStudent: 'Сохранить', allStudentsTitle: 'Список всех студентов',
         btnExcel: 'Скачать Excel (.xls)', btnClearHistory: 'Очистить историю', balanceFormTitle: 'Пополнение или списание баланса',
         lblSelectStudent: 'Выберите студента', lblTxType: 'Тип операции', lblAmount: 'Сумма (сум)', lblDesc: 'Примечание',
         btnSave: 'Сохранить', txHistoryTitle: 'История финансовых операций', bulkAttTitle: 'Массовая посещаемость',
@@ -1636,7 +2149,7 @@
         preview.src = '';
         preview.style.display = 'none';
       }
-      if (label) label.textContent = 'Rasm tanlanmagan';
+      if (label) label.textContent = 'Rasm yuklash yoki fayl tanlash';
     }
 
     document.getElementById('stPhoto').addEventListener('change', (e) => {
@@ -1683,13 +2196,31 @@
       reader.readAsDataURL(file);
     });
 
+    function activateSection(targetId, clickedSideBtn = null) {
+      document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(targetId)?.classList.add('active');
+      document.querySelectorAll(`.tab-btn[data-tab="${targetId}"]`).forEach(b => b.classList.add('active'));
+
+      document.querySelectorAll('.side-nav-item').forEach(sb => sb.classList.remove('active'));
+      if (clickedSideBtn) {
+        clickedSideBtn.classList.add('active');
+      } else {
+        const matchSide = document.querySelector(`.side-nav-item[data-sync-tab="${targetId}"]`);
+        matchSide?.classList.add('active');
+      }
+    }
+
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        const targetId = btn.getAttribute('data-tab');
-        document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(targetId).classList.add('active');
-        btn.classList.add('active');
+        activateSection(btn.getAttribute('data-tab'));
+      });
+    });
+
+    document.querySelectorAll('.side-nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetId = btn.getAttribute('data-sync-tab');
+        activateSection(targetId, btn);
       });
     });
 
