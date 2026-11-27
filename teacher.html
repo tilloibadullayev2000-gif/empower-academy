@@ -467,7 +467,12 @@
       const tbody = document.getElementById('skillHistoryBody');
       if (!tbody) return;
       try {
-        const rows = await api('/api/admin/skill-evaluations');
+        let rows = [];
+        try {
+          rows = await api('/api/teacher/skill-evaluations');
+        } catch (_) {
+          rows = await api('/api/admin/skill-evaluations');
+        }
         tbody.innerHTML = (rows || []).map(ev => `
           <tr>
             <td>${escapeHtml(ev.created_at || '-')}</td>
@@ -481,8 +486,9 @@
             <td>${escapeHtml(ev.created_by || '-')}</td>
           </tr>
         `).join('') || '<tr><td colspan="9">Hali baholar tarixi yo‘q</td></tr>';
-      } catch (_) {
-        tbody.innerHTML = '<tr><td colspan="9">-</td></tr>';
+      } catch (err) {
+        console.error('Skill history load error:', err);
+        tbody.innerHTML = '<tr><td colspan="9">Baholar tarixini yuklashda xatolik</td></tr>';
       }
     }
 
