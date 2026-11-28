@@ -135,15 +135,31 @@
     .m-head-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
+    }
+    .auto-btn {
+      background: rgba(16, 185, 129, 0.16);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.45);
+      border-radius: 10px;
+      padding: 6px 9px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .auto-btn.off {
+      background: rgba(148, 163, 184, 0.15);
+      color: #cbd5e1;
+      border-color: rgba(148, 163, 184, 0.35);
     }
     .icon-btn {
       background: var(--card-2);
       color: var(--heading);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 10px;
-      padding: 7px 10px;
+      padding: 7px 9px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
@@ -153,7 +169,7 @@
       color: #fff;
       border: none;
       border-radius: 10px;
-      padding: 7px 11px;
+      padding: 7px 10px;
       font-size: 12px;
       font-weight: 800;
       cursor: pointer;
@@ -453,7 +469,8 @@
         </div>
       </div>
       <div class="m-head-actions">
-        <button type="button" class="icon-btn" id="mRefreshBtn" title="Yangilash">🔄</button>
+        <button type="button" class="auto-btn" id="mAutoSyncBtn" title="Avto-yangilanish intervalini o‘zgartirish">🟢 Avto: 5s</button>
+        <button type="button" class="icon-btn" id="mRefreshBtn" title="Hoziroq yangilash">🔄</button>
         <button type="button" class="logout-mini" id="mLogoutBtn">Chiqish</button>
       </div>
     </header>
@@ -686,6 +703,41 @@
     let currentRole = localStorage.getItem('role') || '';
     let currentToken = localStorage.getItem('token') || '';
     let isSyncing = false;
+    let autoTimer = null;
+
+    // Interval variantlari (ms): 5s -> 10s -> 0 (o'chiq)
+    const AUTO_MODES = [5000, 10000, 0];
+    let autoModeIndex = Number(localStorage.getItem('mAutoModeIdx') || '0');
+    if (autoModeIndex < 0 || autoModeIndex >= AUTO_MODES.length) autoModeIndex = 0;
+
+    function updateAutoButtonLabel() {
+      const btn = document.getElementById('mAutoSyncBtn');
+      if (!btn) return;
+      const ms = AUTO_MODES[autoModeIndex];
+      if (ms > 0) {
+        btn.classList.remove('off');
+        btn.textContent = `🟢 Avto: ${Math.round(ms / 1000)}s`;
+      } else {
+        btn.classList.add('off');
+        btn.textContent = '⏸ Avto: Off';
+      }
+    }
+
+    function restartAutoSync() {
+      if (autoTimer) {
+        clearInterval(autoTimer);
+        autoTimer = null;
+      }
+      updateAutoButtonLabel();
+      const ms = AUTO_MODES[autoModeIndex];
+      if (ms > 0) {
+        autoTimer = setInterval(() => {
+          if (!document.hidden && currentToken && currentRole) {
+            loadMobileData(true);
+          }
+        }, ms);
+      }
+    }
 
     function showToast(msg) {
       const el = document.getElementById('mToast');
@@ -716,6 +768,8 @@
     }
 
     async function api(url, method = 'GET', body = null) {
+      const sep = url.includes('?') ? '&' : '?';
+      const bustUrl = method === 'GET' ? `${url}${sep}_t=${Date.now()}` : url;
       const opts = {
         method,
         cache: 'no-store',
@@ -725,7 +779,7 @@
         }
       };
       if (body) opts.body = JSON.stringify(body);
-      const res = await fetch(url, opts);
+      const res = await fetch(bustUrl, opts);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Xatolik');
       return data;
@@ -786,7 +840,7 @@
       document.getElementById('mobileLoginScreen').style.display = 'none';
       document.getElementById('mobileAppScreen').style.display = 'block';
       document.getElementById('mUserTitle').textContent = localStorage.getItem('full_name') || 'Empower Academy';
-      document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • AUTO SYNC';
+      document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • LIVE SYNC';
       configureRoleUI();
     }
 
@@ -829,9 +883,20 @@
       showLogin();
     });
 
+    document.getElementById('mAutoSyncBtn').addEventListener('click', () => {
+      autoModeIndex = (autoModeIndex + 1) % AUTO_MODES.length;
+      localStorage.setItem('mAutoModeIdx', String(autoModeIndex));
+      restartAutoSync();
+      const ms = AUTO_MODES[autoModeIndex];
+      showToast(ms > 0 ? `Avto-yangilanish: har ${ms / 1000}s` : 'Avto-yangilanish o‘chirildi');
+      if (ms > 0 && currentToken && currentRole) {
+        loadMobileData(true);
+      }
+    });
+
     document.getElementById('mRefreshBtn').addEventListener('click', () => {
       loadMobileData(false);
-      showToast('Yangilandi');
+      showToast('Baza yangilandi');
     });
 
     document.querySelectorAll('.b-nav-btn').forEach(btn => {
@@ -1241,19 +1306,14 @@
     document.getElementById('mCloseMonthInput').value =
       `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
 
+    restartAutoSync();
+
     if (currentToken && currentRole) {
       showApp();
       loadMobileData(false);
     } else {
       showLogin();
     }
-
-    // Avto-obnavleniya: har 8 soniyada va ekran/oyna faollashganda
-    setInterval(() => {
-      if (!document.hidden && currentToken && currentRole) {
-        loadMobileData(true);
-      }
-    }, 8000);
 
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden && currentToken && currentRole) {
