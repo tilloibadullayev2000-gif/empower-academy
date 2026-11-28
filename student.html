@@ -286,7 +286,7 @@
 
     <main class="main">
       <div class="top-sync-bar">
-        <button type="button" class="auto-sync-pill" id="stAutoSyncBtn">🟢 Avto: 20s</button>
+        <button type="button" class="auto-sync-pill" id="stAutoSyncBtn">🟢 Avto: 60s</button>
         <button type="button" class="theme-btn" style="width:auto; padding:7px 12px;" id="stManualRefreshBtn">🔄 Yangilash</button>
       </div>
 
@@ -520,7 +520,7 @@
     let lastDashboardData = null;
     let isSyncing = false;
     let stAutoTimer = null;
-    const ST_AUTO_INTERVAL_MS = 20000; // Har 20 soniyada yangilanish
+    const ST_AUTO_INTERVAL_MS = 60000; // Har 60 soniyada yangilanish
     let stAutoEnabled = localStorage.getItem('stAutoEnabled') !== 'false';
 
     function tr(key) {
@@ -541,7 +541,7 @@
       if (!btn) return;
       if (stAutoEnabled) {
         btn.classList.remove('off');
-        btn.textContent = '🟢 Avto: 20s';
+        btn.textContent = '🟢 Avto: 60s';
       } else {
         btn.classList.add('off');
         btn.textContent = '⏸ Avto: Off';
@@ -595,7 +595,7 @@
       stAutoEnabled = !stAutoEnabled;
       localStorage.setItem('stAutoEnabled', String(stAutoEnabled));
       restartStAutoSync();
-      showToast(stAutoEnabled ? 'Avto-yangilanish: har 20 soniyada' : 'Avto-yangilanish o‘chirildi');
+      showToast(stAutoEnabled ? 'Avto-yangilanish: har 60 soniyada' : 'Avto-yangilanish o‘chirildi');
       if (stAutoEnabled) loadDashboard(false);
     });
 
