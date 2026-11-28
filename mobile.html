@@ -199,6 +199,37 @@
       margin-bottom: 10px;
     }
 
+    .skills-mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .skill-mini-box {
+      background: var(--card-2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .skill-mini-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--heading);
+      margin-bottom: 6px;
+    }
+    .bar-track {
+      height: 6px;
+      background: rgba(148, 163, 184, 0.2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #10b981);
+      border-radius: 99px;
+    }
+
     .form-group { margin-bottom: 11px; }
     label {
       display: block;
@@ -254,6 +285,18 @@
       font-weight: 700;
       cursor: pointer;
     }
+    .btn-link-mini {
+      display: inline-block;
+      margin-top: 8px;
+      margin-right: 6px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      text-decoration: none;
+      font-size: 11.5px;
+      font-weight: 700;
+    }
 
     .list-item {
       background: var(--card-2);
@@ -266,8 +309,15 @@
       align-items: center;
       gap: 10px;
     }
+    .block-item {
+      background: var(--card-2);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
     .item-title { font-size: 13.5px; font-weight: 800; color: var(--heading); }
-    .item-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+    .item-sub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
     .pill {
       padding: 4px 9px;
       border-radius: 99px;
@@ -380,21 +430,27 @@
       <section id="mTabHome" class="m-section active">
         <div class="kpi-grid" id="mKpiGrid">
           <div class="kpi b">
-            <div class="kpi-lbl">O‘quvchilar</div>
+            <div class="kpi-lbl" id="mKpi1Lbl">O‘quvchilar</div>
             <div class="kpi-val" id="mKpi1">0</div>
           </div>
           <div class="kpi g">
-            <div class="kpi-lbl">Kassa kirim</div>
+            <div class="kpi-lbl" id="mKpi2Lbl">Kassa kirim</div>
             <div class="kpi-val" id="mKpi2">0</div>
           </div>
           <div class="kpi p">
-            <div class="kpi-lbl">O‘rtacha ball</div>
+            <div class="kpi-lbl" id="mKpi3Lbl">O‘rtacha ball</div>
             <div class="kpi-val" id="mKpi3">0%</div>
           </div>
           <div class="kpi a">
-            <div class="kpi-lbl">Kam balans</div>
+            <div class="kpi-lbl" id="mKpi4Lbl">Kam balans</div>
             <div class="kpi-val" id="mKpi4">0</div>
           </div>
+        </div>
+
+        <!-- Faqat O'quvchi uchun ko'nikmalar kartasi -->
+        <div class="m-card" id="mStudentSkillsCard" style="display:none;">
+          <h2>📈 Ko‘nikmalarim</h2>
+          <div class="skills-mini-grid" id="mStudentSkillsGrid"></div>
         </div>
 
         <div class="m-card">
@@ -408,143 +464,182 @@
         </div>
       </section>
 
-      <!-- 2. O'QUVCHILAR / DARS -->
+      <!-- 2. O'QUVCHILAR (Admin/Teacher) / DARSLIKLAR (Student) -->
       <section id="mTabStudents" class="m-section">
-        <div class="m-card" id="mAddStudentCard">
-          <h2>➕ Yangi o‘quvchi qo‘shish</h2>
-          <form id="mAddStudentForm">
-            <div class="form-group">
-              <label>Ism Familiya</label>
-              <input type="text" id="mStName" placeholder="Jasur Karimov" required />
-            </div>
-            <div class="form-group">
-              <label>Login</label>
-              <input type="text" id="mStUser" placeholder="jasur" required />
-            </div>
-            <div class="form-group">
-              <label>Parol</label>
-              <input type="text" id="mStPass" placeholder="12345" required />
-            </div>
-            <div class="form-group">
-              <label>Daraja va Guruh</label>
-              <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:8px;">
-                <select id="mStLevel">
-                  <option value="A1">A1</option><option value="A2">A2</option>
-                  <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
-                </select>
-                <input type="text" id="mStGroup" value="General English" />
+        <div id="mAdminTeacherStudentsView">
+          <div class="m-card" id="mAddStudentCard">
+            <h2>➕ Yangi o‘quvchi qo‘shish</h2>
+            <form id="mAddStudentForm">
+              <div class="form-group">
+                <label>Ism Familiya</label>
+                <input type="text" id="mStName" placeholder="Jasur Karimov" required />
               </div>
-            </div>
+              <div class="form-group">
+                <label>Login</label>
+                <input type="text" id="mStUser" placeholder="jasur" required />
+              </div>
+              <div class="form-group">
+                <label>Parol</label>
+                <input type="text" id="mStPass" placeholder="12345" required />
+              </div>
+              <div class="form-group">
+                <label>Daraja va Guruh</label>
+                <div style="display:grid; grid-template-columns:1fr 1.5fr; gap:8px;">
+                  <select id="mStLevel">
+                    <option value="A1">A1</option><option value="A2">A2</option>
+                    <option value="B1" selected>B1</option><option value="B2">B2</option><option value="C1">C1</option>
+                  </select>
+                  <input type="text" id="mStGroup" value="General English" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Oylik to‘lov (so‘m)</label>
+                <input type="number" id="mStFee" value="500000" />
+              </div>
+              <button type="submit" class="btn-main">Saqlash</button>
+            </form>
+          </div>
+
+          <div class="m-card">
+            <h2>👥 O‘quvchilar ro‘yxati</h2>
             <div class="form-group">
-              <label>Oylik to‘lov (so‘m)</label>
-              <input type="number" id="mStFee" value="500000" />
+              <input type="text" id="mSearchInput" placeholder="Ism yoki guruh bo‘yicha qidirish..." />
             </div>
-            <button type="submit" class="btn-main">Saqlash</button>
-          </form>
+            <div id="mStudentsList"></div>
+          </div>
         </div>
 
-        <div class="m-card">
-          <h2>👥 O‘quvchilar ro‘yxati</h2>
-          <div class="form-group">
-            <input type="text" id="mSearchInput" placeholder="Ism yoki guruh bo‘yicha qidirish..." />
+        <div id="mStudentLessonsView" style="display:none;">
+          <div class="m-card">
+            <h2>📚 Darsliklar va o‘quv materiallari</h2>
+            <div id="mStudentLessonsList"></div>
           </div>
-          <div id="mStudentsList"></div>
         </div>
       </section>
 
-      <!-- 3. BALANS & DAVOMAT -->
+      <!-- 3. BALANS & DAVOMAT (Admin/Teacher) / VAZIFALAR (Student) -->
       <section id="mTabFinance" class="m-section">
-        <div class="m-card" id="mBalanceCard">
-          <h2>💳 Balans (Deposit / Charge)</h2>
-          <form id="mBalanceForm">
-            <div class="form-group">
-              <label>O‘quvchi</label>
-              <select id="mFinStudent"></select>
-            </div>
-            <div class="form-group">
-              <label>Amal turi va Summa</label>
-              <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:8px;">
-                <select id="mFinType">
-                  <option value="deposit">Deposit (+)</option>
-                  <option value="charge">Charge (-)</option>
-                </select>
-                <input type="number" id="mFinAmount" placeholder="500000" required />
+        <div id="mAdminTeacherFinanceView">
+          <div class="m-card" id="mBalanceCard">
+            <h2>💳 Balans (Deposit / Charge)</h2>
+            <form id="mBalanceForm">
+              <div class="form-group">
+                <label>O‘quvchi</label>
+                <select id="mFinStudent"></select>
               </div>
-            </div>
-            <div class="form-group">
-              <label>Izoh</label>
-              <input type="text" id="mFinDesc" placeholder="To‘lov izohi..." />
-            </div>
-            <button type="submit" class="btn-green">Balansni yangilash</button>
-          </form>
+              <div class="form-group">
+                <label>Amal turi va Summa</label>
+                <div style="display:grid; grid-template-columns:1fr 1.4fr; gap:8px;">
+                  <select id="mFinType">
+                    <option value="deposit">Deposit (+)</option>
+                    <option value="charge">Charge (-)</option>
+                  </select>
+                  <input type="number" id="mFinAmount" placeholder="500000" required />
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Izoh</label>
+                <input type="text" id="mFinDesc" placeholder="To‘lov izohi..." />
+              </div>
+              <button type="submit" class="btn-green">Balansni yangilash</button>
+            </form>
+          </div>
+
+          <div class="m-card" id="mAttCard">
+            <h2>📋 Tezkor davomat</h2>
+            <form id="mAttForm">
+              <div class="form-group">
+                <label>O‘quvchi</label>
+                <select id="mAttStudent"></select>
+              </div>
+              <div class="form-group">
+                <label>Sana va Holat</label>
+                <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:8px;">
+                  <input type="date" id="mAttDate" required />
+                  <select id="mAttStatus">
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                    <option value="excused">Excused</option>
+                  </select>
+                </div>
+              </div>
+              <button type="submit" class="btn-main">Davomat saqlash</button>
+            </form>
+          </div>
+
+          <div class="m-card">
+            <h2>🕒 So‘nggi tranzaksiyalar</h2>
+            <div id="mTxList"></div>
+          </div>
         </div>
 
-        <div class="m-card" id="mAttCard">
-          <h2>📋 Tezkor davomat</h2>
-          <form id="mAttForm">
-            <div class="form-group">
-              <label>O‘quvchi</label>
-              <select id="mAttStudent"></select>
-            </div>
-            <div class="form-group">
-              <label>Sana va Holat</label>
-              <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:8px;">
-                <input type="date" id="mAttDate" required />
-                <select id="mAttStatus">
-                  <option value="present">Present</option>
-                  <option value="absent">Absent</option>
-                  <option value="excused">Excused</option>
-                </select>
-              </div>
-            </div>
-            <button type="submit" class="btn-main">Davomat saqlash</button>
-          </form>
-        </div>
-
-        <div class="m-card">
-          <h2>🕒 So‘nggi tranzaksiyalar</h2>
-          <div id="mTxList"></div>
+        <div id="mStudentAssignmentsView" style="display:none;">
+          <div class="m-card">
+            <h2>📝 Uy vazifalarim</h2>
+            <div id="mStudentAssignmentsList"></div>
+          </div>
+          <div class="m-card">
+            <h2>✅ Yuborgan javoblarim</h2>
+            <div id="mStudentSubmissionsList"></div>
+          </div>
         </div>
       </section>
 
-      <!-- 4. HISOBOT & OY YOPISH -->
+      <!-- 4. HISOBOT & OY YOPISH (Admin/Teacher) / DAVOMAT & TO'LOV (Student) -->
       <section id="mTabReports" class="m-section">
-        <div class="m-card" id="mCloseMonthCard">
-          <h2>📅 Oylik yakun (Oy yopish)</h2>
-          <div class="form-group">
-            <label>Yopiladigan oy (YYYY-MM)</label>
-            <input type="month" id="mCloseMonthInput" />
+        <div id="mAdminTeacherReportsView">
+          <div class="m-card" id="mCloseMonthCard">
+            <h2>📅 Oylik yakun (Oy yopish)</h2>
+            <div class="form-group">
+              <label>Yopiladigan oy (YYYY-MM)</label>
+              <input type="month" id="mCloseMonthInput" />
+            </div>
+            <div class="form-group">
+              <label>Admin paroli</label>
+              <input type="password" id="mCloseMonthPass" placeholder="Parolni kiriting" />
+            </div>
+            <button type="button" class="btn-main" id="mCloseMonthBtn">Oyni yopish</button>
           </div>
-          <div class="form-group">
-            <label>Admin paroli</label>
-            <input type="password" id="mCloseMonthPass" placeholder="Parolni kiriting" />
+
+          <div class="m-card">
+            <h2>📊 Yopilgan oylar arxivi</h2>
+            <div id="mClosingsList"></div>
           </div>
-          <button type="button" class="btn-main" id="mCloseMonthBtn">Oyni yopish</button>
         </div>
 
-        <div class="m-card">
-          <h2>📊 Yopilgan oylar arxivi</h2>
-          <div id="mClosingsList"></div>
+        <div id="mStudentAttFinanceView" style="display:none;">
+          <div class="m-card">
+            <h2>📅 Dars jadvali</h2>
+            <div id="mStudentScheduleList"></div>
+          </div>
+          <div class="m-card">
+            <h2>📋 Davomat tarixim</h2>
+            <div id="mStudentAttendanceList"></div>
+          </div>
+          <div class="m-card">
+            <h2>💳 To‘lovlar tarixim</h2>
+            <div id="mStudentTxList"></div>
+          </div>
         </div>
       </section>
     </main>
 
     <nav class="bottom-nav">
-      <button type="button" class="b-nav-btn active" data-mtab="mTabHome">
+      <button type="button" class="b-nav-btn active" data-mtab="mTabHome" id="mNav1">
         <span class="ico">🏠</span>
-        <span>Asosiy</span>
+        <span id="mNav1Lbl">Asosiy</span>
       </button>
-      <button type="button" class="b-nav-btn" data-mtab="mTabStudents">
+      <button type="button" class="b-nav-btn" data-mtab="mTabStudents" id="mNav2">
         <span class="ico">👥</span>
-        <span>O‘quvchilar</span>
+        <span id="mNav2Lbl">O‘quvchilar</span>
       </button>
-      <button type="button" class="b-nav-btn" data-mtab="mTabFinance">
+      <button type="button" class="b-nav-btn" data-mtab="mTabFinance" id="mNav3">
         <span class="ico">💳</span>
-        <span>Kassa/Dav.</span>
+        <span id="mNav3Lbl">Kassa/Dav.</span>
       </button>
-      <button type="button" class="b-nav-btn" data-mtab="mTabReports">
+      <button type="button" class="b-nav-btn" data-mtab="mTabReports" id="mNav4">
         <span class="ico">📊</span>
-        <span>Hisobot</span>
+        <span id="mNav4Lbl">Hisobot</span>
       </button>
     </nav>
   </div>
@@ -591,16 +686,58 @@
       document.getElementById('mobileLoginScreen').style.display = 'flex';
     }
 
+    function configureRoleUI() {
+      const isStudent = currentRole === 'student';
+      const isAdmin = currentRole === 'admin';
+
+      document.getElementById('mStudentSkillsCard').style.display = isStudent ? 'block' : 'none';
+
+      document.getElementById('mAdminTeacherStudentsView').style.display = isStudent ? 'none' : 'block';
+      document.getElementById('mStudentLessonsView').style.display = isStudent ? 'block' : 'none';
+
+      document.getElementById('mAdminTeacherFinanceView').style.display = isStudent ? 'none' : 'block';
+      document.getElementById('mStudentAssignmentsView').style.display = isStudent ? 'block' : 'none';
+
+      document.getElementById('mAdminTeacherReportsView').style.display = isStudent ? 'none' : 'block';
+      document.getElementById('mStudentAttFinanceView').style.display = isStudent ? 'block' : 'none';
+
+      document.getElementById('mAddStudentCard').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('mBalanceCard').style.display = isAdmin ? 'block' : 'none';
+      document.getElementById('mCloseMonthCard').style.display = isAdmin ? 'block' : 'none';
+
+      if (isStudent) {
+        document.getElementById('mKpi1Lbl').textContent = 'Balansim';
+        document.getElementById('mKpi2Lbl').textContent = 'Davomat';
+        document.getElementById('mKpi3Lbl').textContent = 'O‘rtacha ball';
+        document.getElementById('mKpi4Lbl').textContent = 'Reyting';
+
+        document.getElementById('mNav2').querySelector('.ico').textContent = '📚';
+        document.getElementById('mNav2Lbl').textContent = 'Darsliklar';
+        document.getElementById('mNav3').querySelector('.ico').textContent = '📝';
+        document.getElementById('mNav3Lbl').textContent = 'Vazifalar';
+        document.getElementById('mNav4').querySelector('.ico').textContent = '📅';
+        document.getElementById('mNav4Lbl').textContent = 'Davomat';
+      } else {
+        document.getElementById('mKpi1Lbl').textContent = 'O‘quvchilar';
+        document.getElementById('mKpi2Lbl').textContent = currentRole === 'teacher' ? 'Darsliklar' : 'Kassa kirim';
+        document.getElementById('mKpi3Lbl').textContent = 'O‘rtacha ball';
+        document.getElementById('mKpi4Lbl').textContent = currentRole === 'teacher' ? 'Vazifalar' : 'Kam balans';
+
+        document.getElementById('mNav2').querySelector('.ico').textContent = '👥';
+        document.getElementById('mNav2Lbl').textContent = 'O‘quvchilar';
+        document.getElementById('mNav3').querySelector('.ico').textContent = '💳';
+        document.getElementById('mNav3Lbl').textContent = 'Kassa/Dav.';
+        document.getElementById('mNav4').querySelector('.ico').textContent = '📊';
+        document.getElementById('mNav4Lbl').textContent = 'Hisobot';
+      }
+    }
+
     function showApp() {
       document.getElementById('mobileLoginScreen').style.display = 'none';
       document.getElementById('mobileAppScreen').style.display = 'block';
       document.getElementById('mUserTitle').textContent = localStorage.getItem('full_name') || 'Empower Academy';
       document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • MOBILE';
-
-      const isAdmin = currentRole === 'admin';
-      document.getElementById('mAddStudentCard').style.display = isAdmin ? 'block' : 'none';
-      document.getElementById('mBalanceCard').style.display = isAdmin ? 'block' : 'none';
-      document.getElementById('mCloseMonthCard').style.display = isAdmin ? 'block' : 'none';
+      configureRoleUI();
     }
 
     document.getElementById('mLoginForm').addEventListener('submit', async (e) => {
@@ -695,6 +832,18 @@
       }
     }
 
+    async function submitMobileAssignment(assignmentId) {
+      const answer_text = document.getElementById(`mAnsText_${assignmentId}`)?.value || '';
+      const answer_url = document.getElementById(`mAnsUrl_${assignmentId}`)?.value || '';
+      try {
+        await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
+        showToast('Javob yuborildi!');
+        loadMobileData();
+      } catch (err) {
+        showToast(err.message);
+      }
+    }
+
     async function loadMobileData() {
       try {
         if (currentRole === 'admin') {
@@ -776,40 +925,117 @@
         } else {
           const dash = await api('/api/student/dashboard');
           const st = dash.student || {};
+
           document.getElementById('mKpi1').textContent = Number(st.balance || 0).toLocaleString();
           document.getElementById('mKpi2').textContent = (dash.attendanceSummary?.percent ?? 0) + '%';
           document.getElementById('mKpi3').textContent = (dash.avgScore ?? 0) + '%';
           document.getElementById('mKpi4').textContent = '#' + (dash.myRank || '-');
 
-          studentsData = dash.rankingList || [];
-          renderStudents(studentsData);
-
-          document.getElementById('mTopList').innerHTML = (dash.rankingList || []).slice(0, 5).map((s, i) => `
-            <div class="list-item">
-              <div><div class="item-title">#${i + 1} ${esc(s.full_name)}</div><div class="item-sub">${esc(s.level)}</div></div>
-              <span class="pill pill-ok">${s.avg_score || 0}%</span>
+          const skillItems = [
+            ['Grammar', Number(st.grammar) || 0],
+            ['Listening', Number(st.listening) || 0],
+            ['Reading', Number(st.reading) || 0],
+            ['Vocabulary', Number(st.vocabulary) || 0],
+            ['Writing', Number(st.writing) || 0],
+            ['Speaking', Number(st.speaking) || 0]
+          ];
+          document.getElementById('mStudentSkillsGrid').innerHTML = skillItems.map(([label, val]) => `
+            <div class="skill-mini-box">
+              <div class="skill-mini-top"><span>${label}</span><span>${val}%</span></div>
+              <div class="bar-track"><div class="bar-fill" style="width:${Math.max(0, Math.min(100, val))}%;"></div></div>
             </div>
           `).join('');
 
+          document.getElementById('mTopList').innerHTML = (dash.rankingList || []).slice(0, 5).map((s, i) => {
+            const isMe = s.id === st.id || s.full_name === st.full_name;
+            return `
+              <div class="list-item">
+                <div>
+                  <div class="item-title">#${i + 1} ${esc(s.full_name)} ${isMe ? '★' : ''}</div>
+                  <div class="item-sub">${esc(s.level || '-')} • ${esc(s.group_name || '-')}</div>
+                </div>
+                <span class="pill pill-ok">${s.avg_score || 0}%</span>
+              </div>
+            `;
+          }).join('') || '<div class="item-sub">Ma’lumot yo‘q</div>';
+
           document.getElementById('mAnnouncementsList').innerHTML = (dash.announcements || []).slice(0, 5).map(a => `
-            <div class="list-item">
-              <div><div class="item-title">${esc(a.title)}</div><div class="item-sub">${esc(a.message)}</div></div>
+            <div class="block-item">
+              <div class="item-title">${esc(a.title)}</div>
+              <div class="item-sub">${esc(a.message)}</div>
             </div>
           `).join('') || '<div class="item-sub">E’lonlar yo‘q</div>';
 
-          document.getElementById('mTxList').innerHTML = (dash.transactions || []).slice(0, 8).map(t => `
+          document.getElementById('mStudentLessonsList').innerHTML = (dash.lessons || []).map(l => {
+            const href = l.file_url || l.file_path || '';
+            return `
+              <div class="block-item">
+                <div class="item-title">${esc(l.title)} <span class="pill pill-info">${esc(l.level || 'ALL')}</span></div>
+                <div class="item-sub">${esc(l.description || '')}</div>
+                ${href ? `<a class="btn-link-mini" href="${esc(href)}" target="_blank">📎 ${esc(l.file_name || 'Fayl')}</a>` : ''}
+                ${l.material_url ? `<a class="btn-link-mini" href="${esc(l.material_url)}" target="_blank">🔗 Havola</a>` : ''}
+              </div>
+            `;
+          }).join('') || '<div class="item-sub">Darsliklar yo‘q</div>';
+
+          const submittedIds = new Set(
+            (dash.submissions || []).map(sub => Number(sub.assignment_id)).filter(Boolean)
+          );
+          document.getElementById('mStudentAssignmentsList').innerHTML = (dash.assignments || []).map(a => {
+            const done = submittedIds.has(Number(a.id));
+            return `
+              <div class="block-item">
+                <div class="item-title">${esc(a.title)} <span class="pill pill-info">${esc(a.due_date || '-')}</span></div>
+                <div class="item-sub" style="margin-bottom:8px;">${esc(a.description || '')}</div>
+                ${
+                  done
+                    ? `<span class="pill pill-ok">✓ Javob yuborilgan</span>`
+                    : `
+                      <div class="form-group"><input type="text" id="mAnsText_${a.id}" placeholder="Javob matni..." /></div>
+                      <div class="form-group"><input type="url" id="mAnsUrl_${a.id}" placeholder="Havola (ixtiyoriy)" /></div>
+                      <button type="button" class="btn-main" onclick="submitMobileAssignment(${a.id})">Yuborish</button>
+                    `
+                }
+              </div>
+            `;
+          }).join('') || '<div class="item-sub">Vazifalar yo‘q</div>';
+
+          document.getElementById('mStudentSubmissionsList').innerHTML = (dash.submissions || []).map(sub => `
             <div class="list-item">
-              <div><div class="item-title">${esc(t.description || t.type)}</div><div class="item-sub">${esc(t.created_at || '')}</div></div>
+              <div>
+                <div class="item-title">${esc(sub.assignment_title || 'Vazifa')}</div>
+                <div class="item-sub">${esc(sub.answer_text || sub.answer_url || '-')} ${sub.teacher_feedback ? '• Izoh: ' + esc(sub.teacher_feedback) : ''}</div>
+              </div>
+              <span class="pill ${sub.grade !== null && sub.grade !== undefined ? 'pill-ok' : 'pill-info'}">${sub.grade !== null && sub.grade !== undefined ? sub.grade + '/100' : 'Kutilmoqda'}</span>
+            </div>
+          `).join('') || '<div class="item-sub">Javoblar yo‘q</div>';
+
+          document.getElementById('mStudentScheduleList').innerHTML = (dash.schedules || []).map(s => `
+            <div class="list-item">
+              <div>
+                <div class="item-title">${esc(s.group_name)} • ${esc(s.day_of_week)}</div>
+                <div class="item-sub">${esc(s.lesson_time)} • ${esc(s.room_or_teacher)}</div>
+              </div>
+              <span class="pill pill-info">${esc(s.level)}</span>
+            </div>
+          `).join('') || '<div class="item-sub">Jadval yo‘q</div>';
+
+          document.getElementById('mStudentAttendanceList').innerHTML = (dash.attendance || []).slice(0, 15).map(a => `
+            <div class="list-item">
+              <div class="item-title">${esc(a.lesson_date)}</div>
+              <span class="pill ${a.status === 'present' ? 'pill-ok' : 'pill-low'}">${esc(a.status)}</span>
+            </div>
+          `).join('') || '<div class="item-sub">Davomat yo‘q</div>';
+
+          document.getElementById('mStudentTxList').innerHTML = (dash.transactions || []).slice(0, 10).map(t => `
+            <div class="list-item">
+              <div>
+                <div class="item-title">${esc(t.description || t.type)}</div>
+                <div class="item-sub">${esc(t.created_at || '')}</div>
+              </div>
               <span class="pill ${t.type === 'deposit' ? 'pill-ok' : 'pill-low'}">${t.type === 'deposit' ? '+' : '-'}${Number(t.amount).toLocaleString()}</span>
             </div>
           `).join('') || '<div class="item-sub">To‘lovlar yo‘q</div>';
-
-          document.getElementById('mClosingsList').innerHTML = (dash.myMonthlyHistory || []).map(m => `
-            <div class="list-item">
-              <div><div class="item-title">${esc(m.month_key)}</div><div class="item-sub">Davomat: ${m.attendance_percent}%</div></div>
-              <span class="pill pill-info">${m.avg_score}%</span>
-            </div>
-          `).join('') || '<div class="item-sub">Tarix yo‘q</div>';
         }
       } catch (err) {
         if (err.message.includes('Token')) {
