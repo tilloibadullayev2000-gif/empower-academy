@@ -93,7 +93,20 @@
       background: #fef2f2; color: #ef4444; font-weight: 700; cursor: pointer;
     }
 
-    .main { flex: 1; padding: 28px 34px; max-width: 1280px; margin: 0 auto; width: 100%; }
+    .main { flex: 1; padding: 24px 34px; max-width: 1280px; margin: 0 auto; width: 100%; }
+    .top-sync-bar {
+      display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-bottom: 14px;
+    }
+    .auto-sync-pill {
+      padding: 7px 12px; border-radius: 10px; border: 1px solid #10b981;
+      background: rgba(16, 185, 129, 0.12); color: #059669;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+    }
+    body.dark .auto-sync-pill { color: #6ee7b7; }
+    .auto-sync-pill.off {
+      border-color: var(--border); background: var(--card); color: var(--muted);
+    }
+
     .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
     .stat-card { background: var(--card); border-radius: 20px; padding: 20px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); }
     .stat-label { font-size: 12px; color: var(--muted); font-weight: 600; }
@@ -272,6 +285,11 @@
     </aside>
 
     <main class="main">
+      <div class="top-sync-bar">
+        <button type="button" class="auto-sync-pill" id="stAutoSyncBtn">🟢 Avto: 5s</button>
+        <button type="button" class="theme-btn" style="width:auto; padding:7px 12px;" id="stManualRefreshBtn">🔄 Yangilash</button>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card">
           <div class="stat-label" data-i18n="statAtt">Davomat ko‘rsatkichi</div>
@@ -500,6 +518,11 @@
     };
 
     let lastDashboardData = null;
+    let isSyncing = false;
+    let stAutoTimer = null;
+    const ST_AUTO_MODES = [5000, 10000, 0];
+    let stAutoModeIdx = Number(localStorage.getItem('stAutoModeIdx') || '0');
+    if (stAutoModeIdx < 0 || stAutoModeIdx >= ST_AUTO_MODES.length) stAutoModeIdx = 0;
 
     function tr(key) {
       const lang = localStorage.getItem('lang') || 'uz';
@@ -512,6 +535,33 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;');
+    }
+
+    function updateStAutoBtn() {
+      const btn = document.getElementById('stAutoSyncBtn');
+      if (!btn) return;
+      const ms = ST_AUTO_MODES[stAutoModeIdx];
+      if (ms > 0) {
+        btn.classList.remove('off');
+        btn.textContent = `🟢 Avto: ${Math.round(ms / 1000)}s`;
+      } else {
+        btn.classList.add('off');
+        btn.textContent = '⏸ Avto: Off';
+      }
+    }
+
+    function restartStAutoSync() {
+      if (stAutoTimer) {
+        clearInterval(stAutoTimer);
+        stAutoTimer = null;
+      }
+      updateStAutoBtn();
+      const ms = ST_AUTO_MODES[stAutoModeIdx];
+      if (ms > 0) {
+        stAutoTimer = setInterval(() => {
+          if (!document.hidden) loadDashboard(true);
+        }, ms);
+      }
     }
 
     function applyLanguage(lang, shouldRender = true) {
@@ -535,12 +585,27 @@
         document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.getAttribute('data-page')).classList.add('active');
+        loadDashboard(true);
       });
     });
 
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.clear();
       window.location.href = '/index.html';
+    });
+
+    document.getElementById('stAutoSyncBtn').addEventListener('click', () => {
+      stAutoModeIdx = (stAutoModeIdx + 1) % ST_AUTO_MODES.length;
+      localStorage.setItem('stAutoModeIdx', String(stAutoModeIdx));
+      restartStAutoSync();
+      const ms = ST_AUTO_MODES[stAutoModeIdx];
+      showToast(ms > 0 ? `Avto-yangilanish: har ${ms / 1000}s` : 'Avto-yangilanish o‘chirildi');
+      if (ms > 0) loadDashboard(true);
+    });
+
+    document.getElementById('stManualRefreshBtn').addEventListener('click', () => {
+      loadDashboard(false);
+      showToast('Baza yangilandi');
     });
 
     function showToast(msg) {
@@ -551,13 +616,15 @@
     }
 
     async function api(url, method = 'GET', body = null) {
+      const sep = url.includes('?') ? '&' : '?';
+      const bustUrl = method === 'GET' ? `${url}${sep}_t=${Date.now()}` : url;
       const opts = {
         method,
         cache: 'no-store',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
       };
       if (body) opts.body = JSON.stringify(body);
-      const res = await fetch(url, opts);
+      const res = await fetch(bustUrl, opts);
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
       return data;
@@ -701,7 +768,7 @@
       try {
         await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
         showToast(tr('sentOk'));
-        loadDashboard();
+        await loadDashboard(false);
       } catch (err) { showToast(err.message); }
     }
 
@@ -773,7 +840,6 @@
         `;
       }).join('');
 
-      // Baholar tarixi (fanlar ko'nikmalari + baholangan uyga vazifalar)
       const gradeHistoryList = Array.isArray(data.gradeHistory) ? data.gradeHistory : [];
       document.getElementById('gradeHistoryBody').innerHTML = gradeHistoryList.map(item => {
         const isHw = item.category === 'Uyga vazifa';
@@ -994,10 +1060,12 @@
     }
 
     async function loadDashboard(silent = false) {
+      if (isSyncing) return;
       const activeTag = document.activeElement?.tagName;
       if (silent && (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT')) {
         return;
       }
+      isSyncing = true;
       try {
         const data = await api('/api/student/dashboard');
         lastDashboardData = data;
@@ -1005,6 +1073,8 @@
       } catch (err) {
         console.error('Dashboard load error:', err);
         if (!silent) showToast('Xato: ' + err.message);
+      } finally {
+        isSyncing = false;
       }
     }
 
@@ -1014,10 +1084,16 @@
       showToast(tr('langSaved'));
     });
 
+    restartStAutoSync();
     loadDashboard(false);
-    setInterval(() => {
+
+    document.addEventListener('visibilitychange', () => {
       if (!document.hidden) loadDashboard(true);
-    }, 10000);
+    });
+
+    window.addEventListener('focus', () => {
+      loadDashboard(true);
+    });
   </script>
 </body>
 </html>
