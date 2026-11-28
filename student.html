@@ -286,7 +286,7 @@
 
     <main class="main">
       <div class="top-sync-bar">
-        <button type="button" class="auto-sync-pill" id="stAutoSyncBtn">🟢 Avto: 5s</button>
+        <button type="button" class="auto-sync-pill" id="stAutoSyncBtn">🟢 Avto: 20s</button>
         <button type="button" class="theme-btn" style="width:auto; padding:7px 12px;" id="stManualRefreshBtn">🔄 Yangilash</button>
       </div>
 
@@ -520,7 +520,7 @@
     let lastDashboardData = null;
     let isSyncing = false;
     let stAutoTimer = null;
-    const ST_AUTO_INTERVAL_MS = 5000; // Har 5 soniyada yangilanish
+    const ST_AUTO_INTERVAL_MS = 20000; // Har 20 soniyada yangilanish
     let stAutoEnabled = localStorage.getItem('stAutoEnabled') !== 'false';
 
     function tr(key) {
@@ -541,7 +541,7 @@
       if (!btn) return;
       if (stAutoEnabled) {
         btn.classList.remove('off');
-        btn.textContent = '🟢 Avto: 5s';
+        btn.textContent = '🟢 Avto: 20s';
       } else {
         btn.classList.add('off');
         btn.textContent = '⏸ Avto: Off';
@@ -595,7 +595,7 @@
       stAutoEnabled = !stAutoEnabled;
       localStorage.setItem('stAutoEnabled', String(stAutoEnabled));
       restartStAutoSync();
-      showToast(stAutoEnabled ? 'Avto-yangilanish: har 5 soniyada' : 'Avto-yangilanish o‘chirildi');
+      showToast(stAutoEnabled ? 'Avto-yangilanish: har 20 soniyada' : 'Avto-yangilanish o‘chirildi');
       if (stAutoEnabled) loadDashboard(false);
     });
 
@@ -1002,23 +1002,28 @@
           ? [...myHistory.map(h => Math.round(Number(h.avg_score) || 0)), computedAvg]
           : [computedAvg];
 
-        if (studentMonthlyChartInstance) studentMonthlyChartInstance.destroy();
-        studentMonthlyChartInstance = new Chart(document.getElementById('studentMonthlyChart'), {
-          type: 'line',
-          data: {
-            labels: monthlyLabels,
-            datasets: [{
-              label: 'Monthly Progress (%)',
-              data: monthlySeries,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.16)',
-              fill: true,
-              tension: 0.35,
-              pointRadius: 3
-            }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
-        });
+        if (!studentMonthlyChartInstance) {
+          studentMonthlyChartInstance = new Chart(document.getElementById('studentMonthlyChart'), {
+            type: 'line',
+            data: {
+              labels: monthlyLabels,
+              datasets: [{
+                label: 'Monthly Progress (%)',
+                data: monthlySeries,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.16)',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
+          });
+        } else {
+          studentMonthlyChartInstance.data.labels = monthlyLabels;
+          studentMonthlyChartInstance.data.datasets[0].data = monthlySeries;
+          studentMonthlyChartInstance.update('none');
+        }
 
         const validHistory = myHistory.filter(h => Number(h.avg_score) > 0);
         let yearlyLabels = validHistory.map(h => h.month_key);
@@ -1034,40 +1039,57 @@
           yearlySeries = [computedAvg];
         }
 
-        if (studentYearlyChartInstance) studentYearlyChartInstance.destroy();
-        studentYearlyChartInstance = new Chart(document.getElementById('studentYearlyChart'), {
-          type: 'bar',
-          data: {
-            labels: yearlyLabels,
-            datasets: [{
-              label: 'Yearly Score (%)',
-              data: yearlySeries,
-              backgroundColor: ['#f59e0b', '#f97316', '#ef4444', '#e11d48', '#3b5bfd', '#10b981'],
-              borderRadius: 8
-            }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
-        });
+        if (!studentYearlyChartInstance) {
+          studentYearlyChartInstance = new Chart(document.getElementById('studentYearlyChart'), {
+            type: 'bar',
+            data: {
+              labels: yearlyLabels,
+              datasets: [{
+                label: 'Yearly Score (%)',
+                data: yearlySeries,
+                backgroundColor: ['#f59e0b', '#f97316', '#ef4444', '#e11d48', '#3b5bfd', '#10b981'],
+                borderRadius: 8
+              }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
+          });
+        } else {
+          studentYearlyChartInstance.data.labels = yearlyLabels;
+          studentYearlyChartInstance.data.datasets[0].data = yearlySeries;
+          studentYearlyChartInstance.update('none');
+        }
 
-        if (radarChartInstance) radarChartInstance.destroy();
-        radarChartInstance = new Chart(document.getElementById('radarChart'), {
-          type: 'radar',
-          data: {
-            labels: skills.map(s => s.name),
-            datasets: [{ label: 'Skills', data: skills.map(s => s.val), backgroundColor: 'rgba(225, 29, 72, 0.18)', borderColor: '#e11d48', borderWidth: 2 }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { r: { min: 0, max: 100 } } }
-        });
+        const skillLabels = skills.map(s => s.name);
+        const skillVals = skills.map(s => s.val);
 
-        if (weeklyChartInstance) weeklyChartInstance.destroy();
-        weeklyChartInstance = new Chart(document.getElementById('weeklyChart'), {
-          type: 'bar',
-          data: {
-            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-            datasets: [{ label: 'Score', data: skills.map(s => s.val), backgroundColor: ['#3b5bfd', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#e11d48'], borderRadius: 8 }]
-          },
-          options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
-        });
+        if (!radarChartInstance) {
+          radarChartInstance = new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+              labels: skillLabels,
+              datasets: [{ label: 'Skills', data: skillVals, backgroundColor: 'rgba(225, 29, 72, 0.18)', borderColor: '#e11d48', borderWidth: 2 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { r: { min: 0, max: 100 } } }
+          });
+        } else {
+          radarChartInstance.data.labels = skillLabels;
+          radarChartInstance.data.datasets[0].data = skillVals;
+          radarChartInstance.update('none');
+        }
+
+        if (!weeklyChartInstance) {
+          weeklyChartInstance = new Chart(document.getElementById('weeklyChart'), {
+            type: 'bar',
+            data: {
+              labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+              datasets: [{ label: 'Score', data: skillVals, backgroundColor: ['#3b5bfd', '#6366f1', '#10b981', '#f59e0b', '#8b5cf6', '#e11d48'], borderRadius: 8 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, animation: false, scales: { y: { min: 0, max: 100 } } }
+          });
+        } else {
+          weeklyChartInstance.data.datasets[0].data = skillVals;
+          weeklyChartInstance.update('none');
+        }
       }
     }
 
