@@ -520,9 +520,8 @@
     let lastDashboardData = null;
     let isSyncing = false;
     let stAutoTimer = null;
-    const ST_AUTO_MODES = [5000, 10000, 0];
-    let stAutoModeIdx = Number(localStorage.getItem('stAutoModeIdx') || '0');
-    if (stAutoModeIdx < 0 || stAutoModeIdx >= ST_AUTO_MODES.length) stAutoModeIdx = 0;
+    const ST_AUTO_INTERVAL_MS = 5000; // Har 5 soniyada yangilanish
+    let stAutoEnabled = localStorage.getItem('stAutoEnabled') !== 'false';
 
     function tr(key) {
       const lang = localStorage.getItem('lang') || 'uz';
@@ -540,10 +539,9 @@
     function updateStAutoBtn() {
       const btn = document.getElementById('stAutoSyncBtn');
       if (!btn) return;
-      const ms = ST_AUTO_MODES[stAutoModeIdx];
-      if (ms > 0) {
+      if (stAutoEnabled) {
         btn.classList.remove('off');
-        btn.textContent = `🟢 Avto: ${Math.round(ms / 1000)}s`;
+        btn.textContent = '🟢 Avto: 5s';
       } else {
         btn.classList.add('off');
         btn.textContent = '⏸ Avto: Off';
@@ -556,11 +554,10 @@
         stAutoTimer = null;
       }
       updateStAutoBtn();
-      const ms = ST_AUTO_MODES[stAutoModeIdx];
-      if (ms > 0) {
+      if (stAutoEnabled) {
         stAutoTimer = setInterval(() => {
           if (!document.hidden) loadDashboard(true);
-        }, ms);
+        }, ST_AUTO_INTERVAL_MS);
       }
     }
 
@@ -585,7 +582,7 @@
         document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById(btn.getAttribute('data-page')).classList.add('active');
-        loadDashboard(true);
+        loadDashboard(false);
       });
     });
 
@@ -595,12 +592,11 @@
     });
 
     document.getElementById('stAutoSyncBtn').addEventListener('click', () => {
-      stAutoModeIdx = (stAutoModeIdx + 1) % ST_AUTO_MODES.length;
-      localStorage.setItem('stAutoModeIdx', String(stAutoModeIdx));
+      stAutoEnabled = !stAutoEnabled;
+      localStorage.setItem('stAutoEnabled', String(stAutoEnabled));
       restartStAutoSync();
-      const ms = ST_AUTO_MODES[stAutoModeIdx];
-      showToast(ms > 0 ? `Avto-yangilanish: har ${ms / 1000}s` : 'Avto-yangilanish o‘chirildi');
-      if (ms > 0) loadDashboard(true);
+      showToast(stAutoEnabled ? 'Avto-yangilanish: har 5 soniyada' : 'Avto-yangilanish o‘chirildi');
+      if (stAutoEnabled) loadDashboard(false);
     });
 
     document.getElementById('stManualRefreshBtn').addEventListener('click', () => {
@@ -763,10 +759,14 @@
     }
 
     async function submitAssignment(assignmentId) {
-      const answer_text = document.getElementById(`ansText_${assignmentId}`).value;
-      const answer_url = document.getElementById(`ansUrl_${assignmentId}`).value;
+      const textEl = document.getElementById(`ansText_${assignmentId}`);
+      const urlEl = document.getElementById(`ansUrl_${assignmentId}`);
+      const answer_text = textEl ? textEl.value : '';
+      const answer_url = urlEl ? urlEl.value : '';
       try {
         await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
+        if (textEl) textEl.value = '';
+        if (urlEl) urlEl.value = '';
         showToast(tr('sentOk'));
         await loadDashboard(false);
       } catch (err) { showToast(err.message); }
@@ -940,10 +940,22 @@
           .filter(Boolean)
       );
 
-      document.getElementById('assignmentsList').innerHTML = (data.assignments || []).map(a => {
+      const assignmentsContainer = document.getElementById('assignmentsList');
+      const existingDrafts = {};
+      assignmentsContainer.querySelectorAll('input[id^="ansText_"]').forEach(inp => {
+        if (inp.value) existingDrafts[inp.id] = inp.value;
+      });
+      assignmentsContainer.querySelectorAll('input[id^="ansUrl_"]').forEach(inp => {
+        if (inp.value) existingDrafts[inp.id] = inp.value;
+      });
+
+      assignmentsContainer.innerHTML = (data.assignments || []).map(a => {
         const alreadySubmitted =
           submittedIds.has(Number(a.id)) ||
           submittedTitles.has((a.title || '').toString().trim().toLowerCase());
+
+        const textId = `ansText_${a.id}`;
+        const urlId = `ansUrl_${a.id}`;
 
         return `
           <div class="item-card">
@@ -953,8 +965,8 @@
               alreadySubmitted
                 ? `<div class="submitted-note">${tr('alreadySubmitted')}</div>`
                 : `
-                  <div class="form-group"><input type="text" id="ansText_${a.id}" placeholder="${tr('ansPlaceholder')}" /></div>
-                  <div class="form-group"><input type="url" id="ansUrl_${a.id}" placeholder="${tr('urlPlaceholder')}" /></div>
+                  <div class="form-group"><input type="text" id="${textId}" value="${escapeHtml(existingDrafts[textId] || '')}" placeholder="${tr('ansPlaceholder')}" /></div>
+                  <div class="form-group"><input type="url" id="${urlId}" value="${escapeHtml(existingDrafts[urlId] || '')}" placeholder="${tr('urlPlaceholder')}" /></div>
                   <button class="btn-primary" onclick="submitAssignment(${a.id})">${tr('btnSend')}</button>
                 `
             }
@@ -1061,10 +1073,6 @@
 
     async function loadDashboard(silent = false) {
       if (isSyncing) return;
-      const activeTag = document.activeElement?.tagName;
-      if (silent && (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT')) {
-        return;
-      }
       isSyncing = true;
       try {
         const data = await api('/api/student/dashboard');
@@ -1088,11 +1096,11 @@
     loadDashboard(false);
 
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) loadDashboard(true);
+      if (!document.hidden) loadDashboard(false);
     });
 
     window.addEventListener('focus', () => {
-      loadDashboard(true);
+      loadDashboard(false);
     });
   </script>
 </body>
