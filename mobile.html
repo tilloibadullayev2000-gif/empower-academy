@@ -289,13 +289,46 @@
       display: inline-block;
       margin-top: 8px;
       margin-right: 6px;
-      padding: 5px 10px;
-      border-radius: 8px;
-      background: rgba(59, 130, 246, 0.2);
+      padding: 6px 11px;
+      border-radius: 9px;
+      background: rgba(59, 130, 246, 0.22);
       color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.35);
       text-decoration: none;
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 700;
+      cursor: pointer;
+    }
+
+    .lesson-reader-box {
+      margin-top: 10px;
+      background: var(--input);
+      border: 1px solid rgba(250, 204, 21, 0.25);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.55;
+      color: var(--heading);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .lesson-img-preview {
+      margin-top: 10px;
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: #091020;
+      display: block;
+    }
+    .lesson-frame {
+      margin-top: 10px;
+      width: 100%;
+      height: 380px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      background: #fff;
+      display: block;
     }
 
     .list-item {
@@ -648,8 +681,11 @@
 
   <script>
     let studentsData = [];
+    let lessonsCache = [];
+    const openedLessonIds = new Set();
     let currentRole = localStorage.getItem('role') || '';
     let currentToken = localStorage.getItem('token') || '';
+    let isSyncing = false;
 
     function showToast(msg) {
       const el = document.getElementById('mToast');
@@ -666,9 +702,23 @@
         .replace(/"/g, '&quot;');
     }
 
+    function toAbsoluteUrl(url) {
+      if (!url) return '';
+      const trimmed = String(url).trim();
+      if (!trimmed) return '';
+      if (trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('data:')) {
+        return trimmed;
+      }
+      if (trimmed.startsWith('/')) {
+        return window.location.origin + trimmed;
+      }
+      return window.location.origin + '/' + trimmed;
+    }
+
     async function api(url, method = 'GET', body = null) {
       const opts = {
         method,
+        cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer ' + currentToken
@@ -736,7 +786,7 @@
       document.getElementById('mobileLoginScreen').style.display = 'none';
       document.getElementById('mobileAppScreen').style.display = 'block';
       document.getElementById('mUserTitle').textContent = localStorage.getItem('full_name') || 'Empower Academy';
-      document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • MOBILE';
+      document.getElementById('mRoleSubtitle').textContent = (currentRole || 'USER').toUpperCase() + ' • AUTO SYNC';
       configureRoleUI();
     }
 
@@ -765,7 +815,7 @@
         localStorage.setItem('role', data.role);
         localStorage.setItem('full_name', data.full_name || '');
         showApp();
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         errBox.textContent = 'Serverga ulanib bo‘lmadi';
         errBox.style.display = 'block';
@@ -780,7 +830,7 @@
     });
 
     document.getElementById('mRefreshBtn').addEventListener('click', () => {
-      loadMobileData();
+      loadMobileData(false);
       showToast('Yangilandi');
     });
 
@@ -791,8 +841,74 @@
         document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(target)?.classList.add('active');
         btn.classList.add('active');
+        loadMobileData(true);
       });
     });
+
+    function toggleLessonReader(lessonId) {
+      if (openedLessonIds.has(lessonId)) {
+        openedLessonIds.delete(lessonId);
+      } else {
+        openedLessonIds.add(lessonId);
+      }
+      renderStudentLessons(lessonsCache);
+    }
+
+    function openLessonExternal(rawUrl) {
+      const fullUrl = toAbsoluteUrl(rawUrl);
+      if (!fullUrl) return showToast('Fayl yoki havola topilmadi');
+      window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    function renderStudentLessons(list) {
+      lessonsCache = Array.isArray(list) ? list : [];
+      document.getElementById('mStudentLessonsList').innerHTML = lessonsCache.map((l, idx) => {
+        const lid = Number(l.id ?? idx);
+        const fileUrl = toAbsoluteUrl(l.file_url || l.file_path || '');
+        const linkUrl = toAbsoluteUrl(l.material_url || '');
+        const targetUrl = fileUrl || linkUrl;
+        const isOpen = openedLessonIds.has(lid);
+        const lowerFile = (fileUrl || l.file_name || '').toLowerCase();
+        const isImage = /\.(jpg|jpeg|png|webp|gif)(\?|$)/i.test(lowerFile);
+        const isPdfOrDoc = /\.(pdf|txt|html)(\?|$)/i.test(lowerFile);
+
+        let readerHtml = '';
+        if (isOpen) {
+          const textPart = l.description
+            ? `<div class="lesson-reader-box">${esc(l.description)}</div>`
+            : `<div class="lesson-reader-box">Darslik: <b>${esc(l.title)}</b></div>`;
+
+          let mediaPart = '';
+          if (fileUrl && isImage) {
+            mediaPart = `<img src="${esc(fileUrl)}" alt="${esc(l.title)}" class="lesson-img-preview" />`;
+          } else if (fileUrl && isPdfOrDoc) {
+            mediaPart = `<iframe src="${esc(fileUrl)}" class="lesson-frame" loading="lazy"></iframe>`;
+          } else if (targetUrl) {
+            mediaPart = `
+              <div class="lesson-reader-box">
+                Material manzili: <a href="${esc(targetUrl)}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;">${esc(targetUrl)}</a>
+              </div>
+            `;
+          }
+          readerHtml = textPart + mediaPart;
+        }
+
+        return `
+          <div class="block-item">
+            <div class="item-title">${esc(l.title)} <span class="pill pill-info">${esc(l.level || 'ALL')}</span></div>
+            <div class="item-sub">${esc(l.description || 'Dars materialini ochib o‘qing')}</div>
+            <div style="margin-top:6px; display:flex; flex-wrap:wrap; gap:6px;">
+              <button type="button" class="btn-link-mini" onclick="toggleLessonReader(${lid})">
+                ${isOpen ? '📖 Yopish' : '📖 Ichida o‘qish'}
+              </button>
+              ${fileUrl ? `<button type="button" class="btn-link-mini" onclick="openLessonExternal('${esc(fileUrl)}')">📎 ${esc(l.file_name || 'Faylni ochish')}</button>` : ''}
+              ${linkUrl ? `<button type="button" class="btn-link-mini" onclick="openLessonExternal('${esc(linkUrl)}')">🔗 Havolani ochish</button>` : ''}
+            </div>
+            ${readerHtml}
+          </div>
+        `;
+      }).join('') || '<div class="item-sub">Darsliklar yo‘q</div>';
+    }
 
     function renderStudents(list) {
       const q = (document.getElementById('mSearchInput').value || '').toLowerCase();
@@ -826,7 +942,7 @@
       try {
         await api(`/api/admin/students/${id}`, 'DELETE');
         showToast('O‘chirildi');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
@@ -838,13 +954,20 @@
       try {
         await api(`/api/student/assignments/${assignmentId}/submit`, 'POST', { answer_text, answer_url });
         showToast('Javob yuborildi!');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
     }
 
-    async function loadMobileData() {
+    async function loadMobileData(silent = true) {
+      if (!currentToken || !currentRole || isSyncing) return;
+      const activeTag = document.activeElement?.tagName;
+      if (silent && (activeTag === 'INPUT' || activeTag === 'TEXTAREA' || activeTag === 'SELECT')) {
+        return;
+      }
+
+      isSyncing = true;
       try {
         if (currentRole === 'admin') {
           const [students, tx, closingsRes, anns] = await Promise.all([
@@ -865,9 +988,13 @@
           document.getElementById('mKpi3').textContent = avgCenter + '%';
           document.getElementById('mKpi4').textContent = lowBal;
 
+          const prevFin = document.getElementById('mFinStudent').value;
+          const prevAtt = document.getElementById('mAttStudent').value;
           const opts = studentsData.map(s => `<option value="${s.id}">${esc(s.full_name)} (${esc(s.level)})</option>`).join('');
           document.getElementById('mFinStudent').innerHTML = opts;
           document.getElementById('mAttStudent').innerHTML = opts;
+          if (prevFin) document.getElementById('mFinStudent').value = prevFin;
+          if (prevAtt) document.getElementById('mAttStudent').value = prevAtt;
 
           renderStudents(studentsData);
 
@@ -908,8 +1035,10 @@
           document.getElementById('mKpi3').textContent = avg + '%';
           document.getElementById('mKpi4').textContent = (dash.assignments || []).length;
 
+          const prevAtt = document.getElementById('mAttStudent').value;
           const opts = studentsData.map(s => `<option value="${s.id}">${esc(s.full_name)}</option>`).join('');
           document.getElementById('mAttStudent').innerHTML = opts;
+          if (prevAtt) document.getElementById('mAttStudent').value = prevAtt;
           renderStudents(studentsData);
 
           const top5 = [...studentsData].sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0)).slice(0, 5);
@@ -966,17 +1095,7 @@
             </div>
           `).join('') || '<div class="item-sub">E’lonlar yo‘q</div>';
 
-          document.getElementById('mStudentLessonsList').innerHTML = (dash.lessons || []).map(l => {
-            const href = l.file_url || l.file_path || '';
-            return `
-              <div class="block-item">
-                <div class="item-title">${esc(l.title)} <span class="pill pill-info">${esc(l.level || 'ALL')}</span></div>
-                <div class="item-sub">${esc(l.description || '')}</div>
-                ${href ? `<a class="btn-link-mini" href="${esc(href)}" target="_blank">📎 ${esc(l.file_name || 'Fayl')}</a>` : ''}
-                ${l.material_url ? `<a class="btn-link-mini" href="${esc(l.material_url)}" target="_blank">🔗 Havola</a>` : ''}
-              </div>
-            `;
-          }).join('') || '<div class="item-sub">Darsliklar yo‘q</div>';
+          renderStudentLessons(dash.lessons || []);
 
           const submittedIds = new Set(
             (dash.submissions || []).map(sub => Number(sub.assignment_id)).filter(Boolean)
@@ -1041,9 +1160,11 @@
         if (err.message.includes('Token')) {
           localStorage.clear();
           showLogin();
-        } else {
+        } else if (!silent) {
           showToast(err.message);
         }
+      } finally {
+        isSyncing = false;
       }
     }
 
@@ -1060,7 +1181,7 @@
         });
         e.target.reset();
         showToast('O‘quvchi qo‘shildi!');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
@@ -1078,7 +1199,7 @@
         document.getElementById('mFinAmount').value = '';
         document.getElementById('mFinDesc').value = '';
         showToast('Balans yangilandi!');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
@@ -1094,7 +1215,7 @@
           status: document.getElementById('mAttStatus').value
         });
         showToast('Davomat saqlandi!');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
@@ -1109,7 +1230,7 @@
         const res = await api('/api/admin/close-month', 'POST', { month_key, password });
         document.getElementById('mCloseMonthPass').value = '';
         showToast(res.message || 'Oy yopildi!');
-        loadMobileData();
+        loadMobileData(false);
       } catch (err) {
         showToast(err.message);
       }
@@ -1122,10 +1243,29 @@
 
     if (currentToken && currentRole) {
       showApp();
-      loadMobileData();
+      loadMobileData(false);
     } else {
       showLogin();
     }
+
+    // Avto-obnavleniya: har 8 soniyada va ekran/oyna faollashganda
+    setInterval(() => {
+      if (!document.hidden && currentToken && currentRole) {
+        loadMobileData(true);
+      }
+    }, 8000);
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && currentToken && currentRole) {
+        loadMobileData(true);
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      if (currentToken && currentRole) {
+        loadMobileData(true);
+      }
+    });
   </script>
 </body>
 </html>
