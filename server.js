@@ -1,5 +1,5 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -15,7 +15,6 @@ app.use(express.urlencoded({ extended: true, limit: '25mb' }));
 
 // Papkalarni avtomatik aniqlash (frontend va uploads)
 const FRONTEND_DIR = __dirname;
-
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fs.existsSync(UPLOADS_DIR)) {
   fs.mkdirSync(UPLOADS_DIR, { recursive: true });
@@ -29,8 +28,16 @@ app.get('/mobile', (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'mobile.html'));
 });
 
-const dbPath = path.join(__dirname, 'empower.db');
-const db = new sqlite3.Database(dbPath);
+if (!process.env.DATABASE_URL) {
+  console.warn('DIQQAT: DATABASE_URL topilmadi! Render Environment bo‘limiga Neon PostgreSQL URL qo‘shing.');
+}
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.DATABASE_URL && !process.env.DATABASE_URL.includes('localhost')
+    ? { rejectUnauthorized: false }
+    : false
+});
 
 const SKILL_KEYS = ['grammar', 'listening', 'reading', 'vocabulary', 'writing', 'speaking'];
 const SKILL_LABELS = {
@@ -42,31 +49,36 @@ const SKILL_LABELS = {
   speaking: 'Speaking'
 };
 
-function dbRun(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) reject(err);
-      else resolve(this);
-    });
-  });
+function formatPgSql(sql) {
+  let idx = 0;
+  return sql.replace(/\?/g, () => `$${++idx}`);
 }
 
-function dbGet(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) reject(err);
-      else resolve(row);
-    });
-  });
+function nowFormatted() {
+  const d = new Date(Date.now() + 5 * 3600 * 1000);
+  return d.toISOString().replace('T', ' ').slice(0, 19);
 }
 
-function dbAll(sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+async function dbRun(sql, params = [], client = pool) {
+  const pgSql = formatPgSql(sql);
+  const res = await client.query(pgSql, params);
+  return {
+    lastID: res.rows && res.rows[0] && res.rows[0].id !== undefined ? res.rows[0].id : null,
+    rowCount: res.rowCount || 0,
+    rows: res.rows || []
+  };
+}
+
+async function dbGet(sql, params = [], client = pool) {
+  const pgSql = formatPgSql(sql);
+  const res = await client.query(pgSql, params);
+  return res.rows[0] || null;
+}
+
+async function dbAll(sql, params = [], client = pool) {
+  const pgSql = formatPgSql(sql);
+  const res = await client.query(pgSql, params);
+  return res.rows || [];
 }
 
 const ALLOWED_EXTENSIONS = new Set([
@@ -77,7 +89,9 @@ function saveBase64File(base64Str, prefix = 'file', originalName = '') {
   if (!base64Str || typeof base64Str !== 'string') return null;
   const trimmed = base64Str.trim();
   if (!trimmed) return null;
-  if (trimmed.startsWith('/uploads/') || trimmed.startsWith('http')) return trimmed;
+  if (trimmed.startsWith('data:') || trimmed.startsWith('http://') || trimmed.startsWith('https://') || trimmed.startsWith('/uploads/')) {
+    return trimmed;
+  }
 
   const match = trimmed.match(/^data:([^;]+);base64,(.+)$/);
   let ext = path.extname(originalName || '').replace('.', '').toLowerCase() || 'jpg';
@@ -98,13 +112,21 @@ function saveBase64File(base64Str, prefix = 'file', originalName = '') {
   }
 
   if (!ALLOWED_EXTENSIONS.has(ext)) {
-    ext = 'bin';
+    ext = 'jpg';
   }
 
-  const fileName = `${prefix}_${Date.now()}_${Math.floor(Math.random() * 10000)}.${ext}`;
-  const fullPath = path.join(UPLOADS_DIR, fileName);
-  fs.writeFileSync(fullPath, Buffer.from(dataPart, 'base64'));
-  return `/uploads/${fileName}`;
+  const mimeMap = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    webp: 'image/webp',
+    gif: 'image/gif',
+    pdf: 'application/pdf',
+    mp3: 'audio/mpeg',
+    mp4: 'video/mp4'
+  };
+  const outMime = mimeMap[ext] || 'image/jpeg';
+  return `data:${outMime};base64,${dataPart}`;
 }
 
 function calcSkillsAvg(user) {
@@ -162,20 +184,14 @@ function clampScore(val) {
 }
 
 async function ensureUserExtraColumns() {
-  const cols = await dbAll(`PRAGMA table_info(users)`);
-  const names = cols.map((c) => c.name);
-  if (!names.includes('photo_url')) {
-    await dbRun(`ALTER TABLE users ADD COLUMN photo_url TEXT`).catch(() => {});
-  }
-  if (!names.includes('phone')) {
-    await dbRun(`ALTER TABLE users ADD COLUMN phone TEXT`).catch(() => {});
-  }
+  await dbRun(`ALTER TABLE users ADD COLUMN IF NOT EXISTS photo_url TEXT`).catch(() => {});
+  await dbRun(`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone TEXT`).catch(() => {});
 }
 
 async function initDb() {
   await dbRun(`
     CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       full_name TEXT NOT NULL,
       username TEXT UNIQUE NOT NULL,
       password TEXT NOT NULL,
@@ -184,15 +200,15 @@ async function initDb() {
       group_name TEXT DEFAULT 'General English',
       phone TEXT,
       photo_url TEXT,
-      balance REAL DEFAULT 0,
-      monthly_fee REAL DEFAULT 500000,
+      balance DOUBLE PRECISION DEFAULT 0,
+      monthly_fee DOUBLE PRECISION DEFAULT 500000,
       grammar INTEGER DEFAULT 0,
       listening INTEGER DEFAULT 0,
       reading INTEGER DEFAULT 0,
       vocabulary INTEGER DEFAULT 0,
       writing INTEGER DEFAULT 0,
       speaking INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
@@ -200,7 +216,7 @@ async function initDb() {
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS skill_evaluations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       student_id INTEGER NOT NULL,
       grammar INTEGER DEFAULT 0,
       listening INTEGER DEFAULT 0,
@@ -209,24 +225,24 @@ async function initDb() {
       writing INTEGER DEFAULT 0,
       speaking INTEGER DEFAULT 0,
       created_by TEXT,
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS transactions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       student_id INTEGER NOT NULL,
-      amount REAL NOT NULL,
+      amount DOUBLE PRECISION NOT NULL,
       type TEXT NOT NULL,
       description TEXT,
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS attendance (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       student_id INTEGER NOT NULL,
       lesson_date TEXT NOT NULL,
       status TEXT NOT NULL
@@ -235,54 +251,54 @@ async function initDb() {
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS lessons (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
       level TEXT DEFAULT 'ALL',
       material_url TEXT,
       file_url TEXT,
       file_name TEXT,
       description TEXT,
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS assignments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
       description TEXT,
       level TEXT DEFAULT 'ALL',
       due_date TEXT,
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS assignment_submissions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       assignment_id INTEGER NOT NULL,
       student_id INTEGER NOT NULL,
       answer_text TEXT,
       answer_url TEXT,
       grade INTEGER,
       teacher_feedback TEXT,
-      submitted_at TEXT DEFAULT (datetime('now','localtime'))
+      submitted_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS announcements (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       title TEXT NOT NULL,
       message TEXT NOT NULL,
       target_level TEXT DEFAULT 'ALL',
-      created_at TEXT DEFAULT (datetime('now','localtime'))
+      created_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS schedules (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       group_name TEXT NOT NULL,
       level TEXT NOT NULL,
       day_of_week TEXT NOT NULL,
@@ -293,30 +309,30 @@ async function initDb() {
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS monthly_closings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       month_key TEXT NOT NULL,
       student_id INTEGER NOT NULL,
       full_name TEXT,
       level TEXT,
       group_name TEXT,
-      avg_score REAL DEFAULT 0,
+      avg_score DOUBLE PRECISION DEFAULT 0,
       skills_json TEXT,
-      attendance_percent REAL DEFAULT 0,
+      attendance_percent DOUBLE PRECISION DEFAULT 0,
       present_count INTEGER DEFAULT 0,
       total_count INTEGER DEFAULT 0,
-      monthly_fee REAL DEFAULT 0,
-      balance_before REAL DEFAULT 0,
-      balance_after REAL DEFAULT 0,
-      closed_at TEXT DEFAULT (datetime('now','localtime'))
+      monthly_fee DOUBLE PRECISION DEFAULT 0,
+      balance_before DOUBLE PRECISION DEFAULT 0,
+      balance_after DOUBLE PRECISION DEFAULT 0,
+      closed_at TEXT
     )
   `);
 
   await dbRun(`
     CREATE TABLE IF NOT EXISTS history_clear_logs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       section_key TEXT NOT NULL,
       cleared_by TEXT NOT NULL,
-      cleared_at TEXT DEFAULT (datetime('now','localtime'))
+      cleared_at TEXT
     )
   `);
 
@@ -324,8 +340,8 @@ async function initDb() {
   if (!adminExists) {
     const hash = bcrypt.hashSync('admin123', 10);
     await dbRun(
-      `INSERT INTO users (full_name, username, password, role) VALUES (?, ?, ?, 'admin')`,
-      ['Super Admin', 'admin', hash]
+      `INSERT INTO users (full_name, username, password, role, created_at) VALUES (?, ?, ?, 'admin', ?)`,
+      ['Super Admin', 'admin', hash, nowFormatted()]
     );
   }
 }
@@ -376,8 +392,8 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
   const hasAnyNonZero = SKILL_KEYS.some((k) => Number(existing[k]) > 0);
   if (historyRows.length === 0 && hasAnyNonZero) {
     await dbRun(
-      `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         studentId,
         clampScore(existing.grammar),
@@ -386,7 +402,8 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
         clampScore(existing.vocabulary),
         clampScore(existing.writing),
         clampScore(existing.speaking),
-        'initial'
+        'initial',
+        nowFormatted()
       ]
     );
   }
@@ -401,8 +418,8 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
   };
 
   await dbRun(
-    `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO skill_evaluations (student_id, grammar, listening, reading, vocabulary, writing, speaking, created_by, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       studentId,
       newEntry.grammar,
@@ -411,7 +428,8 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
       newEntry.vocabulary,
       newEntry.writing,
       newEntry.speaking,
-      actorName
+      actorName,
+      nowFormatted()
     ]
   );
 
@@ -422,7 +440,7 @@ async function recordAndRecalculateSkills(studentId, body, actorName = 'system')
 async function buildStudentMonthDetail(student, monthKey, gradedSubmissionsForScore, chargeFee) {
   const attRows = await dbAll(
     `SELECT lesson_date, status FROM attendance
-     WHERE student_id = ? AND strftime('%Y-%m', lesson_date) = ?
+     WHERE student_id = ? AND SUBSTRING(lesson_date, 1, 7) = ?
      ORDER BY lesson_date ASC`,
     [student.id, monthKey]
   );
@@ -574,9 +592,9 @@ async function createLessonRecord(body) {
   const { title, level, material_url, description, file_base64, file_name } = body;
   const savedFileUrl = saveBase64File(file_base64, 'lesson', file_name);
   await dbRun(
-    `INSERT INTO lessons (title, level, material_url, file_url, file_name, description)
-     VALUES (?, ?, ?, ?, ?, ?)`,
-    [title, level || 'ALL', material_url || '', savedFileUrl || '', file_name || '', description || '']
+    `INSERT INTO lessons (title, level, material_url, file_url, file_name, description, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [title, level || 'ALL', material_url || '', savedFileUrl || '', file_name || '', description || '', nowFormatted()]
   );
 }
 
@@ -636,9 +654,9 @@ app.post('/api/admin/teachers', authMiddleware, adminOnly, async (req, res) => {
     const savedPhotoUrl = saveBase64File(rawPhoto, 'teacher', photo_name);
 
     const result = await dbRun(
-      `INSERT INTO users (full_name, username, password, role, phone, photo_url)
-       VALUES (?, ?, ?, 'teacher', ?, ?)`,
-      [full_name.trim(), username.trim(), hashed, (phone || '').trim(), savedPhotoUrl]
+      `INSERT INTO users (full_name, username, password, role, phone, photo_url, created_at)
+       VALUES (?, ?, ?, 'teacher', ?, ?, ?) RETURNING id`,
+      [full_name.trim(), username.trim(), hashed, (phone || '').trim(), savedPhotoUrl, nowFormatted()]
     );
     res.json({ message: 'O‘qituvchi qo‘shildi!', id: result.lastID, photo_url: savedPhotoUrl });
   } catch (err) {
@@ -884,8 +902,8 @@ app.post('/api/teacher/assignments', authMiddleware, teacherOrAdmin, async (req,
   try {
     const { title, description, level, due_date } = req.body;
     await dbRun(
-      `INSERT INTO assignments (title, description, level, due_date) VALUES (?, ?, ?, ?)`,
-      [title, description, level || 'ALL', due_date || '']
+      `INSERT INTO assignments (title, description, level, due_date, created_at) VALUES (?, ?, ?, ?, ?)`,
+      [title, description, level || 'ALL', due_date || '', nowFormatted()]
     );
     res.json({ message: 'Vazifa yaratildi!' });
   } catch (err) {
@@ -917,8 +935,8 @@ app.get('/api/admin/monthly-closings', authMiddleware, adminOnly, async (req, re
     const closings = await dbAll(
       `SELECT month_key,
               COUNT(*) as students_count,
-              ROUND(AVG(avg_score), 1) as avg_score,
-              ROUND(AVG(attendance_percent), 1) as avg_attendance,
+              ROUND(AVG(avg_score)::numeric, 1) as avg_score,
+              ROUND(AVG(attendance_percent)::numeric, 1) as avg_attendance,
               SUM(CASE WHEN balance_after < 0 THEN ABS(balance_after) ELSE 0 END) as total_debt,
               MAX(closed_at) as closed_at
        FROM monthly_closings
@@ -927,8 +945,8 @@ app.get('/api/admin/monthly-closings', authMiddleware, adminOnly, async (req, re
     );
 
     const yearlyLeaders = await dbAll(
-      `SELECT student_id, full_name, level,
-              ROUND(AVG(avg_score), 1) as yearly_avg,
+      `SELECT student_id, MAX(full_name) as full_name, MAX(level) as level,
+              ROUND(AVG(avg_score)::numeric, 1) as yearly_avg,
               MAX(avg_score) as best_score
        FROM monthly_closings
        GROUP BY student_id
@@ -959,6 +977,7 @@ app.get('/api/admin/monthly-closings', authMiddleware, adminOnly, async (req, re
 });
 
 app.delete('/api/admin/monthly-close/:monthKey', authMiddleware, adminOnly, async (req, res) => {
+  const client = await pool.connect();
   try {
     const { password } = req.body || {};
     if (String(password || '').trim() !== CLOSE_MONTH_DELETE_PASSWORD) {
@@ -968,28 +987,32 @@ app.delete('/api/admin/monthly-close/:monthKey', authMiddleware, adminOnly, asyn
     const cleanMonth = decodeURIComponent(req.params.monthKey || '').trim();
     if (!cleanMonth) return res.status(400).json({ error: 'Oy kaliti topilmadi' });
 
-    const row = await dbGet(`SELECT COUNT(*) as cnt FROM monthly_closings WHERE month_key = ?`, [cleanMonth]);
+    const row = await dbGet(`SELECT COUNT(*) as cnt FROM monthly_closings WHERE month_key = ?`, [cleanMonth], client);
     if (!row || Number(row.cnt) === 0) {
       return res.status(404).json({ error: `${cleanMonth} oyi arxivi topilmadi` });
     }
 
-    await dbRun('BEGIN TRANSACTION');
-    await dbRun(`DELETE FROM monthly_closings WHERE month_key = ?`, [cleanMonth]);
-    await dbRun(`DELETE FROM transactions WHERE type = 'charge' AND description LIKE ?`, [`${cleanMonth} oy yakuni%`]);
+    await client.query('BEGIN');
+    await dbRun(`DELETE FROM monthly_closings WHERE month_key = ?`, [cleanMonth], client);
+    await dbRun(`DELETE FROM transactions WHERE type = 'charge' AND description LIKE ?`, [`${cleanMonth} oy yakuni%`], client);
     await dbRun(
-      `INSERT INTO history_clear_logs (section_key, cleared_by) VALUES (?, ?)`,
-      [`monthly_close:${cleanMonth}`, req.user.username || 'admin']
+      `INSERT INTO history_clear_logs (section_key, cleared_by, cleared_at) VALUES (?, ?, ?)`,
+      [`monthly_close:${cleanMonth}`, req.user.username || 'admin', nowFormatted()],
+      client
     );
-    await dbRun('COMMIT');
+    await client.query('COMMIT');
 
     res.json({ message: `${cleanMonth} oy yopilishi o‘chirildi!` });
   } catch (err) {
-    await dbRun('ROLLBACK').catch(() => {});
+    await client.query('ROLLBACK').catch(() => {});
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
 app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) => {
+  const client = await pool.connect();
   try {
     const {
       month_key,
@@ -1007,7 +1030,7 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
     }
 
     const cleanMonth = String(month_key).trim();
-    const existing = await dbGet(`SELECT COUNT(*) as cnt FROM monthly_closings WHERE month_key = ?`, [cleanMonth]);
+    const existing = await dbGet(`SELECT COUNT(*) as cnt FROM monthly_closings WHERE month_key = ?`, [cleanMonth], client);
     if (existing && Number(existing.cnt) > 0) {
       return res.status(400).json({ error: `${cleanMonth} oyi allaqachon yopilgan!` });
     }
@@ -1015,13 +1038,16 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
     const students = await dbAll(
       `SELECT id, full_name, level, group_name, balance, monthly_fee,
               grammar, listening, reading, vocabulary, writing, speaking
-       FROM users WHERE role = 'student'`
+       FROM users WHERE role = 'student'`,
+      [],
+      client
     );
     const gradedMap = await getGradedSubmissionsByStudentMap();
 
     const studentReports = [];
+    const closedTime = nowFormatted();
 
-    await dbRun('BEGIN TRANSACTION');
+    await client.query('BEGIN');
 
     for (const st of students) {
       const grammar = Number(st.grammar) || 0;
@@ -1043,8 +1069,8 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
         `INSERT INTO monthly_closings (
           month_key, student_id, full_name, level, group_name,
           avg_score, skills_json, attendance_percent, present_count, total_count,
-          monthly_fee, balance_before, balance_after
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          monthly_fee, balance_before, balance_after, closed_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           cleanMonth,
           st.id,
@@ -1072,14 +1098,17 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
           report.total_count,
           report.monthly_fee,
           report.balance_before,
-          report.balance_after
-        ]
+          report.balance_after,
+          closedTime
+        ],
+        client
       );
 
       if (charge_fee && report.monthly_fee > 0) {
         await dbRun(
-          `INSERT INTO transactions (student_id, amount, type, description) VALUES (?, ?, 'charge', ?)`,
-          [st.id, report.monthly_fee, `${cleanMonth} oy yakuni — oylik to'lov hisoblandi`]
+          `INSERT INTO transactions (student_id, amount, type, description, created_at) VALUES (?, ?, 'charge', ?, ?)`,
+          [st.id, report.monthly_fee, `${cleanMonth} oy yakuni — oylik to'lov hisoblandi`, closedTime],
+          client
         );
       }
 
@@ -1096,28 +1125,29 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
           reset_skills ? 0 : writing,
           reset_skills ? 0 : speaking,
           st.id
-        ]
+        ],
+        client
       );
     }
 
     if (reset_skills) {
-      await dbRun(`DELETE FROM skill_evaluations`);
+      await dbRun(`DELETE FROM skill_evaluations`, [], client);
     }
 
     if (clear_month_attendance) {
-      await dbRun(`DELETE FROM attendance WHERE strftime('%Y-%m', lesson_date) = ?`, [cleanMonth]);
+      await dbRun(`DELETE FROM attendance WHERE SUBSTRING(lesson_date, 1, 7) = ?`, [cleanMonth], client);
     }
 
     if (clear_lessons) {
-      await dbRun(`DELETE FROM lessons`);
+      await dbRun(`DELETE FROM lessons`, [], client);
     }
 
     if (clear_assignments) {
-      await dbRun(`DELETE FROM assignment_submissions`);
-      await dbRun(`DELETE FROM assignments`);
+      await dbRun(`DELETE FROM assignment_submissions`, [], client);
+      await dbRun(`DELETE FROM assignments`, [], client);
     }
 
-    await dbRun('COMMIT');
+    await client.query('COMMIT');
 
     res.json({
       message: `${cleanMonth} oyi yopildi! Har bir o‘quvchi bo‘yicha davomat, pul va uyga vazifa hisoboti tayyorlandi.`,
@@ -1126,8 +1156,10 @@ app.post('/api/admin/close-month', authMiddleware, adminOnly, async (req, res) =
       student_reports: studentReports
     });
   } catch (err) {
-    await dbRun('ROLLBACK').catch(() => {});
+    await client.query('ROLLBACK').catch(() => {});
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 
@@ -1163,8 +1195,8 @@ app.post('/api/admin/clear-history', authMiddleware, adminOnly, async (req, res)
     const admin = await verifyAdminPassword(req.user.id, password);
     await dbRun(allowedSections[section]);
     await dbRun(
-      `INSERT INTO history_clear_logs (section_key, cleared_by) VALUES (?, ?)`,
-      [section, admin.full_name || admin.username]
+      `INSERT INTO history_clear_logs (section_key, cleared_by, cleared_at) VALUES (?, ?, ?)`,
+      [section, admin.full_name || admin.username, nowFormatted()]
     );
 
     res.json({ message: 'Tarix muvaffaqiyatli tozalandi!' });
@@ -1228,8 +1260,8 @@ app.post('/api/admin/students', authMiddleware, adminOnly, async (req, res) => {
     const savedPhotoUrl = saveBase64File(photo_base64 || photo_url || avatar_url, 'student', photo_name);
 
     const result = await dbRun(
-      `INSERT INTO users (full_name, username, password, role, level, group_name, monthly_fee, photo_url)
-       VALUES (?, ?, ?, 'student', ?, ?, ?, ?)`,
+      `INSERT INTO users (full_name, username, password, role, level, group_name, monthly_fee, photo_url, created_at)
+       VALUES (?, ?, ?, 'student', ?, ?, ?, ?, ?) RETURNING id`,
       [
         full_name,
         username,
@@ -1237,7 +1269,8 @@ app.post('/api/admin/students', authMiddleware, adminOnly, async (req, res) => {
         level || 'B1',
         group_name || 'General',
         monthly_fee || 500000,
-        savedPhotoUrl
+        savedPhotoUrl,
+        nowFormatted()
       ]
     );
 
@@ -1301,8 +1334,8 @@ app.post('/api/admin/balance', authMiddleware, adminOnly, async (req, res) => {
 
     await dbRun(`UPDATE users SET balance = balance + ? WHERE id = ? AND role = 'student'`, [delta, student_id]);
     await dbRun(
-      `INSERT INTO transactions (student_id, amount, type, description) VALUES (?, ?, ?, ?)`,
-      [student_id, numAmount, type, description || (type === 'deposit' ? 'Hisob to‘ldirildi' : 'Oylik dars to‘lovi yechildi')]
+      `INSERT INTO transactions (student_id, amount, type, description, created_at) VALUES (?, ?, ?, ?, ?)`,
+      [student_id, numAmount, type, description || (type === 'deposit' ? 'Hisob to‘ldirildi' : 'Oylik dars to‘lovi yechildi'), nowFormatted()]
     );
     res.json({ message: 'Balans yangilandi' });
   } catch (err) {
@@ -1440,8 +1473,8 @@ app.post('/api/admin/announcements', authMiddleware, adminOnly, async (req, res)
   try {
     const { title, message, target_level } = req.body;
     await dbRun(
-      `INSERT INTO announcements (title, message, target_level) VALUES (?, ?, ?)`,
-      [title, message, target_level || 'ALL']
+      `INSERT INTO announcements (title, message, target_level, created_at) VALUES (?, ?, ?, ?)`,
+      [title, message, target_level || 'ALL', nowFormatted()]
     );
     res.json({ message: 'E’lon joylandi' });
   } catch (err) {
@@ -1509,8 +1542,8 @@ app.post('/api/admin/assignments', authMiddleware, adminOnly, async (req, res) =
   try {
     const { title, description, level, due_date } = req.body;
     await dbRun(
-      `INSERT INTO assignments (title, description, level, due_date) VALUES (?, ?, ?, ?)`,
-      [title, description, level || 'ALL', due_date || '']
+      `INSERT INTO assignments (title, description, level, due_date, created_at) VALUES (?, ?, ?, ?, ?)`,
+      [title, description, level || 'ALL', due_date || '', nowFormatted()]
     );
     res.json({ message: 'Vazifa yaratildi' });
   } catch (err) {
@@ -1565,9 +1598,9 @@ app.post('/api/student/assignments/:id/submit', authMiddleware, async (req, res)
     }
 
     await dbRun(
-      `INSERT INTO assignment_submissions (assignment_id, student_id, answer_text, answer_url)
-       VALUES (?, ?, ?, ?)`,
-      [assignmentId, studentId, (answer_text || '').trim(), (answer_url || '').trim()]
+      `INSERT INTO assignment_submissions (assignment_id, student_id, answer_text, answer_url, submitted_at)
+       VALUES (?, ?, ?, ?, ?)`,
+      [assignmentId, studentId, (answer_text || '').trim(), (answer_url || '').trim(), nowFormatted()]
     );
     res.json({ message: 'Javobingiz qabul qilindi!' });
   } catch (err) {
@@ -1669,8 +1702,8 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
         [studentId]
       ),
       dbAll(
-        `SELECT student_id, full_name, level,
-                ROUND(AVG(avg_score), 1) as yearly_avg,
+        `SELECT student_id, MAX(full_name) as full_name, MAX(level) as level,
+                ROUND(AVG(avg_score)::numeric, 1) as yearly_avg,
                 MAX(avg_score) as best_score
          FROM monthly_closings
          GROUP BY student_id
@@ -1771,7 +1804,7 @@ app.get('/api/student/dashboard', authMiddleware, async (req, res) => {
 initDb()
   .then(() => {
     app.listen(PORT, () => {
-      console.log(`Server ishga tushdi: http://localhost:${PORT}`);
+      console.log(`Server PostgreSQL bilan ishga tushdi: http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
