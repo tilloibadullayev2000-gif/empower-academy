@@ -208,11 +208,84 @@
       padding: 16px;
       margin-bottom: 14px;
     }
+    .m-card.clickable-box {
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .m-card.clickable-box:active {
+      transform: scale(0.99);
+      border-color: #fde047;
+    }
+    .m-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
     .m-card h2 {
       font-size: 15.5px;
       font-weight: 800;
       color: var(--heading);
-      margin-bottom: 10px;
+      margin-bottom: 0;
+    }
+    .enter-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: #fde047;
+      background: rgba(250, 204, 21, 0.14);
+      border: 1px solid rgba(250, 204, 21, 0.35);
+      padding: 4px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    /* ICHKI BO'LIM (MODAL / OVERLAY) */
+    .sub-modal-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 70;
+      background: rgba(5, 9, 20, 0.85);
+      backdrop-filter: blur(6px);
+      overflow-y: auto;
+      padding: 16px 14px 36px;
+    }
+    .sub-modal-backdrop.open {
+      display: block;
+    }
+    .sub-modal-card {
+      max-width: 680px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+    }
+    .sub-modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sub-modal-title {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--heading);
+    }
+    .close-modal-btn {
+      background: var(--card-2);
+      color: var(--heading);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 10px;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
     }
 
     .skills-mini-grid {
@@ -657,22 +730,45 @@
           </div>
         </div>
 
+        <!-- O'QUVCHI: 3 TA BO'LIM KARTOCHKASI — BOSILGANDA ICHIGA KIRADI -->
         <div id="mStudentAttFinanceView" style="display:none;">
-          <div class="m-card">
-            <h2>📅 Dars jadvali</h2>
+          <div class="m-card clickable-box" onclick="openStudentSubModal('schedule')">
+            <div class="m-card-head">
+              <h2>📅 Dars jadvali</h2>
+              <span class="enter-badge">Ichiga kirish ›</span>
+            </div>
             <div id="mStudentScheduleList"></div>
           </div>
-          <div class="m-card">
-            <h2>📋 Davomat tarixim</h2>
+
+          <div class="m-card clickable-box" onclick="openStudentSubModal('attendance')">
+            <div class="m-card-head">
+              <h2>📋 Davomat tarixim</h2>
+              <span class="enter-badge">Ichiga kirish ›</span>
+            </div>
             <div id="mStudentAttendanceList"></div>
           </div>
-          <div class="m-card">
-            <h2>💳 To‘lovlar tarixim</h2>
+
+          <div class="m-card clickable-box" onclick="openStudentSubModal('finance')">
+            <div class="m-card-head">
+              <h2>💳 To‘lovlar tarixim</h2>
+              <span class="enter-badge">Ichiga kirish ›</span>
+            </div>
             <div id="mStudentTxList"></div>
           </div>
         </div>
       </section>
     </main>
+
+    <!-- ICHKI BO'LIM OYNASI (Dars jadvali / Davomat tarixim / To'lovlar tarixim) -->
+    <div id="mSubModal" class="sub-modal-backdrop" onclick="if(event.target===this) closeStudentSubModal()">
+      <div class="sub-modal-card">
+        <div class="sub-modal-top">
+          <div class="sub-modal-title" id="mSubModalTitle">Bo‘lim</div>
+          <button type="button" class="close-modal-btn" onclick="closeStudentSubModal()">✕ Yopish</button>
+        </div>
+        <div id="mSubModalBody"></div>
+      </div>
+    </div>
 
     <nav class="bottom-nav">
       <button type="button" class="b-nav-btn active" data-mtab="mTabHome" id="mNav1">
@@ -699,6 +795,8 @@
   <script>
     let studentsData = [];
     let lessonsCache = [];
+    let lastStudentDash = null;
+    let activeStudentModalType = null;
     const openedLessonIds = new Set();
     let currentRole = localStorage.getItem('role') || '';
     let currentToken = localStorage.getItem('token') || '';
@@ -767,6 +865,74 @@
       return window.location.origin + '/' + trimmed;
     }
 
+    function buildStudentSubHtml(type, dash) {
+      const d = dash || {};
+      if (type === 'schedule') {
+        const rows = Array.isArray(d.schedules) ? d.schedules : [];
+        return rows.length ? rows.map(s => `
+          <div class="block-item">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+              <div class="item-title">${esc(s.group_name || 'Dars')} • ${esc(s.day_of_week || '-')}</div>
+              <span class="pill pill-info">${esc(s.level || '-')}</span>
+            </div>
+            <div class="item-sub" style="margin-top:6px;">Vaqt: <b>${esc(s.lesson_time || '-')}</b></div>
+            <div class="item-sub">Xona / Ustoz: <b>${esc(s.room_or_teacher || '-')}</b></div>
+          </div>
+        `).join('') : '<div class="item-sub">Dars jadvali ma’lumoti topilmadi.</div>';
+      }
+
+      if (type === 'attendance') {
+        const rows = Array.isArray(d.attendance) ? d.attendance : [];
+        return rows.length ? rows.map(a => {
+          const isPresent = String(a.status || '').toLowerCase() === 'present';
+          return `
+            <div class="list-item">
+              <div>
+                <div class="item-title">${esc(a.lesson_date || '-')}</div>
+                ${a.note ? `<div class="item-sub">${esc(a.note)}</div>` : ''}
+              </div>
+              <span class="pill ${isPresent ? 'pill-ok' : 'pill-low'}">${esc(a.status || '-')}</span>
+            </div>
+          `;
+        }).join('') : '<div class="item-sub">Davomat tarixi topilmadi.</div>';
+      }
+
+      if (type === 'finance') {
+        const rows = Array.isArray(d.transactions) ? d.transactions : [];
+        return rows.length ? rows.map(t => {
+          const isDep = t.type === 'deposit';
+          return `
+            <div class="list-item">
+              <div>
+                <div class="item-title">${esc(t.description || (isDep ? 'To‘lov' : 'Yechim'))}</div>
+                <div class="item-sub">${esc(t.created_at || '')}</div>
+              </div>
+              <span class="pill ${isDep ? 'pill-ok' : 'pill-low'}">${isDep ? '+' : '-'}${Number(t.amount || 0).toLocaleString()}</span>
+            </div>
+          `;
+        }).join('') : '<div class="item-sub">To‘lovlar tarixi topilmadi.</div>';
+      }
+
+      return '';
+    }
+
+    function openStudentSubModal(type) {
+      activeStudentModalType = type;
+      const titles = {
+        schedule: '📅 Dars jadvali',
+        attendance: '📋 Davomat tarixim',
+        finance: '💳 To‘lovlar tarixim'
+      };
+      document.getElementById('mSubModalTitle').textContent = titles[type] || 'Ma’lumotlar';
+      document.getElementById('mSubModalBody').innerHTML = buildStudentSubHtml(type, lastStudentDash);
+      document.getElementById('mSubModal').classList.add('open');
+    }
+
+    function closeStudentSubModal() {
+      activeStudentModalType = null;
+      document.getElementById('mSubModal').classList.remove('open');
+    }
+
     async function api(url, method = 'GET', body = null) {
       const sep = url.includes('?') ? '&' : '?';
       const bustUrl = method === 'GET' ? `${url}${sep}_t=${Date.now()}` : url;
@@ -786,6 +952,7 @@
     }
 
     function showLogin() {
+      closeStudentSubModal();
       document.getElementById('mobileAppScreen').style.display = 'none';
       document.getElementById('mobileLoginScreen').style.display = 'flex';
     }
@@ -901,6 +1068,7 @@
 
     document.querySelectorAll('.b-nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        closeStudentSubModal();
         const target = btn.getAttribute('data-mtab');
         document.querySelectorAll('.m-section').forEach(s => s.classList.remove('active'));
         document.querySelectorAll('.b-nav-btn').forEach(b => b.classList.remove('active'));
@@ -1118,6 +1286,7 @@
           document.getElementById('mClosingsList').innerHTML = '<div class="item-sub">Hisobotlar admin tomonidan yuritiladi</div>';
         } else {
           const dash = await api('/api/student/dashboard');
+          lastStudentDash = dash;
           const st = dash.student || {};
 
           document.getElementById('mKpi1').textContent = Number(st.balance || 0).toLocaleString();
@@ -1194,8 +1363,8 @@
             </div>
           `).join('') || '<div class="item-sub">Javoblar yo‘q</div>';
 
-          document.getElementById('mStudentScheduleList').innerHTML = (dash.schedules || []).map(s => `
-            <div class="list-item">
+          document.getElementById('mStudentScheduleList').innerHTML = (dash.schedules || []).slice(0, 1).map(s => `
+            <div class="list-item" style="margin-bottom:0;">
               <div>
                 <div class="item-title">${esc(s.group_name)} • ${esc(s.day_of_week)}</div>
                 <div class="item-sub">${esc(s.lesson_time)} • ${esc(s.room_or_teacher)}</div>
@@ -1204,15 +1373,15 @@
             </div>
           `).join('') || '<div class="item-sub">Jadval yo‘q</div>';
 
-          document.getElementById('mStudentAttendanceList').innerHTML = (dash.attendance || []).slice(0, 15).map(a => `
-            <div class="list-item">
+          document.getElementById('mStudentAttendanceList').innerHTML = (dash.attendance || []).slice(0, 1).map(a => `
+            <div class="list-item" style="margin-bottom:0;">
               <div class="item-title">${esc(a.lesson_date)}</div>
               <span class="pill ${a.status === 'present' ? 'pill-ok' : 'pill-low'}">${esc(a.status)}</span>
             </div>
           `).join('') || '<div class="item-sub">Davomat yo‘q</div>';
 
-          document.getElementById('mStudentTxList').innerHTML = (dash.transactions || []).slice(0, 10).map(t => `
-            <div class="list-item">
+          document.getElementById('mStudentTxList').innerHTML = (dash.transactions || []).slice(0, 1).map(t => `
+            <div class="list-item" style="margin-bottom:0;">
               <div>
                 <div class="item-title">${esc(t.description || t.type)}</div>
                 <div class="item-sub">${esc(t.created_at || '')}</div>
@@ -1220,6 +1389,10 @@
               <span class="pill ${t.type === 'deposit' ? 'pill-ok' : 'pill-low'}">${t.type === 'deposit' ? '+' : '-'}${Number(t.amount).toLocaleString()}</span>
             </div>
           `).join('') || '<div class="item-sub">To‘lovlar yo‘q</div>';
+
+          if (activeStudentModalType) {
+            document.getElementById('mSubModalBody').innerHTML = buildStudentSubHtml(activeStudentModalType, dash);
+          }
         }
       } catch (err) {
         if (err.message.includes('Token')) {
